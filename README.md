@@ -58,3 +58,16 @@ docker compose --profile dev up -d
 ```
 
 phpMyAdmin is available at http://localhost:8080.
+
+## Code quality
+
+From `website`:
+
+```powershell
+npm run lint
+npm run format:check
+npm run format:php:check
+npm run build
+```
+
+Run `npm run format` to format the frontend files and project configuration. Use `npm run format:php` to format PHP and Blade files, or `npm run format:php:check` to check them without changing files. Husky runs lint and frontend format checks automatically before each commit.
