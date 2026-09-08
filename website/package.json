@@ -7,8 +7,8 @@
         "dev": "vite",
         "lint": "eslint resources/js vite.config.js",
         "lint:fix": "eslint resources/js vite.config.js --fix",
-        "format": "prettier --write resources/js resources/css vite.config.js package.json ../README.md",
-        "format:check": "prettier --check resources/js resources/css vite.config.js package.json ../README.md",
+        "format": "prettier --write resources/js resources/css vite.config.js package.json ../README.md && npm run format:php",
+        "format:check": "prettier --check resources/js resources/css vite.config.js package.json ../README.md && npm run format:php:check",
         "format:php": "prettier --write app config database routes tests resources/views",
         "format:php:check": "prettier --check app config database routes tests resources/views",
         "prepare": "husky"
