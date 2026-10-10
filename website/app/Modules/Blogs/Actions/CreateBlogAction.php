@@ -11,13 +11,14 @@ final class CreateBlogAction
 {
     public function execute(User $actor, array $input): int
     {
-        if ($actor->status !== 'ACTIVE' || ! $actor->hasVerifiedEmail()) {
+        if (! $actor->canAccessApplication()) {
             throw ValidationException::withMessages([
                 'account' => 'Tài khoản phải được xác minh và đang hoạt động.',
             ]);
         }
 
         return DB::transaction(function () use ($actor, $input): int {
+            DB::table('users')->where('id', $actor->id)->lockForUpdate()->first();
             $defaults = DB::table('platform_settings')->where('id', 1)->value('config_json');
             $config = is_string($defaults)
                 ? json_decode($defaults, true, 512, JSON_THROW_ON_ERROR)
@@ -35,6 +36,9 @@ final class CreateBlogAction
             }
 
             $slug = Str::slug($input['slug'] ?? $input['name']);
+            if ($slug === '' || DB::table('blogs')->where('slug', $slug)->exists()) {
+                throw ValidationException::withMessages(['slug' => 'Đường dẫn rỗng hoặc đã được sử dụng.']);
+            }
             $blogId = DB::table('blogs')->insertGetId([
                 'owner_user_id' => $actor->id,
                 'name' => $input['name'],

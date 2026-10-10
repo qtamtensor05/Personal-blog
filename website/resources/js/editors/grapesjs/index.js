@@ -41,5 +41,8 @@ export function mountDesignEditor(element, initialData, onChange) {
             700,
         );
     });
-    return () => editor.destroy();
+    return () => {
+        clearTimeout(timer);
+        editor.destroy();
+    };
 }

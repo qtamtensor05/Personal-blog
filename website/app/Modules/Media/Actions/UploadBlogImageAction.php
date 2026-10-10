@@ -21,8 +21,10 @@ final class UploadBlogImageAction
             ->join('blog_settings', 'blog_settings.blog_id', '=', 'blogs.id')
             ->where('blogs.id', $blogId)
             ->where('blogs.owner_user_id', $actor->id)
+            ->whereNull('blogs.deleted_at')
+            ->where('blogs.status', '!=', 'SUSPENDED')
             ->first();
-        if (! $blog || $actor->status !== 'ACTIVE' || ! $actor->hasVerifiedEmail()) {
+        if (! $blog || ! $actor->canAccessApplication()) {
             throw new AuthorizationException;
         }
         $used = (int) DB::table('media_assets')

@@ -58,7 +58,10 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/email/verify', fn () => view('auth.verify-email'))->name('verification.notice');
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
-        $request->user()->update(['status' => 'ACTIVE']);
+        DB::table('users')
+            ->where('id', $request->user()->id)
+            ->where('status', 'PENDING_VERIFICATION')
+            ->update(['status' => 'ACTIVE', 'updated_at' => now()]);
 
         return redirect('/blog-admin');
     })

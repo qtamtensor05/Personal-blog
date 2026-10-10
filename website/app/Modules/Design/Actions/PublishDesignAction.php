@@ -20,12 +20,12 @@ final class PublishDesignAction
     public function execute(User $actor, int $blogId, string $fingerprint): void
     {
         DB::transaction(function () use ($actor, $blogId, $fingerprint): void {
-            $blog = DB::table('blogs')->where('id', $blogId)->lockForUpdate()->first();
+            $blog = DB::table('blogs')->where('id', $blogId)->whereNull('deleted_at')->lockForUpdate()->first();
             if (
                 ! $blog ||
                 (int) $blog->owner_user_id !== (int) $actor->id ||
-                $actor->status !== 'ACTIVE' ||
-                ! $actor->hasVerifiedEmail()
+                ! $actor->canAccessApplication() ||
+                $blog->status === 'SUSPENDED'
             ) {
                 throw new AuthorizationException;
             }

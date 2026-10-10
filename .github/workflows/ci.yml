@@ -40,8 +40,10 @@ jobs:
       - working-directory: website
         run: npm ci --ignore-scripts
       - working-directory: website
+        run: npm run build
+      - working-directory: website
         run: php artisan test
       - working-directory: website
         run: php vendor/bin/pint --test
       - working-directory: website
-        run: npm run lint && npm run format:check && npm audit && npm run build
+        run: npm run lint && npm run format:check && npm audit

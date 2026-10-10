@@ -20,12 +20,17 @@ final class PublishScheduledContentAction
                 ->where('content.scheduled_at', '<=', now())
                 ->where('blog.status', 'PUBLISHED')
                 ->where('owner.status', 'ACTIVE')
+                ->whereNotNull('owner.email_verified_at')
+                ->whereNull('owner.deleted_at')
+                ->whereNull('blog.deleted_at')
+                ->whereNull('content.deleted_at')
+                ->where(fn ($query) => $query->whereNull('owner.locked_until')->orWhere('owner.locked_until', '<=', now()))
                 ->orderBy('content.id')
                 ->limit(100)
                 ->pluck('content.id');
             foreach ($ids as $id) {
                 $didPublish = DB::transaction(function () use ($table, $id): bool {
-                    $row = DB::table($table)->where('id', $id)->lockForUpdate()->first();
+                    $row = DB::table($table)->where('id', $id)->whereNull('deleted_at')->lockForUpdate()->first();
                     if (
                         ! $row ||
                         $row->status !== 'SCHEDULED' ||
@@ -39,6 +44,10 @@ final class PublishScheduledContentAction
                         ->where('blogs.id', $row->blog_id)
                         ->where('blogs.status', 'PUBLISHED')
                         ->where('users.status', 'ACTIVE')
+                        ->whereNotNull('users.email_verified_at')
+                        ->whereNull('users.deleted_at')
+                        ->whereNull('blogs.deleted_at')
+                        ->where(fn ($query) => $query->whereNull('users.locked_until')->orWhere('users.locked_until', '<=', now()))
                         ->value('users.id');
                     if (! $ownerId) {
                         return false;

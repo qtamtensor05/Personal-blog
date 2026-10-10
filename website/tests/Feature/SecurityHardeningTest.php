@@ -4,8 +4,57 @@ use App\Models\User;
 use App\Modules\Audit\DatabaseAuditRecorder;
 use App\Modules\Content\Actions\PublishPostAction;
 use App\Modules\Content\Actions\PublishScheduledContentAction;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
+
+it('does not reactivate a suspended account through email verification', function () {
+    $user = User::factory()->create(['status' => 'SUSPENDED', 'email_verified_at' => null]);
+    $url = URL::temporarySignedRoute('verification.verify', now()->addMinutes(10), [
+        'id' => $user->id, 'hash' => sha1($user->email),
+    ]);
+    $this->actingAs($user)->get($url)->assertRedirect();
+    $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'SUSPENDED']);
+});
+
+it('publishes array JSON drafts and rejects locked actors', function () {
+    $owner = User::factory()->create(['status' => 'ACTIVE']);
+    $blog = createSecurityBlog($owner, 'json-draft');
+    $document = ['type' => 'doc', 'content' => [['type' => 'paragraph']]];
+    $post = DB::table('posts')->insertGetId([
+        'blog_id' => $blog, 'title' => 'Original', 'slug' => 'json',
+        'author_user_id' => $owner->id, 'updated_by' => $owner->id,
+        'content_json' => json_encode(['type' => 'doc', 'content' => []]),
+        'draft_data' => json_encode(['title' => 'Updated', 'content_json' => $document]),
+        'status' => 'DRAFT', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $owner->forceFill(['locked_until' => now()->addHour()])->save();
+    expect(fn () => app(PublishPostAction::class)->execute($owner, $blog, $post))
+        ->toThrow(AuthorizationException::class);
+    $owner->forceFill(['locked_until' => null])->save();
+    app(PublishPostAction::class)->execute($owner, $blog, $post);
+    $row = DB::table('posts')->where('id', $post)->first();
+    expect(json_decode($row->content_json, true))->toBe($document)
+        ->and($row->draft_data)->toBeNull()->and($row->title)->toBe('Updated');
+});
+
+it('skips scheduled content for locked owners and deleted records', function () {
+    $owner = User::factory()->create(['status' => 'ACTIVE', 'locked_until' => now()->addHour()]);
+    $blog = createSecurityBlog($owner, 'skip-scheduled');
+    $post = DB::table('posts')->insertGetId([
+        'blog_id' => $blog, 'title' => 'Scheduled', 'slug' => 'skip',
+        'author_user_id' => $owner->id, 'updated_by' => $owner->id,
+        'content_json' => json_encode(['type' => 'doc', 'content' => []]),
+        'status' => 'SCHEDULED', 'scheduled_at' => now()->subMinute(),
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    expect(app(PublishScheduledContentAction::class)->execute())->toBe(0);
+    $owner->forceFill(['locked_until' => null])->save();
+    DB::table('posts')->where('id', $post)->update(['deleted_at' => now()]);
+    expect(app(PublishScheduledContentAction::class)->execute())->toBe(0);
+    $this->assertDatabaseCount('admin_audit_logs', 0);
+});
 
 function createSecurityBlog(User $owner, string $slug): int
 {

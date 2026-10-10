@@ -94,6 +94,7 @@ final class SafeTiptapRenderer implements RichTextRenderer
         }
         $media = \DB::table('media_assets')
             ->where(['id' => $mediaId, 'blog_id' => $this->blogId, 'scope' => 'BLOG', 'status' => 'READY'])
+            ->whereNull('deleted_at')
             ->first();
         if (! $media) {
             return '';

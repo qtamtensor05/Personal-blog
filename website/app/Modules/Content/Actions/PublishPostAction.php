@@ -15,17 +15,18 @@ final class PublishPostAction
     public function execute(User $actor, int $blogId, int $postId): void
     {
         DB::transaction(function () use ($actor, $blogId, $postId): void {
-            $blog = DB::table('blogs')->where('id', $blogId)->lockForUpdate()->first();
+            $blog = DB::table('blogs')->where('id', $blogId)->whereNull('deleted_at')->lockForUpdate()->first();
             if (
                 ! $blog ||
                 (int) $blog->owner_user_id !== (int) $actor->id ||
-                $actor->status !== 'ACTIVE' ||
-                ! $actor->hasVerifiedEmail()
+                ! $actor->canAccessApplication() ||
+                $blog->status === 'SUSPENDED'
             ) {
                 throw new AuthorizationException;
             }
             $post = DB::table('posts')
                 ->where(['id' => $postId, 'blog_id' => $blogId])
+                ->whereNull('deleted_at')
                 ->lockForUpdate()
                 ->first();
             abort_unless($post, 404);
@@ -47,7 +48,10 @@ final class PublishPostAction
                     'robots',
                 ]),
             );
-            $this->assertMediaBelongsToBlog($allowed, $blogId);
+            $this->assertMediaBelongsToBlog(array_replace((array) $post, $allowed), $blogId);
+            if (isset($allowed['content_json']) && is_array($allowed['content_json'])) {
+                $allowed['content_json'] = json_encode($allowed['content_json'], JSON_THROW_ON_ERROR);
+            }
             $allowed['status'] = 'PUBLISHED';
             $allowed['draft_data'] = null;
             $allowed['scheduled_at'] = null;
