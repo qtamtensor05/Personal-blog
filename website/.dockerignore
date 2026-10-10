@@ -1,0 +1,12 @@
+.git
+.env
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+public/build
+bootstrap/cache/*.php
+tests
+codex_blog_platform

@@ -1,0 +1,13 @@
+services:
+  nginx:
+    restart: unless-stopped
+    ports: ["127.0.0.1:${APP_PORT:-8000}:80"]
+  app: { restart: unless-stopped }
+  worker: { restart: unless-stopped }
+  scheduler: { restart: unless-stopped }
+  mysql:
+    restart: unless-stopped
+    ports: []
+  redis:
+    restart: unless-stopped
+    ports: []

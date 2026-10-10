@@ -9,8 +9,8 @@
         "lint:fix": "eslint resources/js vite.config.js --fix",
         "format": "prettier --write resources/js resources/css vite.config.js package.json ../README.md && npm run format:php",
         "format:check": "prettier --check resources/js resources/css vite.config.js package.json ../README.md && npm run format:php:check",
-        "format:php": "prettier --write app config database routes tests resources/views",
-        "format:php:check": "prettier --check app config database routes tests resources/views",
+        "format:php": "php vendor/bin/pint",
+        "format:php:check": "php vendor/bin/pint --test",
         "prepare": "husky"
     },
     "devDependencies": {
@@ -31,5 +31,15 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "@tiptap/core": "^3.31.4",
+        "@tiptap/extension-image": "^3.31.4",
+        "@tiptap/extension-table": "^3.31.4",
+        "@tiptap/extension-table-cell": "^3.31.4",
+        "@tiptap/extension-table-header": "^3.31.4",
+        "@tiptap/extension-table-row": "^3.31.4",
+        "@tiptap/starter-kit": "^3.31.4",
+        "grapesjs": "^0.23.6"
     }
 }

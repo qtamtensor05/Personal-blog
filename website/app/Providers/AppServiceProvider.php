@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Modules\Audit\DatabaseAuditRecorder;
+use App\Modules\Content\Rendering\SafeTiptapRenderer;
+use App\Modules\Media\Infrastructure\CloudinarySdkGateway;
+use App\Shared\Contracts\AuditRecorder;
+use App\Shared\Contracts\CloudinaryGateway;
+use App\Shared\Contracts\RichTextRenderer;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +17,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(AuditRecorder::class, DatabaseAuditRecorder::class);
+        $this->app->bind(RichTextRenderer::class, SafeTiptapRenderer::class);
+        $this->app->bind(CloudinaryGateway::class, CloudinarySdkGateway::class);
     }
 
     /**

@@ -1,49 +1,65 @@
+x-app: &app
+  image: website-app:latest
+  build: .
+  env_file: .env
+  depends_on:
+    mysql: { condition: service_healthy }
+    redis: { condition: service_healthy }
+  volumes:
+    - storage:/var/www/html/storage
+    - cache:/var/www/html/bootstrap/cache
+  networks: [blog-network]
+
 services:
-  mysql:
-    container_name: blog-mysql
-    image: mysql:8.4
-    ports:
-      - "${DB_PORT}:3306"
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    command:
-      - --log-bin-trust-function-creators=1
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  app:
+    <<: *app
+    healthcheck: { test: ["CMD", "php", "artisan", "about", "--only=environment"], interval: 30s, timeout: 10s, retries: 3 }
+  nginx:
+    image: nginx:1.29-alpine
+    ports: ["${APP_PORT:-8000}:80"]
     volumes:
-      - blog_mysql_data:/var/lib/mysql
-    networks:
-      - blog-network
-
+      - .:/var/www/html:ro
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [app]
+    networks: [blog-network]
+  worker:
+    <<: *app
+    command: php artisan queue:work redis --sleep=2 --tries=3 --backoff=10 --timeout=90
+    healthcheck: { test: ["CMD-SHELL", "ps aux | grep '[q]ueue:work'"], interval: 30s, timeout: 5s, retries: 3 }
+  scheduler:
+    <<: *app
+    command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
+  mysql:
+    image: mysql:8.4
+    ports: ["${DB_FORWARD_PORT:-3306}:3306"]
+    environment: { MYSQL_DATABASE: "${DB_DATABASE:-blog}", MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-local-secret}" }
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck: { test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-local-secret}"], interval: 10s, timeout: 5s, retries: 10 }
+    volumes: ["mysql-data:/var/lib/mysql"]
+    networks: [blog-network]
+  redis:
+    image: redis:8-alpine
+    ports: ["${REDIS_FORWARD_PORT:-6379}:6379"]
+    command: redis-server --appendonly yes
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5 }
+    volumes: ["redis-data:/data"]
+    networks: [blog-network]
+  mailpit:
+    image: axllent/mailpit:v1.27
+    profiles: [local]
+    ports: ["8025:8025"]
+    networks: [blog-network]
   phpmyadmin:
-    profiles:
-      - dev
-
-    container_name: blog-phpmyadmin
     image: phpmyadmin:5.2
-    ports:
-      - "8080:80"
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306 
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - blog-network
+    profiles: [local]
+    ports: ["8080:80"]
+    environment: { PMA_HOST: mysql, PMA_USER: root, PMA_PASSWORD: "${DB_PASSWORD:-local-secret}" }
+    networks: [blog-network]
 
 volumes:
-  blog_mysql_data:
-
+  mysql-data:
+  redis-data:
+  storage:
+  cache:
 networks:
   blog-network:
-    driver: bridge

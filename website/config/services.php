@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME')],
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

@@ -1,73 +1,55 @@
-# Personal Blog
+# Bút Mây — Multi-Tenant Blog Platform
 
-Laravel blog application with MySQL running through Docker Compose.
+Laravel 13, Filament 5, Livewire 4, Blade, GrapesJS, Tiptap, MySQL 8.4, Redis và Cloudinary SDK. Ứng dụng nằm trong `website/`; ERD chuẩn và tài liệu triển khai nằm trong `website/docs/`.
 
-## Requirements
+## Chạy bằng Docker trên Windows PowerShell
 
-- PHP 8.3 or later
-- Composer
-- Node.js and npm
-- Docker Desktop with Docker Compose
+```powershell
+Set-Location .\website
+Copy-Item .env.example .env
+docker compose --profile local up -d --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
+docker compose exec app php artisan db:seed --class=DemoSeeder
+```
 
-## First-time setup (PowerShell)
+Mở http://localhost:8000. Mailpit: http://localhost:8025. phpMyAdmin: http://localhost:8080.
 
-Open PowerShell in the repository root and run:
+Tạo Super Admin đầu tiên (không có mật khẩu mặc định trong source):
+
+```powershell
+docker compose exec app php artisan platform:bootstrap-admin
+```
+
+## Chạy trực tiếp
+
+PHP CLI phải bật `intl`, `pdo_mysql`, `mbstring`, `zip` và `redis`.
 
 ```powershell
 Set-Location .\website
 composer install
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-```
-
-Open `website\.env` and set the database values as follows:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=blog
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Start MySQL with Docker Compose, then prepare Laravel and the frontend:
-
-```powershell
-docker compose up -d mysql
+npm ci
+Copy-Item .env.example .env
 php artisan key:generate
-php artisan migrate
-npm install
-```
-
-The local Docker setup allows an empty MySQL root password for development. Do not use this configuration in production.
-
-## Run the application
-
-From `website`:
-
-```powershell
+php artisan migrate --seed
+npm run build
 composer run dev
 ```
 
-Open http://localhost:8000 in a browser. The command starts the Laravel server, queue worker, and Vite development server.
+Nếu chạy app trực tiếp thay vì trong Compose, đổi `DB_HOST=127.0.0.1`, `REDIS_HOST=127.0.0.1` và mở port dịch vụ local tương ứng.
 
-To start phpMyAdmin as well:
-
-```powershell
-docker compose --profile dev up -d
-```
-
-phpMyAdmin is available at http://localhost:8080.
-
-## Code quality
-
-From `website`:
+## Kiểm tra
 
 ```powershell
+php artisan test
+vendor\bin\pint --test
 npm run lint
 npm run format:check
-npm run format:php:check
+npm audit
 npm run build
+docker compose config
 ```
 
-Run `npm run format` to format the frontend files and project configuration. Use `npm run format:php` to format PHP and Blade files, or `npm run format:php:check` to check them without changing files. Husky runs lint and frontend format checks automatically before each commit.
+Migration nghiệp vụ cố ý chỉ chạy trên MySQL 8.0.16+; SQLite không đại diện được CHECK/JSON/composite FK của ERD. Cloudinary, SMTP production, DNS/HTTPS custom domain và VPS cần credentials/hạ tầng thật trước khi kiểm chứng live.
+
+Xem [trạng thái hiện tại](website/docs/current-state.md), [kiến trúc](website/docs/architecture/README.md), [đối chiếu database](website/docs/database/migration-comparison.md) và [runbook VPS](website/docs/deployment/VPS.md).
