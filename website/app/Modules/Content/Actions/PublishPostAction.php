@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class PublishPostAction
 {
@@ -46,6 +47,7 @@ final class PublishPostAction
                     'robots',
                 ]),
             );
+            $this->assertMediaBelongsToBlog($allowed, $blogId);
             $allowed['status'] = 'PUBLISHED';
             $allowed['draft_data'] = null;
             $allowed['scheduled_at'] = null;
@@ -65,5 +67,46 @@ final class PublishPostAction
                 $allowed,
             );
         });
+    }
+
+    private function assertMediaBelongsToBlog(array $changes, int $blogId): void
+    {
+        $mediaIds = collect([$changes['cover_media_id'] ?? null, $changes['og_media_id'] ?? null])
+            ->filter()
+            ->map(fn (mixed $id): int => (int) $id);
+
+        $content = $changes['content_json'] ?? null;
+        if (is_string($content)) {
+            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        }
+        $walk = function (mixed $value) use (&$walk, $mediaIds): void {
+            if (! is_array($value)) {
+                return;
+            }
+            if (array_key_exists('mediaId', $value) && filter_var($value['mediaId'], FILTER_VALIDATE_INT)) {
+                $mediaIds->push((int) $value['mediaId']);
+            }
+            foreach ($value as $child) {
+                $walk($child);
+            }
+        };
+        $walk($content);
+        $mediaIds = $mediaIds->unique()->values();
+        if ($mediaIds->isEmpty()) {
+            return;
+        }
+
+        $validCount = DB::table('media_assets')
+            ->where('blog_id', $blogId)
+            ->where('scope', 'BLOG')
+            ->where('status', 'READY')
+            ->whereNull('deleted_at')
+            ->whereIn('id', $mediaIds)
+            ->count();
+        if ($validCount !== $mediaIds->count()) {
+            throw ValidationException::withMessages([
+                'media' => 'Nội dung chứa media không thuộc blog hoặc chưa sẵn sàng.',
+            ]);
+        }
     }
 }

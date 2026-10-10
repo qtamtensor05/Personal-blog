@@ -8,11 +8,15 @@ use InvalidArgumentException;
 
 final class SafeTiptapRenderer implements RichTextRenderer
 {
-    public function render(array $document): string
+    private ?int $blogId = null;
+
+    public function render(array $document, ?int $blogId = null): string
     {
         if (($document['type'] ?? null) !== 'doc' || ! is_array($document['content'] ?? [])) {
             throw new InvalidArgumentException('Tài liệu Tiptap không hợp lệ.');
         }
+
+        $this->blogId = $blogId;
 
         return collect($document['content'])
             ->map(fn (array $node): string => $this->node($node))
@@ -81,15 +85,18 @@ final class SafeTiptapRenderer implements RichTextRenderer
 
     private function image(array $attrs): string
     {
+        if ($this->blogId === null) {
+            return '';
+        }
         $mediaId = filter_var($attrs['mediaId'] ?? null, FILTER_VALIDATE_INT);
         if (! $mediaId) {
-            throw new InvalidArgumentException('Ảnh phải tham chiếu media_id hợp lệ.');
+            return '';
         }
         $media = \DB::table('media_assets')
-            ->where(['id' => $mediaId, 'status' => 'READY'])
+            ->where(['id' => $mediaId, 'blog_id' => $this->blogId, 'scope' => 'BLOG', 'status' => 'READY'])
             ->first();
         if (! $media) {
-            throw new InvalidArgumentException('Không tìm thấy ảnh sẵn sàng.');
+            return '';
         }
 
         return '<img src="'.

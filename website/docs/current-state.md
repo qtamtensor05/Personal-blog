@@ -16,3 +16,14 @@ Ngày cập nhật: 2026-10-11.
 ## Ranh giới chưa nghiệm thu production
 
 Chưa xác minh dịch vụ thật vì chưa được cấp Cloudinary URL, SMTP production, domain hay VPS. Mailpit và adapter/test local là ranh giới kiểm thử. Custom domain vẫn tắt. Các màn hình CRUD quản trị sâu của Filament, toàn bộ luồng challenge 2FA, media lifecycle hoàn chỉnh và browser E2E toàn hành trình cần được bổ sung trước khi coi hệ thống là production-ready theo toàn bộ prompt.
+
+## Gia cố bảo mật 2026-10-11
+
+- Production Compose không còn publish cổng MySQL/Redis; Nginx chỉ bind `127.0.0.1`.
+- Production ép `APP_ENV=production`, `APP_DEBUG=false`, log warning, mã hóa session và cookie Secure.
+- Media trong Tiptap và khi publish bài viết được xác thực theo đúng `blog_id`, trạng thái READY và scope BLOG.
+- Upload ảnh giới hạn định dạng, dung lượng và kích thước pixel.
+- Audit log dùng đúng cột canonical; scheduled publish ghi actor là chủ blog.
+- Tài khoản có `locked_until` trong tương lai bị chặn ở login, middleware và Filament panel.
+- Nginx thêm CSP, chống MIME sniffing/clickjacking, Referrer Policy và Permissions Policy.
+- Pest sau gia cố: 13 test, 24 assertion đều đạt trên MySQL.

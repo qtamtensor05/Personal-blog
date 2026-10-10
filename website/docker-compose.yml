@@ -31,7 +31,7 @@ services:
     command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
   mysql:
     image: mysql:8.4
-    ports: ["${DB_FORWARD_PORT:-3306}:3306"]
+    ports: ["127.0.0.1:${DB_FORWARD_PORT:-3306}:3306"]
     environment: { MYSQL_DATABASE: "${DB_DATABASE:-blog}", MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-local-secret}" }
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     healthcheck: { test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-local-secret}"], interval: 10s, timeout: 5s, retries: 10 }
@@ -39,7 +39,7 @@ services:
     networks: [blog-network]
   redis:
     image: redis:8-alpine
-    ports: ["${REDIS_FORWARD_PORT:-6379}:6379"]
+    ports: ["127.0.0.1:${REDIS_FORWARD_PORT:-6379}:6379"]
     command: redis-server --appendonly yes
     healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5 }
     volumes: ["redis-data:/data"]
@@ -47,12 +47,12 @@ services:
   mailpit:
     image: axllent/mailpit:v1.27
     profiles: [local]
-    ports: ["8025:8025"]
+    ports: ["127.0.0.1:8025:8025"]
     networks: [blog-network]
   phpmyadmin:
     image: phpmyadmin:5.2
     profiles: [local]
-    ports: ["8080:80"]
+    ports: ["127.0.0.1:8080:80"]
     environment: { PMA_HOST: mysql, PMA_USER: root, PMA_PASSWORD: "${DB_PASSWORD:-local-secret}" }
     networks: [blog-network]
 

@@ -33,6 +33,7 @@ final class PublicBlogController extends Controller
 
         $content = $this->renderer->render(
             json_decode($post->content_json, true, 512, JSON_THROW_ON_ERROR),
+            (int) $blog->id,
         );
 
         return view('public.post', compact('blog', 'post', 'content'));
@@ -49,6 +50,7 @@ final class PublicBlogController extends Controller
 
         $content = $this->renderer->render(
             json_decode($page->content_json, true, 512, JSON_THROW_ON_ERROR),
+            (int) $blog->id,
         );
 
         return view('public.page', compact('blog', 'page', 'content'));

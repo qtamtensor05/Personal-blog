@@ -7,6 +7,7 @@ use App\Shared\Contracts\CloudinaryGateway;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class UploadBlogImageAction
@@ -15,6 +16,7 @@ final class UploadBlogImageAction
 
     public function execute(User $actor, int $blogId, UploadedFile $file, ?string $alt = null): int
     {
+        $this->validateImage($file);
         $blog = DB::table('blogs')
             ->join('blog_settings', 'blog_settings.blog_id', '=', 'blogs.id')
             ->where('blogs.id', $blogId)
@@ -72,5 +74,26 @@ final class UploadBlogImageAction
         }
 
         return $id;
+    }
+
+    private function validateImage(UploadedFile $file): void
+    {
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        $size = $file->getSize();
+        $dimensions = @getimagesize($file->getRealPath());
+        if (
+            ! $file->isValid() ||
+            ! in_array($file->getMimeType(), $allowedMimeTypes, true) ||
+            ! is_int($size) ||
+            $size < 1 ||
+            $size > 10 * 1024 * 1024 ||
+            $dimensions === false ||
+            $dimensions[0] > 12000 ||
+            $dimensions[1] > 12000
+        ) {
+            throw ValidationException::withMessages([
+                'image' => 'Ảnh phải là JPEG, PNG, WebP hoặc GIF hợp lệ, tối đa 10 MB và 12000 px mỗi chiều.',
+            ]);
+        }
     }
 }

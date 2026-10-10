@@ -12,7 +12,7 @@ final class EnsureAccountActive
     {
         $user = $request->user();
         abort_unless(
-            $user && $user->status === 'ACTIVE' && $user->hasVerifiedEmail(),
+            $user && $user->canAccessApplication(),
             403,
             'Tài khoản chưa xác minh hoặc đang bị hạn chế.',
         );

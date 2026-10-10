@@ -24,10 +24,10 @@ final class DatabaseAuditRecorder implements AuditRecorder
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId === null ? null : (string) $resourceId,
-            'before_json' => json_encode($this->redact($before), JSON_THROW_ON_ERROR),
-            'after_json' => json_encode($this->redact($after), JSON_THROW_ON_ERROR),
+            'before_data' => json_encode($this->redact($before), JSON_THROW_ON_ERROR),
+            'after_data' => json_encode($this->redact($after), JSON_THROW_ON_ERROR),
             'ip_address' => request()?->ip(),
-            'request_id' => request()?->header('X-Request-ID'),
+            'request_id' => str(request()?->header('X-Request-ID'))->limit(64, ''),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -36,7 +36,7 @@ final class DatabaseAuditRecorder implements AuditRecorder
     private function redact(array $payload): array
     {
         foreach ($payload as $key => $value) {
-            if (in_array(strtolower((string) $key), self::REDACTED, true)) {
+            if (collect(self::REDACTED)->contains(fn (string $sensitive) => str_contains(strtolower((string) $key), $sensitive))) {
                 $payload[$key] = '[REDACTED]';
             } elseif (is_array($value)) {
                 $payload[$key] = $this->redact($value);

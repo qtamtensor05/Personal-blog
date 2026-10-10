@@ -34,13 +34,13 @@ final class PublishScheduledContentAction
                     ) {
                         return false;
                     }
-                    $ownerActive = DB::table('blogs')
+                    $ownerId = DB::table('blogs')
                         ->join('users', 'users.id', '=', 'blogs.owner_user_id')
                         ->where('blogs.id', $row->blog_id)
                         ->where('blogs.status', 'PUBLISHED')
                         ->where('users.status', 'ACTIVE')
-                        ->exists();
-                    if (! $ownerActive) {
+                        ->value('users.id');
+                    if (! $ownerId) {
                         return false;
                     }
                     DB::table($table)
@@ -52,7 +52,7 @@ final class PublishScheduledContentAction
                             'updated_at' => now(),
                         ]);
                     $this->audit->record(
-                        null,
+                        (int) $ownerId,
                         rtrim($table, 's').'.scheduled_published',
                         rtrim($table, 's'),
                         $id,

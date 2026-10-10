@@ -41,7 +41,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($this->status !== 'ACTIVE' || ! $this->hasVerifiedEmail()) {
+        if (! $this->canAccessApplication()) {
             return false;
         }
 
@@ -50,6 +50,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         }
 
         return $this->hasPlatformPermission('platform.dashboard.view');
+    }
+
+    public function canAccessApplication(): bool
+    {
+        return $this->status === 'ACTIVE'
+            && $this->hasVerifiedEmail()
+            && ($this->locked_until === null || $this->locked_until->isPast());
     }
 
     public function hasPlatformPermission(string $permission): bool

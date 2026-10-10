@@ -34,8 +34,10 @@ final class AuthController extends Controller
                 ->onlyInput('email');
         }
         $request->session()->regenerate();
-        if ($request->user()->status !== 'ACTIVE') {
+        if (! $request->user()->canAccessApplication()) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return back()->withErrors(['email' => 'Tài khoản chưa xác minh hoặc đang bị hạn chế.']);
         }

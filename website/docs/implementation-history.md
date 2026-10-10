@@ -7,3 +7,4 @@
 - Giai đoạn 3-4: post/design publish actions, JSON fingerprint, safe section validation, Tiptap và GrapesJS integration modules, ba template demo khác nhau.
 - Giai đoạn 5-6: landing/catalog/public render, audit contract, production compose/runbook và risk-focused unit/tenant tests.
 - Kiểm tra thực tế và blocker được ghi trong `current-state.md`; không ghi nhận Cloudinary/SMTP/VPS là đã tích hợp live.
+- Gia cố bảo mật: đóng cổng dữ liệu trong production, ép production environment, tenant-scope media, sửa audit/scheduler, khóa `locked_until`, kiểm tra upload và thêm HTTP security headers.
