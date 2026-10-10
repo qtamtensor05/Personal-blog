@@ -1,1 +1,16 @@
 /codex_blog_platform/
+
+# Local editor and operating-system files
+/.idea/
+/.vscode/
+/.cursor/
+/.codex/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~

@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.*
+!.env.example
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -10,6 +12,7 @@
 /.idea
 /.nova
 /.phpunit.cache
+/coverage
 /.vscode
 /.zed
 /auth.json
@@ -21,6 +24,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+/blog
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+docker-compose.override.yml
 _ide_helper.php
 Homestead.json
 Homestead.yaml
