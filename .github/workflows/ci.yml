@@ -26,6 +26,11 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v4
+      - name: Verify tracked runtime SQL inputs
+        run: |
+          git ls-files --error-unmatch website/database/sql/blog_platform_mysql.sql website/database/sql/seed_roles_permissions.sql
+          test -s website/database/sql/blog_platform_mysql.sql
+          test -s website/database/sql/seed_roles_permissions.sql
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'

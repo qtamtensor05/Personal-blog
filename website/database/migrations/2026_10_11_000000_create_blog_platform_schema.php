@@ -11,11 +11,12 @@ return new class extends Migration
             throw new RuntimeException('The business schema requires MySQL 8.0.16 or newer.');
         }
 
-        $sql = file_get_contents(base_path('docs/database/blog_platform_mysql.sql'));
+        $path = database_path('sql/blog_platform_mysql.sql');
+        $sql = is_file($path) ? file_get_contents($path) : false;
 
         if ($sql === false) {
             throw new RuntimeException(
-                'Missing canonical schema at docs/database/blog_platform_mysql.sql.',
+                'Missing runtime schema at database/sql/blog_platform_mysql.sql.',
             );
         }
 

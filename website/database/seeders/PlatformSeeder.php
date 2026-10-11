@@ -9,9 +9,10 @@ final class PlatformSeeder extends Seeder
 {
     public function run(): void
     {
-        $sql = file_get_contents(base_path('docs/database/seed_roles_permissions.sql'));
+        $path = database_path('sql/seed_roles_permissions.sql');
+        $sql = is_file($path) ? file_get_contents($path) : false;
         if ($sql === false) {
-            throw new \RuntimeException('Missing canonical platform seed.');
+            throw new \RuntimeException('Missing runtime platform seed at database/sql/seed_roles_permissions.sql.');
         }
         $sql = preg_replace('/^START TRANSACTION;|COMMIT;$/m', '', $sql);
         DB::transaction(fn () => DB::unprepared($sql));

@@ -34,7 +34,3 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /codex_blog_platform/
-
-# Local database reference documents; preserve the directory only.
-/docs/database/*
-!/docs/database/.gitkeep

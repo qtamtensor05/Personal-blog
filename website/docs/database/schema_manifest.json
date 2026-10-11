@@ -1,0 +1,3780 @@
+{
+  "tables": {
+    "users": {
+      "group": "01_AUTH",
+      "note": "Tài khoản chung. User là mặc định; quyền quản trị cấp qua user_platform_roles; quyền Owner suy ra từ blogs.owner_user_id.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "email",
+          "type": "varchar(254)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "email_verified_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "password",
+          "type": "varchar(255)",
+          "null": false,
+          "default": null,
+          "note": "Mật khẩu đã hash, không lưu bản rõ.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "account_status",
+          "null": false,
+          "default": "PENDING_VERIFICATION",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "locked_until",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "last_login_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "remember_token",
+          "type": "varchar(100)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "avatar_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "two_factor_secret",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "Mã hóa bằng khóa ứng dụng.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "two_factor_recovery_codes",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "Mã hóa; không hiển thị trong log.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "two_factor_confirmed_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "email"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "platform_roles": {
+      "group": "01_AUTH",
+      "note": "SUPER_ADMIN và PLATFORM_ADMIN. Chủ blog xác định bằng blogs.owner_user_id.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "code",
+          "type": "varchar(60)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "permissions": {
+      "group": "01_AUTH",
+      "note": "Quyền platform.* cho quản trị nền tảng. Owner dùng Policy kiểm tra blogs.owner_user_id; không có RBAC thành viên blog.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "code",
+          "type": "varchar(120)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "scope",
+          "type": "varchar(20)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "checks": [
+        "scope = 'PLATFORM'"
+      ]
+    },
+    "platform_role_permissions": {
+      "group": "01_AUTH",
+      "note": "Quyền của vai trò nền tảng.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "role_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "permission_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "role_id",
+          "permission_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "user_platform_roles": {
+      "group": "01_AUTH",
+      "note": "Gán quyền quản trị nền tảng. User thường không cần bản ghi tại đây.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "role_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "granted_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "expires_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "user_id",
+          "role_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "sessions": {
+      "group": "01_AUTH",
+      "note": "Database session driver Laravel. Thu hồi bằng xóa session; last_activity là Unix timestamp.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "varchar(255)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "user_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "user_agent",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "payload",
+          "type": "longtext",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "last_activity",
+          "type": "int unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "user_id"
+        ],
+        [
+          "last_activity"
+        ]
+      ],
+      "checks": []
+    },
+    "password_reset_tokens": {
+      "group": "01_AUTH",
+      "note": "Theo cấu trúc password broker Laravel. Token được hash và có TTL ở cấu hình.",
+      "cols": [
+        {
+          "name": "email",
+          "type": "varchar(254)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "token",
+          "type": "varchar(255)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [],
+      "checks": []
+    },
+    "account_restrictions": {
+      "group": "01_AUTH",
+      "note": "Lịch sử khóa/đình chỉ/vô hiệu hóa; đồng bộ users.status trong transaction. Mở khóa không mặc định ACTIVE nếu email chưa xác thực.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "kind",
+          "type": "restriction_kind",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "restriction_status",
+          "null": false,
+          "default": "ACTIVE",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "issued_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "starts_at",
+          "type": "datetime",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "ends_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "revoked_by",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "revoked_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "revoke_reason",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "user_id",
+          "status",
+          "ends_at"
+        ]
+      ],
+      "checks": []
+    },
+    "security_audit_logs": {
+      "group": "01_AUTH",
+      "note": "Append-only. Không lưu password, OTP, token, recovery code. actor/subject nullable cho thất bại đăng nhập.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "actor_user_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "subject_user_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "event",
+          "type": "varchar(120)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "outcome",
+          "type": "varchar(20)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "user_agent",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "context",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "subject_user_id",
+          "created_at"
+        ],
+        [
+          "event",
+          "created_at"
+        ]
+      ],
+      "checks": []
+    },
+    "blog_topics": {
+      "group": "02_BLOG",
+      "note": "Chủ đề blog trên Main Website; khác danh mục bài viết trong từng blog.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "null": false,
+          "default": true,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "slug"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "blogs": {
+      "group": "02_BLOG",
+      "note": "Tenant gốc, một chủ sở hữu qua owner_user_id. Không có thành viên, lời mời hoặc vai trò Editor. Trạng thái và visibility độc lập.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "owner_user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "blog_status",
+          "null": false,
+          "default": "DRAFT",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "visibility",
+          "type": "blog_visibility",
+          "null": false,
+          "default": "PUBLIC",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "discoverable",
+          "type": "boolean",
+          "null": false,
+          "default": true,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "slug"
+        ]
+      ],
+      "indexes": [
+        [
+          "owner_user_id",
+          "status"
+        ],
+        [
+          "status",
+          "visibility",
+          "discoverable"
+        ]
+      ],
+      "checks": []
+    },
+    "blog_topic_assignments": {
+      "group": "02_BLOG",
+      "note": "Phân loại blog trong thư viện khám phá.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "topic_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "blog_id",
+          "topic_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "blog_settings": {
+      "group": "02_BLOG",
+      "note": "1:1 cài đặt riêng mỗi blog; JSON cho liên kết xã hội và giới hạn do nền tảng cấp.",
+      "cols": [
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "locale",
+          "type": "varchar(20)",
+          "null": false,
+          "default": "vi",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "timezone",
+          "type": "varchar(80)",
+          "null": false,
+          "default": "Asia/Ho_Chi_Minh",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "logo_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "favicon_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "posts_per_page",
+          "type": "int unsigned",
+          "null": false,
+          "default": 10,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "social_links",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_title",
+          "type": "varchar(255)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_description",
+          "type": "varchar(500)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "og_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "storage_quota_bytes",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": 104857600,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "post_limit",
+          "type": "int unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [],
+      "checks": [
+        "posts_per_page BETWEEN 1 AND 100"
+      ]
+    },
+    "blog_domains": {
+      "group": "02_BLOG",
+      "note": "Mở rộng: tên miền tùy chỉnh; chỉ phục vụ khi xác minh chủ sở hữu DNS và HTTPS thành công.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "hostname",
+          "type": "varchar(253)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "domain_status",
+          "null": false,
+          "default": "PENDING",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "verification_token_hash",
+          "type": "char(64)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "verified_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "activated_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "hostname"
+        ],
+        [
+          "blog_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "template_categories": {
+      "group": "03_TEMPLATE_DESIGN",
+      "note": "Loại mẫu/ngành/chủ đề trong thư viện template như ảnh tham khảo.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "kind",
+          "type": "varchar(20)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "parent_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "null": false,
+          "default": true,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "kind",
+          "slug"
+        ]
+      ],
+      "indexes": [],
+      "checks": [
+        "kind IN ('TYPE','INDUSTRY','TOPIC')"
+      ]
+    },
+    "templates": {
+      "group": "03_TEMPLATE_DESIGN",
+      "note": "Một hàng cho mỗi mẫu. Cấu trúc trang/section/theme/menu/rules gộp vào template_data JSON; draft_data giữ một bản nháp. Không có các bảng chi tiết hoặc lịch sử template.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "template_status",
+          "null": false,
+          "default": "DRAFT",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "preview_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "demo_url",
+          "type": "varchar(2048)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "version_number",
+          "type": "int unsigned",
+          "null": false,
+          "default": 0,
+          "note": "Tăng khi publish; không có bảng lịch sử phiên bản.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "template_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "Mẫu đã công bố: GrapesJS project, theme defaults/schema, section rules, page definitions, menu defaults và bindings.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "draft_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "Một bản chỉnh sửa template chờ công bố.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_by",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "slug"
+        ]
+      ],
+      "indexes": [
+        [
+          "status",
+          "created_at"
+        ]
+      ],
+      "checks": [
+        "(template_data IS NOT NULL OR draft_data IS NOT NULL)",
+        "status <> 'PUBLISHED' OR template_data IS NOT NULL",
+        "(template_data IS NULL AND version_number = 0) OR (template_data IS NOT NULL AND version_number > 0)"
+      ]
+    },
+    "template_category_assignments": {
+      "group": "03_TEMPLATE_DESIGN",
+      "note": "N:M phân loại template.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "template_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "category_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "template_id",
+          "category_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "pages": {
+      "group": "04_CONTENT",
+      "note": "Nội dung và SEO trang tĩnh cùng một hàng; content_json là Tiptap JSON. Layout và menu nằm trong blog_designs. page_key ổn định để binding.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "title",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "page_key",
+          "type": "varchar(80)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "content_json",
+          "type": "json",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_title",
+          "type": "varchar(255)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_description",
+          "type": "varchar(500)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "og_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "canonical_url",
+          "type": "varchar(2048)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "robots",
+          "type": "varchar(80)",
+          "null": false,
+          "default": "index,follow",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "draft_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "Một bản chỉnh sửa trang chờ đăng, không có lịch sử phiên bản.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "content_status",
+          "null": false,
+          "default": "DRAFT",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "scheduled_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "blog_id",
+          "slug"
+        ],
+        [
+          "blog_id",
+          "page_key"
+        ],
+        [
+          "blog_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "posts": {
+      "group": "04_CONTENT",
+      "note": "Một hàng cho mỗi bài: nội dung Tiptap JSON, ảnh cover và SEO. draft_data giữ tối đa một bản chỉnh sửa chờ đăng; không có lịch sử phiên bản bài viết.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "title",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "author_user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "excerpt",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "content_json",
+          "type": "json",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "cover_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_title",
+          "type": "varchar(255)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "seo_description",
+          "type": "varchar(500)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "og_media_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "canonical_url",
+          "type": "varchar(2048)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "robots",
+          "type": "varchar(80)",
+          "null": false,
+          "default": "index,follow",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "draft_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "Một bản chỉnh sửa chờ xuất bản của bài đang public; không phải lịch sử phiên bản. Validate cùng schema nội dung và SEO.",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "content_status",
+          "null": false,
+          "default": "DRAFT",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "scheduled_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "is_featured",
+          "type": "boolean",
+          "null": false,
+          "default": false,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "blog_id",
+          "slug"
+        ],
+        [
+          "blog_id",
+          "id"
+        ]
+      ],
+      "indexes": [
+        [
+          "blog_id",
+          "status",
+          "published_at"
+        ],
+        [
+          "status",
+          "scheduled_at"
+        ]
+      ],
+      "checks": []
+    },
+    "categories": {
+      "group": "04_CONTENT",
+      "note": "Danh mục bài viết trong từng blog; không dùng lại blog_topics.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "parent_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "null": false,
+          "default": true,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "blog_id",
+          "slug"
+        ],
+        [
+          "blog_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "tags": {
+      "group": "04_CONTENT",
+      "note": "Tag riêng trong mỗi blog.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "slug",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "blog_id",
+          "slug"
+        ],
+        [
+          "blog_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "post_categories": {
+      "group": "04_CONTENT",
+      "note": "N:M với composite FK bảo vệ phạm vi blog.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "post_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "category_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "post_id",
+          "category_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "post_tags": {
+      "group": "04_CONTENT",
+      "note": "N:M với composite FK bảo vệ phạm vi blog.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "post_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "tag_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "post_id",
+          "tag_id"
+        ]
+      ],
+      "indexes": [],
+      "checks": []
+    },
+    "media_assets": {
+      "group": "05_MEDIA",
+      "note": "Một thư viện Cloudinary dùng chung. JSON nội dung lưu media_id và URL; không có bảng liên kết media riêng. Backend kiểm tra quyền và tất cả tham chiếu JSON trước khi xóa ảnh.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "scope",
+          "type": "media_scope",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "cloud_name",
+          "type": "varchar(120)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "cloudinary_asset_id",
+          "type": "varchar(128)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "cloudinary_public_id",
+          "type": "varchar(255)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "cloudinary_version",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resource_type",
+          "type": "varchar(20)",
+          "null": false,
+          "default": "image",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "delivery_type",
+          "type": "varchar(40)",
+          "null": false,
+          "default": "upload",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "secure_url",
+          "type": "varchar(2048)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "original_name",
+          "type": "varchar(255)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "format",
+          "type": "varchar(40)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "mime_type",
+          "type": "varchar(120)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "width",
+          "type": "int unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "height",
+          "type": "int unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "bytes",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "alt_text",
+          "type": "varchar(500)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "media_status",
+          "null": false,
+          "default": "UPLOADING",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [
+        [
+          "cloud_name",
+          "cloudinary_asset_id"
+        ]
+      ],
+      "indexes": [
+        [
+          "blog_id",
+          "status",
+          "created_at"
+        ]
+      ],
+      "checks": [
+        "(scope = 'BLOG' AND blog_id IS NOT NULL) OR (scope IN ('PLATFORM','USER') AND blog_id IS NULL)"
+      ]
+    },
+    "content_reports": {
+      "group": "06_OPERATIONS",
+      "note": "Báo cáo blog hoặc bài viết. Không có báo cáo bình luận. Platform Admin xử lý theo quyền; thay đổi ghi vào admin_audit_logs.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "target_type",
+          "type": "report_target",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "post_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "reporter_user_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "status",
+          "type": "report_status",
+          "null": false,
+          "default": "OPEN",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "assigned_to",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resolution_note",
+          "type": "text",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "status",
+          "created_at"
+        ]
+      ],
+      "checks": [
+        "(target_type = 'BLOG' AND post_id IS NULL) OR (target_type = 'POST' AND post_id IS NOT NULL)"
+      ]
+    },
+    "admin_audit_logs": {
+      "group": "06_OPERATIONS",
+      "note": "Thao tác nền tảng và blog. resource_type/resource_id là snapshot log, không phải quan hệ đa hình bảo đảm FK.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": true
+        },
+        {
+          "name": "actor_user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "action",
+          "type": "varchar(120)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resource_type",
+          "type": "varchar(80)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "resource_id",
+          "type": "varchar(80)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "before_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "after_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "request_id",
+          "type": "varchar(64)",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "actor_user_id",
+          "created_at"
+        ],
+        [
+          "blog_id",
+          "created_at"
+        ]
+      ],
+      "checks": []
+    },
+    "platform_settings": {
+      "group": "06_OPERATIONS",
+      "note": "Một bản ghi id=1. config_json chứa branding/SEO/discovery/limits/features/security; backend chỉ trả các khóa public được cho phép. Secrets ở env.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "tinyint unsigned",
+          "null": false,
+          "default": 1,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "config_json",
+          "type": "json",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_by",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [],
+      "checks": [
+        "id = 1",
+        "JSON_TYPE(config_json) = 'OBJECT'"
+      ]
+    },
+    "notifications": {
+      "group": "06_OPERATIONS",
+      "note": "Thông báo cho user; delivery email do queue thực hiện. recipient_user_id là FK trực tiếp nên cần custom notification channel/mapping nếu dùng Laravel DatabaseNotification mặc định.",
+      "cols": [
+        {
+          "name": "id",
+          "type": "char(36)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "recipient_user_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "type",
+          "type": "varchar(160)",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "data",
+          "type": "json",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "read_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "recipient_user_id",
+          "read_at",
+          "created_at"
+        ]
+      ],
+      "checks": []
+    },
+    "blog_designs": {
+      "group": "03_TEMPLATE_DESIGN",
+      "note": "1:1 với blog. published_data/draft_data lưu toàn bộ layout, theme, sections, menu và snapshot template; publish đổi JSON trong một transaction, không tạo hàng revision.",
+      "cols": [
+        {
+          "name": "blog_id",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": true,
+          "inc": false
+        },
+        {
+          "name": "template_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "draft_template_id",
+          "type": "bigint unsigned",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "draft_data",
+          "type": "json",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "published_at",
+          "type": "datetime",
+          "null": true,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_by",
+          "type": "bigint unsigned",
+          "null": false,
+          "default": null,
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "null": false,
+          "default": "CURRENT_TIMESTAMP",
+          "note": "",
+          "pk": false,
+          "inc": false
+        }
+      ],
+      "unique": [],
+      "indexes": [],
+      "checks": [
+        "(published_data IS NOT NULL OR draft_data IS NOT NULL)",
+        "(template_id IS NULL AND published_data IS NULL) OR (template_id IS NOT NULL AND published_data IS NOT NULL)",
+        "(draft_template_id IS NULL AND draft_data IS NULL) OR (draft_template_id IS NOT NULL AND draft_data IS NOT NULL)"
+      ]
+    }
+  },
+  "enums": {
+    "account_status": [
+      "PENDING_VERIFICATION",
+      "ACTIVE",
+      "LOCKED",
+      "SUSPENDED",
+      "DISABLED"
+    ],
+    "blog_status": [
+      "DRAFT",
+      "PUBLISHED",
+      "HIDDEN",
+      "SUSPENDED",
+      "ARCHIVED"
+    ],
+    "blog_visibility": [
+      "PUBLIC",
+      "UNLISTED",
+      "PRIVATE"
+    ],
+    "template_status": [
+      "DRAFT",
+      "PUBLISHED",
+      "HIDDEN",
+      "RETIRED"
+    ],
+    "content_status": [
+      "DRAFT",
+      "SCHEDULED",
+      "PUBLISHED",
+      "ARCHIVED"
+    ],
+    "media_status": [
+      "UPLOADING",
+      "READY",
+      "FAILED",
+      "DELETING",
+      "DELETED"
+    ],
+    "media_scope": [
+      "PLATFORM",
+      "BLOG",
+      "USER"
+    ],
+    "restriction_kind": [
+      "LOCK",
+      "SUSPEND",
+      "DISABLE"
+    ],
+    "restriction_status": [
+      "ACTIVE",
+      "REVOKED",
+      "EXPIRED"
+    ],
+    "report_status": [
+      "OPEN",
+      "REVIEWING",
+      "RESOLVED",
+      "DISMISSED"
+    ],
+    "report_target": [
+      "BLOG",
+      "POST"
+    ],
+    "domain_status": [
+      "PENDING",
+      "VERIFIED",
+      "ACTIVE",
+      "FAILED",
+      "DISABLED"
+    ]
+  },
+  "relationships": [
+    {
+      "a": "platform_role_permissions",
+      "ac": [
+        "role_id"
+      ],
+      "b": "platform_roles",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "user_platform_roles",
+      "ac": [
+        "role_id"
+      ],
+      "b": "platform_roles",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "platform_role_permissions",
+      "ac": [
+        "permission_id"
+      ],
+      "b": "permissions",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "user_platform_roles",
+      "ac": [
+        "user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "user_platform_roles",
+      "ac": [
+        "granted_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "sessions",
+      "ac": [
+        "user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "cascade"
+    },
+    {
+      "a": "account_restrictions",
+      "ac": [
+        "user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "account_restrictions",
+      "ac": [
+        "issued_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "account_restrictions",
+      "ac": [
+        "revoked_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "security_audit_logs",
+      "ac": [
+        "actor_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "security_audit_logs",
+      "ac": [
+        "subject_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_topics",
+      "ac": [
+        "created_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blogs",
+      "ac": [
+        "owner_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_topic_assignments",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_topic_assignments",
+      "ac": [
+        "topic_id"
+      ],
+      "b": "blog_topics",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_settings",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_domains",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "template_categories",
+      "ac": [
+        "parent_id"
+      ],
+      "b": "template_categories",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "templates",
+      "ac": [
+        "created_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "templates",
+      "ac": [
+        "updated_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "template_category_assignments",
+      "ac": [
+        "template_id"
+      ],
+      "b": "templates",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "template_category_assignments",
+      "ac": [
+        "category_id"
+      ],
+      "b": "template_categories",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "pages",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "pages",
+      "ac": [
+        "created_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "pages",
+      "ac": [
+        "updated_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "posts",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "posts",
+      "ac": [
+        "author_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "posts",
+      "ac": [
+        "updated_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "categories",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "categories",
+      "ac": [
+        "blog_id",
+        "parent_id"
+      ],
+      "b": "categories",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "tags",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "post_categories",
+      "ac": [
+        "blog_id",
+        "post_id"
+      ],
+      "b": "posts",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "post_categories",
+      "ac": [
+        "blog_id",
+        "category_id"
+      ],
+      "b": "categories",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "post_tags",
+      "ac": [
+        "blog_id",
+        "post_id"
+      ],
+      "b": "posts",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "post_tags",
+      "ac": [
+        "blog_id",
+        "tag_id"
+      ],
+      "b": "tags",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "media_assets",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "media_assets",
+      "ac": [
+        "uploaded_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "users",
+      "ac": [
+        "avatar_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_settings",
+      "ac": [
+        "logo_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_settings",
+      "ac": [
+        "favicon_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_settings",
+      "ac": [
+        "og_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "templates",
+      "ac": [
+        "preview_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "content_reports",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "content_reports",
+      "ac": [
+        "blog_id",
+        "post_id"
+      ],
+      "b": "posts",
+      "bc": [
+        "blog_id",
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "content_reports",
+      "ac": [
+        "reporter_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "content_reports",
+      "ac": [
+        "assigned_to"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "content_reports",
+      "ac": [
+        "resolved_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "admin_audit_logs",
+      "ac": [
+        "actor_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "admin_audit_logs",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "platform_settings",
+      "ac": [
+        "updated_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "notifications",
+      "ac": [
+        "recipient_user_id"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "posts",
+      "ac": [
+        "cover_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "posts",
+      "ac": [
+        "og_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "templates",
+      "ac": [
+        "published_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "pages",
+      "ac": [
+        "og_media_id"
+      ],
+      "b": "media_assets",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_designs",
+      "ac": [
+        "blog_id"
+      ],
+      "b": "blogs",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_designs",
+      "ac": [
+        "template_id"
+      ],
+      "b": "templates",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_designs",
+      "ac": [
+        "draft_template_id"
+      ],
+      "b": "templates",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    },
+    {
+      "a": "blog_designs",
+      "ac": [
+        "updated_by"
+      ],
+      "b": "users",
+      "bc": [
+        "id"
+      ],
+      "delete": "restrict"
+    }
+  ]
+}

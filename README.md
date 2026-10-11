@@ -112,4 +112,4 @@ docker compose config --quiet
 - Lỗi port bị chiếm: dừng dịch vụ trùng hoặc đổi port forwarding trong Compose/.env; đồng bộ APP_URL khi đổi cổng web.
 - Không deploy production theo các bước local. Xem [runbook VPS](website/docs/deployment/VPS.md).
 - [Trạng thái](website/docs/current-state.md) · [Kiến trúc](website/docs/architecture/README.md) · [Bàn giao UI và giới hạn kiểm chứng](website/docs/ui-implementation-handoff.md).
-- Tài liệu ERD trong website/docs/database/ là tham chiếu local, không tải theo Git; migration/seed trong website/database/ vẫn được quản lý trong repo.
+- Tài liệu ERD trong website/docs/database/ được quản lý trong Git. Migration/seed sử dụng hai file SQL bắt buộc trong website/database/sql/; không bỏ các file runtime SQL này khi commit. Không commit .env hoặc bản dump chứa dữ liệu thật.
