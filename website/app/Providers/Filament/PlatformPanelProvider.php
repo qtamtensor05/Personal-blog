@@ -34,6 +34,7 @@ class PlatformPanelProvider extends PanelProvider
             ->id('platform')
             ->path('platform-admin')
             ->brandName('Bút Mây · Platform Admin')
+            ->darkMode(false)
             ->sidebarWidth('232px')
             ->navigationItems($this->navigationItems())
             ->renderHook('panels::head.end', fn () => Blade::render("@vite(['resources/css/app.css', 'resources/js/app.js'])"))

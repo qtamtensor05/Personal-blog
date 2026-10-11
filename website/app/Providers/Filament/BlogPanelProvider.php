@@ -28,6 +28,7 @@ class BlogPanelProvider extends PanelProvider
             ->id('blog')
             ->path('blog-admin')
             ->brandName('Bút Mây · Blog Admin')
+            ->darkMode(false)
             ->renderHook('panels::head.end', fn () => Blade::render("@vite(['resources/css/app.css', 'resources/js/app.js'])"))
             ->colors([
                 'primary' => Color::Teal,

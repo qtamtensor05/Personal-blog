@@ -1,83 +1,115 @@
-# Bút Mây — Multi-Tenant Blog Platform
+# Bút Mây — Blog Platform
 
-Laravel 13, Filament 5, Livewire 4, Blade, GrapesJS, Tiptap, MySQL 8.4, Redis và Cloudinary SDK. Ứng dụng nằm trong `website/`; ERD chuẩn và tài liệu triển khai nằm trong `website/docs/`.
+Laravel / Filament / Livewire / MySQL / Redis. Source nằm trong website/. Khuyên dùng Docker.
 
-## Chạy bằng Docker trên Windows PowerShell
+## 1. Cài mới bằng Docker (PowerShell)
+
+Cần Docker Desktop đang chạy, Linux containers và Compose v2. Mở terminal tại thư mục repository.
 
 ```powershell
 Set-Location .\website
-Copy-Item .env.example .env
-docker compose --profile local up -d --build
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
-docker compose exec app php artisan db:seed --class=DemoSeeder
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+docker compose build
+docker compose run --rm --no-deps app php artisan key:generate --show
 ```
 
-Mở http://localhost:8000. Mailpit: http://localhost:8025. phpMyAdmin: http://localhost:8080.
-
-Tạo Super Admin đầu tiên (không có mật khẩu mặc định trong source):
+Chép chuỗi base64:... vừa tạo vào APP_KEY trong **website/.env trên máy**, đặt MAIL_HOST=mailpit, rồi lưu file. Nếu đã có key, giữ nguyên và bỏ qua bước tạo key. Không chia sẻ .env; không tạo key chỉ trong container vì sẽ mất khi recreate.
 
 ```powershell
+docker compose --profile local up -d
+docker compose exec app php artisan migrate --seed
 docker compose exec app php artisan platform:bootstrap-admin
 ```
 
-## Chạy trực tiếp
+Lệnh admin hỏi email, tên, mật khẩu (ít nhất 12 ký tự); chỉ chạy một lần cho mỗi email. Không có mật khẩu admin mặc định.
 
-PHP CLI phải bật `intl`, `pdo_mysql`, `mbstring`, `zip` và `redis`.
+| Mục                                          | Địa chỉ                              |
+| -------------------------------------------- | ------------------------------------ |
+| Website / chọn mẫu                           | http://localhost:8000                |
+| Platform Admin (thiết lập 2FA khi đăng nhập) | http://localhost:8000/platform-admin |
+| Blog của tôi (cần xác minh email)            | http://localhost:8000/workspace      |
+| Email thử nghiệm Mailpit                     | http://localhost:8025                |
+| Quản lý DB phpMyAdmin                        | http://localhost:8080                |
+
+**Demo tùy chọn:** gallery có thể trống khi chưa tạo/xuất bản mẫu. Muốn có ba mẫu và hai blog minh họa:
 
 ```powershell
-Set-Location .\website
+docker compose exec app php artisan db:seed --class=DemoSeeder
+```
+
+Demo chỉ chạy ở local/testing, có thể ghi đè bản ghi demo cùng slug/email. Không chạy trên dữ liệu cần giữ; không dùng migrate:fresh để cập nhật UI.
+
+## 2. Chạy lại, cập nhật và dừng
+
+Các lệnh sau chạy trong website/:
+
+```powershell
+# Chạy lại, giữ dữ liệu
+docker compose --profile local up -d
+
+# Sau khi sửa source hoặc .env
+docker compose up -d --build --force-recreate app nginx worker scheduler
+docker compose exec app php artisan optimize:clear
+
+# Kiểm tra trạng thái / log
+docker compose ps
+docker compose logs --tail=80 app worker scheduler
+
+# Dừng, giữ volume database
+docker compose --profile local down
+```
+
+Không dùng down -v nếu cần giữ dữ liệu. Khi có migration mới, backup DB rồi chạy migrate --seed. Docker đã chạy worker và scheduler.
+
+## 3. Chạy PHP trực tiếp (tùy chọn)
+
+Cần PHP 8.4+, Composer 2, Node.js 24 và Docker Desktop. PHP CLI bật intl, pdo_mysql, mbstring, zip, redis (kiểm tra bằng php -m).
+
+Tại website/, tạo .env nếu chưa có. Đặt DB_HOST=127.0.0.1, REDIS_HOST=127.0.0.1, MAIL_HOST=127.0.0.1; giữ port/mật khẩu khớp Compose. Không chạy đồng thời app Docker trên port 8000.
+
+```powershell
+docker compose --profile local up -d mysql redis mailpit
 composer install
 npm ci
-Copy-Item .env.example .env
+# Chỉ cài mới, khi APP_KEY còn trống:
 php artisan key:generate
 php artisan migrate --seed
-npm run build
 php artisan filament:assets
+npm run build
 composer run dev
 ```
 
-Nếu chạy app trực tiếp thay vì trong Compose, đổi `DB_HOST=127.0.0.1`, `REDIS_HOST=127.0.0.1` và mở port dịch vụ local tương ứng.
-
-## Kiểm tra
-
-```powershell
-php artisan test
-vendor\bin\pint --test
-npm run lint
-npm run format:check
-npm audit
-npm run build
-docker compose config
-```
-
-Migration nghiệp vụ cố ý chỉ chạy trên MySQL 8.0.16+; SQLite không đại diện được CHECK/JSON/composite FK của ERD. Cloudinary, SMTP production, DNS/HTTPS custom domain và VPS cần credentials/hạ tầng thật trước khi kiểm chứng live.
-
-Xem [trạng thái hiện tại](website/docs/current-state.md), [kiến trúc](website/docs/architecture/README.md), [đối chiếu database](website/docs/database/migration-comparison.md) và [runbook VPS](website/docs/deployment/VPS.md).
-
-## Giao diện và luồng sử dụng
-
-- `/` hoặc `/templates`: gallery, tìm/lọc mẫu, preview và đăng nhập. Chọn **Dùng mẫu** sẽ giữ lựa chọn qua đăng nhập/đăng ký và xác minh email.
-- `/workspace`: tạo blog từ mẫu đã xuất bản; blog mới có giao diện nháp riêng.
-- `/platform-admin/management?section=templates`: quản lý mẫu bằng dữ liệu thật, lưu nháp, editor section, xuất bản/ngừng cho chọn. Admin đăng nhập tại `/platform-admin/login` và hoàn tất 2FA.
-- `/blog-admin/studio?blog=<id>`: quản lý blog của Owner. Preview nháp yêu cầu đăng nhập đúng Owner; public chỉ đọc snapshot đã xuất bản.
-
-Demo là tùy chọn, chỉ chạy khi `APP_ENV=local` hoặc `testing`; gồm ba mẫu Nhật ký, Hành trình, Tạp chí và hai blog minh họa. **DemoSeeder có thể ghi đè các bản ghi demo cùng slug/email; không chạy trên dữ liệu cần giữ.** Không chạy `migrate:fresh` để cập nhật giao diện.
-
-Khi chạy Docker, source PHP được đóng trong image, vì vậy sau khi sửa code cần:
-
-```powershell
-docker compose up -d --build app worker scheduler nginx
-docker compose restart nginx
-docker compose exec app php artisan optimize:clear
-```
-
-Nếu chạy trực tiếp, ngoài `composer run dev`, mở terminal khác chạy scheduler:
+composer run dev chạy web, queue và Vite. Terminal thứ hai (cũng trong website/) chạy:
 
 ```powershell
 php artisan schedule:work
 ```
 
-Worker dùng `php artisan queue:work redis --tries=3 --timeout=90`; lịch bài/trang được xử lý bởi scheduler. Thời gian nhập lịch trong UI hiện là UTC. Upload ảnh cần `CLOUDINARY_URL` (server-only); đặt `CLOUDINARY_CLOUD_NAME` nếu cần. SMTP local trong Docker dùng `MAIL_HOST=mailpit`, `MAIL_PORT=1025` với profile `local`; không dùng `127.0.0.1` để gọi Mailpit từ container app.
+Tạo admin/demo bằng cùng lệnh Artisan ở mục 1, bỏ tiền tố docker compose exec app.
 
-Chi tiết phạm vi, giả định và kiểm chứng: [bàn giao giao diện](website/docs/ui-implementation-handoff.md).
+## 4. Kiểm tra dành cho lập trình viên
+
+Chạy trên máy trong website/ sau composer install và npm ci; image Docker ứng dụng không chứa test/dev dependencies.
+
+Pest dùng MySQL **blog_test** theo phpunit.xml; tạo DB này riêng trước khi chạy (ví dụ qua phpMyAdmin: CREATE DATABASE blog_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;). Bộ test reset schema test; tuyệt đối không trỏ test sang DB ứng dụng. Nếu đổi port/mật khẩu local, cập nhật cấu hình test tương ứng.
+
+```powershell
+php artisan config:clear
+php artisan test
+npm run format:check
+npm run lint
+npm run build
+npm audit
+composer audit --locked
+docker compose config --quiet
+```
+
+## Lưu ý và tài liệu
+
+- Upload ảnh cần CLOUDINARY_URL server-only; không cần Cloudinary để xem gallery. SMTP local dùng Mailpit, không gửi email thật.
+- Thời gian nhập lịch trong UI hiện là UTC. Chỉ giao diện đã xuất bản mới xuất hiện public; sửa mẫu không tự đổi blog live.
+- Lỗi thiếu key: kiểm tra APP_KEY trong .env trên máy rồi recreate app/worker/scheduler. Lỗi email Docker: kiểm tra MAIL_HOST=mailpit và profile local.
+- Lỗi port bị chiếm: dừng dịch vụ trùng hoặc đổi port forwarding trong Compose/.env; đồng bộ APP_URL khi đổi cổng web.
+- Không deploy production theo các bước local. Xem [runbook VPS](website/docs/deployment/VPS.md).
+- [Trạng thái](website/docs/current-state.md) · [Kiến trúc](website/docs/architecture/README.md) · [Bàn giao UI và giới hạn kiểm chứng](website/docs/ui-implementation-handoff.md).
+- Tài liệu ERD trong website/docs/database/ là tham chiếu local, không tải theo Git; migration/seed trong website/database/ vẫn được quản lý trong repo.

@@ -2,6 +2,7 @@
 
 ## 2026-10-11
 
+- Sửa chữ trắng trên nền trắng trong Blog Studio: Filament dark mode kế thừa màu chữ trong khi surface tùy chỉnh luôn sáng. Cố định hai panel light mode theo thiết kế, khai báo màu chữ cho vùng quản lý/tab/editor toolbar. Test PanelThemeTest đạt 1 test / 2 assertions; không thay đổi dữ liệu blog.
 - Tiếp tục hai UI tham chiếu: gallery/auth/chọn mẫu và Platform Admin quản lý mẫu; nối snapshot draft/live, Blog Studio và renderer, phân quyền/tenant isolation; xem `ui-implementation-handoff.md`.
 - Regression hiện tại đạt 29 test / 97 assertion; Docker local rebuild đồng bộ PHP/Nginx và publish Filament assets, kiểm tra HTTP route/assets đạt. Không chạy migration/seed trên DB ứng dụng hoặc deploy production; browser không khả dụng nên visual QA còn mở.
 
