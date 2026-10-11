@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 final class ModerateAction
 {
@@ -29,6 +30,7 @@ final class ModerateAction
             }
             if ($kind === 'users') {
                 abort_if($id === (int) $actor->id || DB::table('user_platform_roles')->where('user_id', $id)->exists(), 403, 'Không được thay đổi tài khoản quản trị tại đây.');
+                $values['remember_token'] = Str::random(60);
                 if ($data['status'] === 'ACTIVE') {
                     $values['status'] = $row->email_verified_at ? 'ACTIVE' : 'PENDING_VERIFICATION';
                     $values['locked_until'] = null;
@@ -39,7 +41,7 @@ final class ModerateAction
                 DB::table('sessions')->where('user_id', $id)->delete();
             }
             DB::table($table)->where('id', $id)->update($values);
-            app(AuditRecorder::class)->record($actor->id, $kind.'.moderated', $kind, $id, $kind === 'blogs' ? $id : ($row->blog_id ?? null), null, ['status' => $values['status'], 'reason' => $data['reason']]);
+            app(AuditRecorder::class)->record($actor->id, $kind.'.moderated', $kind, $id, $kind === 'blogs' ? $id : ($row->blog_id ?? null), [], ['status' => $values['status'], 'reason' => $data['reason']]);
         });
     }
 }

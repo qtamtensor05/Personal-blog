@@ -34,7 +34,7 @@ final class AuthController extends Controller
                 ->onlyInput('email');
         }
         $request->session()->regenerate();
-        if ($request->user()->status === 'PENDING_VERIFICATION' && ! $request->user()->hasVerifiedEmail()) {
+        if ($request->user()->deleted_at === null && ($request->user()->locked_until === null || $request->user()->locked_until->isPast()) && $request->user()->status === 'PENDING_VERIFICATION' && ! $request->user()->hasVerifiedEmail()) {
             return redirect('/email/verify');
         }
         if (! $request->user()->canAccessApplication()) {

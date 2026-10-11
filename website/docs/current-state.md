@@ -2,6 +2,8 @@
 
 Ngày cập nhật: 2026-10-11.
 
+Mục 1 đã bổ sung hồ sơ /account và quản lý quyền /platform-admin/access-management; xem checklist 1.1a–1.3 và implementation-history. Full suite mới nhất đạt 45 tests / 215 assertions, gồm bốn race hai kết nối MySQL. Đã sửa remember-token và lỗi audit trong restriction lifecycle. Browser E2E vẫn chưa nghiệm thu; có kịch bản thủ công tại setup/identity-browser-qa.md.
+
 ## Rà soát hoàn thành dự án
 
 Xem [checklist nghiệm thu chi tiết](project-completion-checklist.md) và [bàn giao hai UI](ui-implementation-handoff.md). Đã triển khai gallery/auth/chọn mẫu và Platform Admin quản lý mẫu, nối nền Blog Admin/renderer. Dự án chưa hoàn thành toàn bộ sáu lát cắt/P1 hoặc nghiệm thu production. Kiểm tra mới nhất: 29 test / 97 assertion đạt; Composer/npm audit không có advisory; format/lint đạt. Docker local đã rebuild, sáu route public/auth/admin login và chín tài nguyên Filament trả HTTP 200. Chưa có browser để nghiệm thu trực quan/responsive. Bằng chứng schema/production bên dưới thuộc các lần kiểm tra trước, không phải migration/deploy mới.

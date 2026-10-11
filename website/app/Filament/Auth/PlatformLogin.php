@@ -12,6 +12,9 @@ class PlatformLogin extends Login
         $response = parent::authenticate();
         if ($response) {
             session()->put('platform_authenticated_user', (int) auth()->id());
+            if (! auth()->user()->hasPlatformPermission('platform.dashboard.view')) {
+                session()->put('url.intended', '/platform-admin/access-management');
+            }
         }
 
         return $response;

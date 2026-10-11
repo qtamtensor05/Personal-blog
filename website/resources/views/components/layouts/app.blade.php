@@ -17,6 +17,7 @@
             <a class="site-nav-link" href="/templates" @if(request()->is('/', 'templates', 'templates/*')) aria-current="page" @endif>Mẫu blog</a>
             <a class="site-nav-link" href="/guide" @if(request()->is('guide')) aria-current="page" @endif>Hướng dẫn</a>
             @auth
+                <a class="site-nav-link" href="/account" @if(request()->is('account')) aria-current="page" @endif>Tài khoản</a>
                 <a class="site-nav-link" href="/workspace" @if(request()->is('workspace')) aria-current="page" @endif>Blog của tôi</a>
                 <a class="site-nav-link" href="/blog-admin">Bảng điều khiển</a>
                 <form method="post" action="/logout">

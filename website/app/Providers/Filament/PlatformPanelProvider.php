@@ -3,8 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\PlatformLogin;
+use App\Filament\Auth\PlatformProfile;
 use App\Filament\Pages\Overview;
 use App\Http\Middleware\EnsureAccountActive;
+use App\Http\Middleware\EnsureCurrentSession;
 use App\Http\Middleware\EnsurePlatformSession;
 use App\Modules\Platform\Queries\PlatformWorkspace;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -33,13 +35,14 @@ class PlatformPanelProvider extends PanelProvider
             ->default()
             ->id('platform')
             ->path('platform-admin')
+            ->homeUrl(fn () => auth()->user()?->hasPlatformPermission('platform.dashboard.view') ? '/platform-admin' : '/platform-admin/access-management')
             ->brandName('Bút Mây · Platform Admin')
             ->darkMode(false)
             ->sidebarWidth('232px')
             ->navigationItems($this->navigationItems())
             ->renderHook('panels::head.end', fn () => Blade::render("@vite(['resources/css/app.css', 'resources/js/app.js'])"))
             ->login(PlatformLogin::class)
-            ->profile()
+            ->profile(PlatformProfile::class)
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)
             ->colors([
                 'primary' => Color::Teal,
@@ -53,6 +56,7 @@ class PlatformPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                EnsureCurrentSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
