@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Modules\Blogs\Actions\CreateBlogAction;
 use App\Modules\Templates\Queries\TemplateLibrary;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class BlogAdminController extends Controller
@@ -28,11 +30,25 @@ final class BlogAdminController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'slug' => ['nullable', 'alpha_dash', 'max:160', 'unique:blogs,slug'],
+            'slug' => ['nullable', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:2000'],
             'template_id' => ['required', 'integer'],
         ]);
-        $id = $action->execute($request->user(), $data);
+
+        try {
+            $id = $action->execute($request->user(), $data);
+        } catch (ValidationException $e) {
+            // Re-throw so Laravel redirects back with errors AND old input (including slug & description).
+            throw $e->redirectTo(url('/workspace'));
+        } catch (QueryException $e) {
+            // MySQL unique constraint on blogs.slug
+            if ($e->errorInfo[1] === 1062) {
+                throw ValidationException::withMessages([
+                    'slug' => 'Đường dẫn đã được sử dụng. Hãy chọn đường dẫn khác.',
+                ])->redirectTo(url('/workspace'));
+            }
+            throw $e;
+        }
 
         $request->session()->forget('selected_template');
 

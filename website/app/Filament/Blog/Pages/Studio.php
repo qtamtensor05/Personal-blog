@@ -152,6 +152,8 @@ class Studio extends Page
     public function saveSettings(): void
     {
         app(SaveBlogSettingsAction::class)->execute(auth()->user(), $this->blogId, $this->form);
+        // Reload the form so it reflects the stored, normalized slug and other values.
+        $this->form = app(BlogSettingsQuery::class)->find(auth()->user(), $this->blogId);
         $this->message = 'Đã lưu cài đặt.';
     }
 
