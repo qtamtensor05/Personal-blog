@@ -1,97 +1,103 @@
-# Review và checklist hoàn thành
+# Checklist hoàn thành và phân công
 
-Ngày: 2026-10-11. Đối chiếu `website/codex_blog_platform/PROMPT_CODEX_BLOG_PLATFORM.md`, ERD trong `docs/database`, source và regression tests. Prompt tại root không còn tồn tại; dùng bản trong website.
+Cập nhật: 2026-10-11. Đối chiếu source hiện tại, [đặc tả UI](DESIGN_REQUIREMENTS_BLOG_PLATFORM.md), [bàn giao UI](ui-implementation-handoff.md) và [lịch sử](implementation-history.md). Đây là checklist hiện hành, thay bản baseline trước đợt triển khai UI.
 
-## Tình trạng
+## Cách đọc và giao việc
 
-Nền tảng/MVP chạy được; chưa đủ nghiệm thu production. Cập nhật triển khai hai UI xem [bàn giao UI](ui-implementation-handoff.md): gallery/auth/chọn mẫu, quản lý mẫu và editor đã nối Action/Query, có regression test; editor đã mount lazy. Chưa nghiệm thu tương tác browser, toàn bộ P1 hoặc provider thật. Các mục bên dưới là baseline rà soát trước đợt triển khai UI; dùng bàn giao để phân biệt phần đã thay đổi, không suy ra toàn bộ checklist đã hoàn thành.
+- [x] Đã triển khai phần việc được mô tả, có bằng chứng source/test hoặc smoke tương ứng; không đồng nghĩa nghiệm thu production.
+- [ ] Phần còn phải thực hiện hoặc kiểm chứng. Nhãn **QA** nghĩa là đã có code, không giao làm lại từ đầu.
+- Phân công theo mục 1–6; mỗi mã 1.1, 2.1… là đầu việc chi tiết trong mục tương ứng. Chỉ đóng việc khi có bằng chứng đáp ứng tiêu chí ghi ngay sau đầu việc.
 
-## Checklist theo giai đoạn
+## Các mục và phụ thuộc
 
-### 1. Nền tảng, identity/access
+| Mục | Phụ thuộc trước khi tích hợp | Đầu ra bàn giao |
+| --- | --- | --- |
+| 1. Nền tảng / identity | Không; nền chung | Auth/quyền/session và test bảo mật |
+| 2. Blog / tenant | Guard/quyền từ 1 | Onboarding/settings và tenant isolation |
+| 3. Content / media | OwnerContext/quota từ 2, guard từ 1 | Viết–lưu–preview–đăng và media an toàn |
+| 4. Template / design | Quyền từ 1; snapshot từ 2; media contract từ 3 | Builder, snapshot và renderer nhất quán |
+| 5. Website / vận hành nghiệp vụ | Published content/design từ 3–4 | Public UI, settings và workflow P1 |
+| 6. Release / nghiệm thu | CI làm xuyên suốt; phát hành sau tích hợp 1–5 | Báo cáo E2E, vận hành và release gate |
 
-- [x] Laravel 13/PHP 8.4, Filament 5/Livewire 4, lockfiles.
-- [x] Migration/seed chuẩn 29 bảng nghiệp vụ/59 FK; tài liệu đối chiếu ERD.
-- [x] Session login/logout/register, signed email verification, CSRF, throttle cơ bản.
-- [x] Platform permission expiry, bootstrap Super Admin, cấu hình required 2FA.
-- [x] Account/email/locked_until guard tại protected routes và Actions hiện có.
-- [ ] Password reset/change, profile thường, đổi email xác minh lại, session/remember-token revoke.
-- [ ] Chặn deleted_at tại auth provider; restriction lifecycle + session revoke + security audit.
-- [ ] Browser tests enroll/challenge/recovery 2FA, đặc biệt login chung rồi vào platform.
-- [ ] CRUD quyền/admin; policy chống nâng quyền, khóa Admin khác và mất Super Admin cuối cùng.
+Thứ tự: ổn định 1 → 2 → làm 3 và 4 song song → tích hợp 5 → nghiệm thu 6. Không cần đợi hoàn thành mọi việc của một mục: chỉ cần phụ thuộc trực tiếp đã sẵn sàng. Mục 6 bắt đầu CI/test ngay từ đầu, không dồn kiểm thử về cuối.
 
-### 2. Blog và tenant
+Trước khi làm song song, thống nhất OwnerContext/blog_id, JSON draft/live và fingerprint, hợp đồng media/preview, mã lỗi/phân quyền. Mục 3 sở hữu media Action/Query; mục 4–5 tái sử dụng, không tạo đường kiểm tra tenant riêng.
 
-- [x] Create/list/detail owner-only, quota cơ bản; public path resolver lọc status/visibility/deletion.
-- [ ] Filament tenant selector, onboarding/chọn template, CRUD blog/settings/topics.
-- [ ] Private reader được authorize và support permission rõ ràng.
-- [ ] Quota/slug race tests nhiều connection; xử lý unique collision thành validation error.
+## 1. Nền tảng, identity/access
 
-### 3. Content/media
+- [x] Stack/lockfiles, migration/seed, session login/logout/register, email verification, CSRF/throttle cơ bản; schema đối chiếu trước đây là 29 bảng/59 FK.
+- [x] Password reset qua broker, đổi remember_token và thu hồi sessions; bootstrap admin, required 2FA và chặn portal session bỏ qua platform login.
+- [x] Guard ACTIVE/verified/locked_until/deleted_at tại canAccessApplication; moderation tài khoản thường có restriction lifecycle, session revoke và audit.
+- [ ] **1.1 — QA:** Test reset token sai/hết hạn/đã dùng, session cũ bị thu hồi; browser enroll/challenge/recovery 2FA và portal→platform không bypass. Đạt khi có test/báo cáo cho từng nhánh.
+- [ ] **1.2 — Triển khai:** Profile người dùng, đổi mật khẩu khi đã đăng nhập, đổi email và xác minh lại; test quyền, validation, session lifecycle. Không gộp với password reset đã có.
+- [ ] **1.3 — Xác nhận phạm vi:** CRUD role/admin và bảo vệ Super Admin cuối cùng nếu đưa vào phạm vi release. Chưa có workflow đầy đủ; cần chốt với đặc tả, không suy từ bảng DB rằng phải dựng thêm màn hình.
 
-- [x] Cloudinary adapter, MIME/size/pixel validation, metadata UPLOADING/READY/FAILED.
-- [x] Tenant-scoped media rendering và kiểm tra cover/OG/content khi publish post.
-- [x] Publish post transaction/audit/JSON draft; scheduler nội dung SCHEDULED mới.
-- [ ] Filament post/page/category/tag CRUD; draft save/autosave/fingerprint/validation đầy đủ.
-- [ ] Tiptap toolbar + mount/unmount + Save/Preview/Publish UI và feedback lỗi/conflict.
-- [ ] Scheduled edit cho PUBLISHED draft, hủy/đổi lịch, chống job cũ và timezone tests.
-- [ ] Media access chung cho page/design/template/settings/avatar; PLATFORM media allowlist.
-- [ ] Upload quota reservation tính cả UPLOADING, provider-response validation, orphan reconcile.
-- [ ] Media library/selector/reuse/alt/delete; reference collectors public/draft/global; destroy job/retry và race publish-delete.
-- [ ] SEO/OG/canonical/robots/sitemap, taxonomy search, preview noindex/no-store.
+## 2. Blog và tenant
 
-### 4. Template/design
+- [x] Create/list/detail owner-only, khóa owner khi kiểm tra quota; onboarding giữ mẫu qua auth, template PUBLISHED và snapshot độc lập.
+- [x] Selector blog trong Studio, OwnerContext phía server, settings tên/visibility/SEO/media; private reader hiện chỉ Owner hợp lệ.
+- [ ] **2.1 — QA:** E2E hai tài khoản: tạo blog, chuyển selector, sửa settings, giả mạo blog/content/media ID; tài khoản B không đọc/sửa nháp A.
+- [ ] **2.2 — Triển khai + test:** Hoàn thiện các trường/settings/slug theo đặc tả chưa được form hỗ trợ; xử lý unique collision thành lỗi form. Test quota/slug bằng nhiều connection, không chỉ tuần tự.
+- [ ] **2.3 — QA:** PUBLIC/UNLISTED/PRIVATE và hidden/suspended/deleted đúng ở discovery, URL trực tiếp và preview. Không thêm member/moderator hoặc support bypass khi chưa được yêu cầu.
 
-- [x] GrapesJS module, ba template seed, design publish/fingerprint cơ bản.
-- [ ] Platform template CRUD/publish/version/categories và builder UI.
-- [ ] GrapesJS component/schema registry đầy đủ: validator hiện nhìn pages.sections, chưa kiểm tra frames/components/styles thật.
-- [ ] Trusted rules, media/binding/menu/route validation, đúng một homepage.
-- [ ] Owner customization theo rules server; upgrade template không tự đổi public.
-- [ ] Public renderer dùng published_data thành sections/theme/menu thực tế; hiện public dùng layout chung.
-- [ ] Authorized preview và browser editor lifecycle tests.
+## 3. Content/media
 
-### 5. Website và vận hành nghiệp vụ
+- [x] Studio bài/trang/danh mục/thẻ, Tiptap, lưu draft/fingerprint, publish/schedule/archive và preview có auth/noindex/no-store.
+- [x] Tách sửa draft của bài live; scheduler áp dụng draft đã hẹn; test hủy lịch khi lưu draft để tránh CHECK constraint.
+- [x] Cloudinary adapter, validation ảnh, quota reservation gồm UPLOADING/DELETING; library/picker/alt/delete có kiểm tra tham chiếu và tenant scope.
+- [ ] **3.1 — QA:** Browser Tiptap mount/unmount, toolbar, giữ nội dung khi lỗi/conflict, Save/Preview/Publish. Không yêu cầu autosave giả; chỉ thêm autosave khi có concurrency test.
+- [ ] **3.2 — QA + bổ sung:** Test đổi/hủy lịch, job cũ, bài live sửa nháp, timezone và biên thời gian; UI hiện nhập UTC, phải hướng dẫn rõ hoặc chốt chuyển đổi.
+- [ ] **3.3 — Triển khai + test:** Kiểm chứng provider-response validation, orphan reconciliation; destroy/retry và race publish-delete/upload-quota bằng nhiều connection. Có Action delete không đồng nghĩa đã có destroy job hoàn chỉnh.
+- [ ] **3.4 — Triển khai:** Upload PLATFORM cho admin, quyền/allowlist/quota và picker; hiện PLATFORM media chỉ đọc/chọn asset có sẵn. Rà lại media references page/design/settings/avatar nếu được dùng.
+- [ ] **3.5 — Hoàn thiện + QA:** Kiểm kê SEO/OG/canonical/robots/sitemap theo đặc tả; taxonomy search và protected preview đã có, không làm lại. Đạt khi URL public/preview và metadata có test tương ứng.
 
-- [x] Landing/catalog/blog/post/page, pagination cơ bản.
-- [ ] Search/filter topic/template, thumbnails, public settings projection.
-- [ ] Settings singleton form/schema/fingerprint/cache invalidation.
-- [ ] Report create/review/moderation, tenant target checks/rate limit/audit.
-- [ ] Custom notification channel đúng recipient_user_id, UUID/read/unread/email queue.
-- [ ] Audit UI append-only và security events cho identity/access.
-- [ ] DNS verification/domain resolver contract + fake tests; giữ feature flag tắt đến nghiệm thu.
+## 4. Template/design
 
-### 6. Release và nghiệm thu
+- [x] Platform gallery dữ liệu thật, lọc/tìm/phân trang, tạo/sửa/lưu nháp/publish/hide, chủ đề, preview và thumbnail PLATFORM.
+- [x] GrapesJS constrained sections/traits/device switch, native project + projection; registry kiểm tra frames/components và chặn script.
+- [x] Owner draft design/menu, trusted source rules, fingerprint, snapshot nguồn độc lập; public renderer dùng published_data/sections/theme/menu, không tự cập nhật theo mẫu.
+- [ ] **4.1 — QA:** Browser thêm/sắp xếp/sửa section, save/reload, chuyển mẫu, preview/live, cảnh báo rời trang; output sau reload khớp JSON đã lưu.
+- [ ] **4.2 — Hoàn thiện + test:** Rà coverage schema registry/frames/styles, binding/media/menu/route, đúng một homepage; server từ chối input giả mạo. Không coi allowlist hiện có là coverage mọi tổ hợp.
+- [ ] **4.3 — Triển khai:** Bổ sung control font/spacing/logo còn thiếu theo đặc tả; kiểm tra responsive. Không mở HTML/JS tùy ý.
+- [ ] **4.4 — Chốt phạm vi:** Nâng cấp template tương thích nếu cần cho release; luôn giữ blog live độc lập. Không tạo hệ thống lịch sử phiên bản.
 
-- [x] Docker app/worker/scheduler, Nginx, MySQL/Redis; local DB ports chỉ localhost.
-- [x] Production không publish DB/Redis, Nginx localhost; ép debug false/production/secure session.
-- [x] Security headers, audit canonical columns, scheduled audit actor.
-- [x] CI build assets trước feature tests; lint/format/build/dependency audit.
-- [ ] Failed jobs persistence: config trỏ failed_jobs nhưng thiếu migration hạ tầng.
-- [ ] Nginx assets cùng immutable release: hiện bind source host còn PHP chạy image.
-- [ ] Scheduler heartbeat, readiness DB/Redis, queue alerts/log rotation, backup restore drill.
-- [ ] MySQL least-privilege user, production secrets, HTTPS/trusted proxy/HSTS tại TLS edge.
-- [ ] CSP còn unsafe-inline/unsafe-eval; siết theo từng surface sau browser compatibility tests.
-- [ ] PHPStan/Larastan; MySQL race tests; E2E 2 account toàn luồng mục 20 prompt.
-- [ ] Cloudinary/SMTP/DNS/VPS live và production image smoke sau lần sửa này.
+## 5. Website và vận hành nghiệp vụ
 
-## Lỗi sửa trong lượt review
+- [x] Gallery/preview/auth, discovery tìm/lọc chủ đề, hướng dẫn, thumbnail thực; public settings projection allowlist.
+- [x] Settings theo nhóm JSON có validation/quyền/transaction, bảo toàn nhóm khác; topic và moderation/audit/notifications có nền query/UI.
+- [ ] **5.1 — QA:** Hai UI và Studio ở 360/768/1024/1440px, keyboard/focus/contrast, menu active/hover, empty/loading/error. Test hồi quy theme đã có; chưa thay thế visual QA.
+- [ ] **5.2 — Hoàn thiện:** Settings stale-write/fingerprint và chiến lược cache nếu dùng cache; hai phiên sửa cùng trường không âm thầm ghi đè.
+- [ ] **5.3 — P1:** Report create/review/detail, tenant target/rate limit/reason/audit và filters; moderation Action có sẵn, cần hoàn chỉnh workflow.
+- [ ] **5.4 — P1:** Notifications đúng recipient/UUID, read/unread/detail/email queue; audit detail/filter/append-only và coverage identity security events. Projection/list hiện tại chưa đủ nghiệm thu workflow.
 
-1. Signed email verification luôn đổi status ACTIVE: nay chỉ chuyển PENDING_VERIFICATION bằng conditional update, không mở khóa SUSPENDED.
-2. Action create/upload/publish bỏ qua locked_until: dùng canAccessApplication; chặn upload/publish blog suspended/deleted.
-3. Publish array content_json gây lỗi Query Builder: encode trước update, validate media trên snapshot merged để không bỏ qua media có sẵn.
-4. Scheduler có thể đăng soft-deleted content/blog/owner, owner chưa verify/đang khóa: lọc candidate và kiểm tra lại trong transaction.
-5. Renderer đọc READY media đã soft-delete: lọc deleted_at.
-6. Slug từ tên rỗng/trùng gây SQL error: validation trước insert; concurrent unique race còn cần handling riêng.
-7. Quota create thiếu điểm khóa ổn định: khóa owner row trước count; race test chưa chạy.
-8. Worker timeout 90s bằng retry_after 90s: nâng Redis retry_after mặc định 120s, dispatch after commit.
-9. GrapesJS debounce chạy sau unmount: clear timeout trước destroy.
-10. CI feature tests trước Vite build trên checkout sạch: build trước test.
+## 6. Release và nghiệm thu
 
-## Bằng chứng kiểm chứng
+- [x] Docker app/web/worker/scheduler, DB/Redis localhost ở local và đóng cổng production; production guard/security headers.
+- [x] PHP/Nginx dùng public assets cùng release, image chạy filament:assets; đã rebuild và smoke HTTP local.
+- [x] CI build assets trước test; có lint/format/build/audit và hướng dẫn local/test/VPS.
+- [ ] **6.1 — Triển khai + test:** Failed-job persistence (config dùng failed_jobs, chưa có migration hạ tầng tương ứng); thử một job lỗi và xác minh retry/failed record.
+- [ ] **6.2 — Vận hành:** Scheduler heartbeat, readiness DB/Redis, queue alerts/log rotation, backup/restore drill có bằng chứng; không chỉ viết runbook.
+- [ ] **6.3 — Cấu hình production:** MySQL least privilege, production secrets/HTTPS/trusted proxy/HSTS; giữ APP_KEY ổn định. Không deploy nếu chưa được phép.
+- [ ] **6.4 — Kiểm tra bảo mật:** Siết CSP theo surface sau kiểm tra browser (hiện còn unsafe-inline/unsafe-eval); static analysis và concurrency tests theo rủi ro.
+- [ ] **6.5 — Nghiệm thu release:** Checkout sạch/cài mới theo README, E2E hai account tạo–viết–xuất bản–đọc, responsive/accessibility và editor lifecycle; chạy lại full suite tại revision bàn giao.
+- [ ] **6.6 — Provider/hạ tầng:** Cloudinary/SMTP thật và production image smoke trên môi trường được cấp quyền. Thiếu credentials chỉ chặn kiểm chứng live, không chặn unit/integration fake.
 
-- Regression MySQL: 16 tests/33 assertions passed, có verification không mở khóa, JSON draft publish và scheduler skip lock/deletion.
-- Dependency audit không có advisory; phạm vi này không bao gồm Docker OS vulnerability scan.
-- Không migrate:fresh DB ứng dụng, không deploy VPS. Runtime Docker chưa tự nhận mã PHP mới nếu chưa rebuild image.
-- Các checkbox trống cần code/test thật; không tính scaffold hoặc chỉ có bảng DB là hoàn thành.
+## Ngoài phạm vi hiện tại
 
-Ưu tiên tiếp theo: identity/session/2FA → Filament tenant/content/media → template/design renderer → settings/moderation/notifications/domain → browser/race/release.
+Không đưa vào phân công mặc định: Comment, Invitation/Member/Follow/Moderator, daily post stats, social login, custom domain/DNS automation, billing, lịch sử phiên bản, phân mảnh bảng content/media. Một blog một Owner. Các mục domain có trong baseline cũ được loại khỏi backlog hiện hành theo đặc tả mới, không phải đánh dấu đã hoàn thành.
+
+## Bằng chứng và giới hạn
+
+- Lần kiểm tra UI trước: full suite **29 tests / 97 assertions**; format/lint/build và Composer/npm audit đạt. Xem bàn giao UI để biết phạm vi.
+- Lần sửa theme tiếp theo: **PanelThemeTest 1 test / 2 assertions**, Pint/Prettier đạt; Docker rebuild và HTTP login xác nhận light mode. Chưa chạy lại full suite gộp sau khi thêm test theme, không cộng thành kết quả full-suite mới.
+- Browser của phiên trước không khả dụng; responsive/keyboard/contrast, drag/drop và browser 2FA chưa nghiệm thu. HTTP 200 không chứng minh tương tác browser đúng.
+- Số bảng/FK là bằng chứng lần kiểm tra schema trước, không phải migration mới trong lần cập nhật tài liệu.
+- Lần cập nhật checklist này chỉ rà source/tài liệu, không chạy lại test/build, không migration/seed/deploy. Không biến ô đã có code thành cam kết production.
+- Các lỗi đã sửa và kết quả từng lượt lưu tại implementation-history.md; checklist này quản lý công việc hiện tại, không thay thế lịch sử.
+
+## Đợt công việc đề xuất tiếp theo
+
+1. QA P0: 1.1, 2.1, 2.3, 3.1–3.2, 4.1, 5.1; ghi issue tái hiện cụ thể, ưu tiên lỗi mất dữ liệu/tenant/auth.
+2. Triển khai song song: 2.2, 3.3–3.4, 4.2–4.3; 1.2 và 3.5 theo mức ưu tiên đã chốt.
+3. P1: 5.2–5.4 sau khi luồng tạo–viết–xuất bản–đọc ổn định.
+4. Release gate: 6.1–6.6; chốt phạm vi 1.3/4.4 trước khi ước lượng, không tự thêm tính năng ngoài yêu cầu.
