@@ -4,7 +4,7 @@ Ngày cập nhật: 2026-10-11.
 
 ## Rà soát hoàn thành dự án
 
-Xem [checklist nghiệm thu chi tiết](project-completion-checklist.md). Dự án hiện là MVP, chưa hoàn thành toàn bộ tiêu chí trong prompt. Kết quả kiểm tra mới nhất: 16 test / 33 assertion đạt; Composer audit, npm audit, ESLint và Vite build đạt. Các kết quả Docker bên dưới thuộc lần kiểm tra trước; chưa rebuild/deploy các bản sửa trong lần rà soát này.
+Xem [checklist nghiệm thu chi tiết](project-completion-checklist.md) và [bàn giao hai UI](ui-implementation-handoff.md). Đã triển khai gallery/auth/chọn mẫu và Platform Admin quản lý mẫu, nối nền Blog Admin/renderer. Dự án chưa hoàn thành toàn bộ sáu lát cắt/P1 hoặc nghiệm thu production. Kiểm tra mới nhất: 29 test / 97 assertion đạt; Composer/npm audit không có advisory; format/lint đạt. Docker local đã rebuild, sáu route public/auth/admin login và chín tài nguyên Filament trả HTTP 200. Chưa có browser để nghiệm thu trực quan/responsive. Bằng chứng schema/production bên dưới thuộc các lần kiểm tra trước, không phải migration/deploy mới.
 
 Đã hoàn thành nền tảng chạy được gồm schema chuẩn 29 bảng/59 khóa ngoại, platform seed, demo seed tùy chọn, bootstrap admin, xác thực session + email verification/status gate, luồng blog theo chủ sở hữu, truy vấn public blog/bài viết/trang, publish action có transaction/audit/fingerprint, bộ kiểm tra component an toàn, module Tiptap/GrapesJS, giao diện tiếng Việt responsive và Docker topology đầy đủ.
 

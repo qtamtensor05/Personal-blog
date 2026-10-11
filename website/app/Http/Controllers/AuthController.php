@@ -34,6 +34,9 @@ final class AuthController extends Controller
                 ->onlyInput('email');
         }
         $request->session()->regenerate();
+        if ($request->user()->status === 'PENDING_VERIFICATION' && ! $request->user()->hasVerifiedEmail()) {
+            return redirect('/email/verify');
+        }
         if (! $request->user()->canAccessApplication()) {
             Auth::logout();
             $request->session()->invalidate();
@@ -48,6 +51,8 @@ final class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        $settings = json_decode(\DB::table('platform_settings')->where('id', 1)->value('config_json') ?? '{}', true);
+        abort_unless(data_get($settings, 'features.registrationEnabled', true), 403, 'Đăng ký tạm thời đóng.');
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'email' => ['required', 'email', 'max:254', 'unique:users,email'],
@@ -56,6 +61,7 @@ final class AuthController extends Controller
         $user = User::create([...$data, 'status' => 'PENDING_VERIFICATION']);
         event(new Registered($user));
         Auth::login($user);
+        $request->session()->regenerate();
 
         return redirect('/email/verify');
     }

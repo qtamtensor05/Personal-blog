@@ -12,12 +12,12 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class BlogPanelProvider extends PanelProvider
@@ -27,8 +27,10 @@ class BlogPanelProvider extends PanelProvider
         return $panel
             ->id('blog')
             ->path('blog-admin')
+            ->brandName('Bút Mây · Blog Admin')
+            ->renderHook('panels::head.end', fn () => Blade::render("@vite(['resources/css/app.css', 'resources/js/app.js'])"))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Teal,
             ])
             ->discoverResources(
                 in: app_path('Filament/Blog/Resources'),
@@ -40,7 +42,7 @@ class BlogPanelProvider extends PanelProvider
                 in: app_path('Filament/Blog/Widgets'),
                 for: 'App\Filament\Blog\Widgets',
             )
-            ->widgets([AccountWidget::class, FilamentInfoWidget::class])
+            ->widgets([AccountWidget::class])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

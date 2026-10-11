@@ -16,7 +16,7 @@ final class PublishScheduledContentAction
             $ids = DB::table("{$table} as content")
                 ->join('blogs as blog', 'blog.id', '=', 'content.blog_id')
                 ->join('users as owner', 'owner.id', '=', 'blog.owner_user_id')
-                ->where('content.status', 'SCHEDULED')
+                ->whereIn('content.status', ['SCHEDULED', 'PUBLISHED'])
                 ->where('content.scheduled_at', '<=', now())
                 ->where('blog.status', 'PUBLISHED')
                 ->where('owner.status', 'ACTIVE')
@@ -33,7 +33,7 @@ final class PublishScheduledContentAction
                     $row = DB::table($table)->where('id', $id)->whereNull('deleted_at')->lockForUpdate()->first();
                     if (
                         ! $row ||
-                        $row->status !== 'SCHEDULED' ||
+                        ! in_array($row->status, ['SCHEDULED', 'PUBLISHED']) ||
                         ! $row->scheduled_at ||
                         now()->isBefore($row->scheduled_at)
                     ) {
@@ -52,11 +52,38 @@ final class PublishScheduledContentAction
                     if (! $ownerId) {
                         return false;
                     }
+                    $draft = json_decode($row->draft_data ?? '{}', true);
+                    $changes = array_intersect_key($draft, array_flip(['title', 'excerpt', 'content_json', 'seo_title', 'seo_description', 'cover_media_id', 'og_media_id', 'canonical_url', 'robots']));
+                    if ($table === 'pages') {
+                        unset($changes['excerpt'],$changes['cover_media_id']);
+                    }
+                    if (isset($changes['content_json']) && is_array($changes['content_json'])) {
+                        $changes['content_json'] = json_encode($changes['content_json'], JSON_THROW_ON_ERROR);
+                    }
+                    if ($table === 'posts') {
+                        foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $terms => $key) {
+                            if (isset($draft[$key]) && DB::table($terms)->where('blog_id', $row->blog_id)->whereIn('id', $draft[$key])->count() !== count(array_unique($draft[$key]))) {
+                                return false;
+                            }
+                        }
+                        foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $terms => $key) {
+                            if (! isset($draft[$key])) {
+                                continue;
+                            }
+                            $join = $terms === 'categories' ? 'post_categories' : 'post_tags';
+                            $column = $terms === 'categories' ? 'category_id' : 'tag_id';
+                            DB::table($join)->where(['blog_id' => $row->blog_id, 'post_id' => $id])->delete();
+                            foreach (array_unique($draft[$key]) as $term) {
+                                DB::table($join)->insert(['blog_id' => $row->blog_id, 'post_id' => $id, $column => $term, 'created_at' => now(), 'updated_at' => now()]);
+                            }
+                        }
+                    }
                     DB::table($table)
                         ->where('id', $id)
-                        ->update([
+                        ->update($changes + [
                             'status' => 'PUBLISHED',
                             'scheduled_at' => null,
+                            'draft_data' => null,
                             'published_at' => $row->published_at ?: now(),
                             'updated_at' => now(),
                         ]);

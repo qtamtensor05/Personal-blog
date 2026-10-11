@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Modules\Blogs\Actions\CreateBlogAction;
+use App\Modules\Templates\Queries\TemplateLibrary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,9 @@ final class BlogAdminController extends Controller
             ->orderByDesc('created_at')
             ->paginate(12);
 
-        return view('blog.dashboard', compact('blogs'));
+        $templates = app(TemplateLibrary::class)->query()->orderBy('name')->get();
+
+        return view('blog.dashboard', compact('blogs', 'templates'));
     }
 
     public function store(Request $request, CreateBlogAction $action): RedirectResponse
@@ -27,10 +30,13 @@ final class BlogAdminController extends Controller
             'name' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'alpha_dash', 'max:160', 'unique:blogs,slug'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'template_id' => ['required', 'integer'],
         ]);
         $id = $action->execute($request->user(), $data);
 
-        return redirect("/workspace/blogs/{$id}")->with('status', 'Đã tạo blog.');
+        $request->session()->forget('selected_template');
+
+        return redirect("/blog-admin/studio?blog={$id}")->with('status', 'Đã tạo blog. Giao diện đang là bản nháp.');
     }
 
     public function show(Request $request, int $blog): View

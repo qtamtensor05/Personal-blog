@@ -1,0 +1,1 @@
+<x-layouts.app :title="'Xem trước · '.$blog->name"><p class="notice">Giao diện nháp · chưa thay đổi blog live.</p><x-design-preview :design="$design" :name="$blog->name" :posts="$posts" :base="'/b/'.$blog->slug" /></x-layouts.app>

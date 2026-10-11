@@ -2,6 +2,9 @@
 
 ## 2026-10-11
 
+- Tiếp tục hai UI tham chiếu: gallery/auth/chọn mẫu và Platform Admin quản lý mẫu; nối snapshot draft/live, Blog Studio và renderer, phân quyền/tenant isolation; xem `ui-implementation-handoff.md`.
+- Regression hiện tại đạt 29 test / 97 assertion; Docker local rebuild đồng bộ PHP/Nginx và publish Filament assets, kiểm tra HTTP route/assets đạt. Không chạy migration/seed trên DB ứng dụng hoặc deploy production; browser không khả dụng nên visual QA còn mở.
+
 - Rà soát nghiệm thu: thêm `project-completion-checklist.md`, phân biệt MVP và yêu cầu chưa hoàn thành.
 - Sửa email verification không được kích hoạt lại tài khoản suspended; bổ sung kiểm tra locked/deleted/suspended trong publish, upload và scheduler.
 - Sửa lưu JSON draft khi publish, kiểm tra media trên snapshot hợp nhất, khóa owner khi kiểm tra quota tạo blog, cấu hình Redis queue và cleanup editor.

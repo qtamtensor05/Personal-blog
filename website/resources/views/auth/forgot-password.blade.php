@@ -1,0 +1,1 @@
+<x-layouts.app title="Quên mật khẩu"><div class="auth-wrap"><form class="auth-card" method="post" action="/forgot-password">@csrf<h1>Đặt lại mật khẩu</h1><label>Email<input type="email" name="email" value="{{ old('email') }}" required autocomplete="email" /></label><button class="button">Gửi liên kết</button><a href="/login">Quay lại đăng nhập</a></form></div></x-layouts.app>

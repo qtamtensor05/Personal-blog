@@ -54,7 +54,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessApplication(): bool
     {
-        return $this->status === 'ACTIVE'
+        return $this->deleted_at === null && $this->status === 'ACTIVE'
             && $this->hasVerifiedEmail()
             && ($this->locked_until === null || $this->locked_until->isPast());
     }

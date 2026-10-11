@@ -1,0 +1,1 @@
+<x-layouts.app :title="'Xem trước · '.$record->title"><p class="notice">Xem trước nháp đã lưu · chỉ chủ blog truy cập được.</p><article class="prose"><h1>{{ $record->title }}</h1>{!! $content !!}</article></x-layouts.app>

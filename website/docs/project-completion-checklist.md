@@ -4,7 +4,7 @@ Ngày: 2026-10-11. Đối chiếu `website/codex_blog_platform/PROMPT_CODEX_BLOG
 
 ## Tình trạng
 
-Nền tảng/MVP chạy được; chưa đủ nghiệm thu production. Panel load được không chứng minh CRUD hoàn chỉnh. Các module JavaScript editor chưa được mount thành luồng giao diện end-to-end. Thiếu credentials chỉ chặn kiểm chứng provider thật, không giải thích các module nội bộ còn thiếu.
+Nền tảng/MVP chạy được; chưa đủ nghiệm thu production. Cập nhật triển khai hai UI xem [bàn giao UI](ui-implementation-handoff.md): gallery/auth/chọn mẫu, quản lý mẫu và editor đã nối Action/Query, có regression test; editor đã mount lazy. Chưa nghiệm thu tương tác browser, toàn bộ P1 hoặc provider thật. Các mục bên dưới là baseline rà soát trước đợt triển khai UI; dùng bàn giao để phân biệt phần đã thay đổi, không suy ra toàn bộ checklist đã hoàn thành.
 
 ## Checklist theo giai đoạn
 

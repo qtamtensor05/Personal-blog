@@ -2,51 +2,28 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogAdminController;
+use App\Http\Controllers\DiscoveryController;
+use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\PublicBlogController;
+use App\Http\Controllers\TemplateController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get(
-    '/',
-    fn () => view('public.home', [
-        'blogs' => DB::table('blogs')
-            ->where(['status' => 'PUBLISHED', 'visibility' => 'PUBLIC', 'discoverable' => true])
-            ->whereNull('deleted_at')
-            ->latest('published_at')
-            ->limit(9)
-            ->get(),
-        'templates' => DB::table('templates')
-            ->where('status', 'PUBLISHED')
-            ->whereNull('deleted_at')
-            ->latest('published_at')
-            ->limit(6)
-            ->get(),
-    ]),
-);
-Route::get(
-    '/blogs',
-    fn () => view('public.catalog', [
-        'title' => 'Khám phá blog',
-        'items' => DB::table('blogs')
-            ->where(['status' => 'PUBLISHED', 'visibility' => 'PUBLIC', 'discoverable' => true])
-            ->whereNull('deleted_at')
-            ->paginate(18),
-    ]),
-);
-Route::get(
-    '/templates',
-    fn () => view('public.catalog', [
-        'title' => 'Thư viện giao diện',
-        'items' => DB::table('templates')
-            ->where('status', 'PUBLISHED')
-            ->whereNull('deleted_at')
-            ->paginate(18),
-    ]),
-);
+Route::get('/', [TemplateController::class, 'index']);
+Route::get('/blogs', [DiscoveryController::class, 'index']);
+Route::get('/templates', [TemplateController::class, 'index']);
+Route::get('/templates/{template}', [TemplateController::class, 'show'])->whereNumber('template');
+Route::post('/templates/{template}/choose', [TemplateController::class, 'choose'])->whereNumber('template')->middleware('throttle:30,1');
+Route::view('/guide', 'public.guide');
 
 Route::middleware('guest')->group(function (): void {
+    Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
+    Route::post('/forgot-password', [PasswordController::class, 'send'])->middleware('throttle:3,1')->name('password.email');
+    Route::get('/reset-password/{token}', fn () => view('auth.reset-password'))->name('password.reset');
+    Route::post('/reset-password', [PasswordController::class, 'reset'])->middleware('throttle:6,1')->name('password.update');
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
     Route::get('/register', [AuthController::class, 'registerForm']);
@@ -63,7 +40,7 @@ Route::middleware('auth')->group(function (): void {
             ->where('status', 'PENDING_VERIFICATION')
             ->update(['status' => 'ACTIVE', 'updated_at' => now()]);
 
-        return redirect('/blog-admin');
+        return redirect('/workspace');
     })
         ->middleware('signed')
         ->name('verification.verify');
@@ -82,6 +59,8 @@ Route::prefix('workspace')
         Route::get('/', [BlogAdminController::class, 'index']);
         Route::post('/blogs', [BlogAdminController::class, 'store']);
         Route::get('/blogs/{blog}', [BlogAdminController::class, 'show'])->whereNumber('blog');
+        Route::get('/blogs/{blog}/preview/{kind}/{id}', [PreviewController::class, 'content'])->whereNumber(['blog', 'id']);
+        Route::get('/blogs/{blog}/preview-design', [PreviewController::class, 'design'])->whereNumber('blog');
     });
 
 Route::get('/b/{blogSlug}', [PublicBlogController::class, 'home']);

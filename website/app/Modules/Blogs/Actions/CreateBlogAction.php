@@ -3,6 +3,7 @@
 namespace App\Modules\Blogs\Actions;
 
 use App\Models\User;
+use App\Modules\Design\DesignDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +20,12 @@ final class CreateBlogAction
 
         return DB::transaction(function () use ($actor, $input): int {
             DB::table('users')->where('id', $actor->id)->lockForUpdate()->first();
+            $template = isset($input['template_id'])
+                ? DB::table('templates')->where('id', $input['template_id'])->where('status', 'PUBLISHED')->whereNull('deleted_at')->sharedLock()->first()
+                : null;
+            if (isset($input['template_id']) && ! $template) {
+                throw ValidationException::withMessages(['template_id' => 'Mẫu không còn cho phép chọn. Hãy chọn lại.']);
+            }
             $defaults = DB::table('platform_settings')->where('id', 1)->value('config_json');
             $config = is_string($defaults)
                 ? json_decode($defaults, true, 512, JSON_THROW_ON_ERROR)
@@ -64,6 +71,14 @@ final class CreateBlogAction
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            if ($template) {
+                DB::table('blog_designs')->insert([
+                    'blog_id' => $blogId, 'draft_template_id' => $template->id,
+                    'draft_data' => json_encode(DesignDocument::snapshot($template), JSON_THROW_ON_ERROR),
+                    'updated_by' => $actor->id, 'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
 
             return $blogId;
         });

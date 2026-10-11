@@ -9,29 +9,32 @@
     @vite (['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
     <header class="site-header">
-        <a class="brand" href="/">Bút Mây</a>
-        <nav>
-            <a href="/blogs">Khám phá</a><a href="/templates">Giao diện</a>
+        <a class="brand" href="/">{{ $publicSettings['name'] }}</a>
+        <nav aria-label="Điều hướng chính">
+            <a class="site-nav-link" href="/blogs" @if(request()->is('blogs', 'blogs/*')) aria-current="page" @endif>Khám phá</a>
+            <a class="site-nav-link" href="/templates" @if(request()->is('/', 'templates', 'templates/*')) aria-current="page" @endif>Mẫu blog</a>
+            <a class="site-nav-link" href="/guide" @if(request()->is('guide')) aria-current="page" @endif>Hướng dẫn</a>
             @auth
-                <a href="/workspace">Blog của tôi</a
-                ><a href="/blog-admin">Bảng điều khiển</a>
+                <a class="site-nav-link" href="/workspace" @if(request()->is('workspace')) aria-current="page" @endif>Blog của tôi</a>
+                <a class="site-nav-link" href="/blog-admin">Bảng điều khiển</a>
                 <form method="post" action="/logout">
                     @csrf
-                    <button>Đăng xuất</button>
+                    <button class="site-nav-link">Đăng xuất</button>
                 </form>
             @else
-                <a href="/login">Đăng nhập</a
+                <a class="site-nav-link site-nav-auth" href="/login" @if(request()->is('login')) aria-current="page" @endif>Đăng nhập</a
                 ><a class="button" href="/register">Tạo blog</a>
             @endauth
         </nav>
     </header>
-    <main>
+    <main id="main-content">
         @if (session('status'))
             <p class="notice">{{ session('status') }}</p>
         @endif
         @if($errors->any())
-        <div class="error">{{ $errors->first() }}</div>
+        <div class="error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
         @endif
         {{ $slot }}
     </main>

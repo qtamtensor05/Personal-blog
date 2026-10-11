@@ -16,10 +16,18 @@ final class PublicBlogController extends Controller
         $posts = DB::table('posts')
             ->where(['blog_id' => $blog->id, 'status' => 'PUBLISHED'])
             ->whereNull('deleted_at')
+            ->when(request('q'), fn ($q) => $q->where('title', 'like', '%'.mb_substr((string) request('q'), 0, 160).'%'))
+            ->when(request('category'), fn ($q) => $q->whereIn('id', DB::table('post_categories')->select('post_id')->where('blog_id', $blog->id)->where('category_id', request('category'))))
+            ->when(request('tag'), fn ($q) => $q->whereIn('id', DB::table('post_tags')->select('post_id')->where('blog_id', $blog->id)->where('tag_id', request('tag'))))
             ->orderByDesc('published_at')
-            ->paginate(10);
+            ->paginate((int) (DB::table('blog_settings')->where('blog_id', $blog->id)->value('posts_per_page') ?: 10))->withQueryString();
 
-        return view('public.blog', compact('blog', 'posts'));
+        $design = json_decode(DB::table('blog_designs')->where('blog_id', $blog->id)->value('published_data') ?? '{}', true);
+        $pages = DB::table('pages')->where(['blog_id' => $blog->id, 'status' => 'PUBLISHED'])->whereNull('deleted_at')->get(['title', 'slug']);
+        $categories = DB::table('categories')->where('blog_id', $blog->id)->where('is_active', true)->get();
+        $tags = DB::table('tags')->where('blog_id', $blog->id)->get();
+
+        return view('public.blog', compact('blog', 'posts', 'categories', 'tags') + $this->shell($blog));
     }
 
     public function post(string $blogSlug, string $postSlug): View
@@ -36,7 +44,7 @@ final class PublicBlogController extends Controller
             (int) $blog->id,
         );
 
-        return view('public.post', compact('blog', 'post', 'content'));
+        return view('public.post', compact('blog', 'post', 'content') + $this->shell($blog));
     }
 
     public function page(string $blogSlug, string $pageSlug): View
@@ -53,18 +61,29 @@ final class PublicBlogController extends Controller
             (int) $blog->id,
         );
 
-        return view('public.page', compact('blog', 'page', 'content'));
+        return view('public.page', compact('blog', 'page', 'content') + $this->shell($blog));
     }
 
     private function blog(string $slug): object
     {
         $blog = DB::table('blogs')
             ->where(['slug' => $slug, 'status' => 'PUBLISHED'])
-            ->whereIn('visibility', ['PUBLIC', 'UNLISTED'])
             ->whereNull('deleted_at')
             ->first();
         abort_unless($blog, 404);
+        abort_if($blog->visibility === 'PRIVATE' && (! auth()->check() || (int) auth()->id() !== (int) $blog->owner_user_id || ! auth()->user()->canAccessApplication()), 404);
 
         return $blog;
+    }
+
+    private function shell(object $blog): array
+    {
+        $design = json_decode(DB::table('blog_designs')->where('blog_id', $blog->id)->value('published_data') ?? '{}', true);
+        $keys = data_get($design, 'navigation.pageKeys');
+        $pages = DB::table('pages')->where(['blog_id' => $blog->id, 'status' => 'PUBLISHED'])->whereNull('deleted_at')->when(is_array($keys), fn ($q) => $q->whereIn('page_key', $keys))->get(['title', 'slug']);
+        $logoId = DB::table('blog_settings')->where('blog_id', $blog->id)->value('logo_media_id');
+        $logo = DB::table('media_assets')->where(['id' => $logoId, 'blog_id' => $blog->id, 'status' => 'READY'])->whereNull('deleted_at')->value('secure_url');
+
+        return compact('design', 'pages', 'logo');
     }
 }

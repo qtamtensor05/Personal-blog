@@ -21,12 +21,16 @@ COPY routes ./routes
 COPY artisan ./
 RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --optimize-autoloader
 
-FROM php:8.4-fpm-alpine
+FROM php:8.4-fpm-alpine AS application
 RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev $PHPIZE_DEPS && docker-php-ext-install intl mbstring pdo_mysql zip && pecl install redis && docker-php-ext-enable redis && apk del $PHPIZE_DEPS
 WORKDIR /var/www/html
 COPY --from=vendor /src/vendor ./vendor
 COPY . .
 COPY --from=assets /src/public/build ./public/build
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN php artisan filament:assets && chown -R www-data:www-data storage bootstrap/cache
 USER www-data
 CMD ["php-fpm", "-F"]
+
+FROM nginx:1.29-alpine AS web
+COPY --from=application /var/www/html/public /var/www/html/public
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf

@@ -3,6 +3,7 @@
 namespace App\Modules\Media\Actions;
 
 use App\Models\User;
+use App\Modules\Blogs\OwnerContext;
 use App\Shared\Contracts\CloudinaryGateway;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
@@ -27,27 +28,32 @@ final class UploadBlogImageAction
         if (! $blog || ! $actor->canAccessApplication()) {
             throw new AuthorizationException;
         }
-        $used = (int) DB::table('media_assets')
-            ->where(['blog_id' => $blogId, 'status' => 'READY'])
-            ->sum('bytes');
-        abort_if(
-            $used + $file->getSize() > (int) $blog->storage_quota_bytes,
-            422,
-            'Đã vượt quota lưu trữ của blog.',
-        );
-        $id = DB::table('media_assets')->insertGetId([
-            'scope' => 'BLOG',
-            'blog_id' => $blogId,
-            'uploaded_by' => $actor->id,
-            'cloud_name' => (string) config('services.cloudinary.cloud_name', 'pending'),
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'bytes' => $file->getSize(),
-            'alt_text' => $alt,
-            'status' => 'UPLOADING',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $id = DB::transaction(function () use ($actor, $blogId, $blog, $file, $alt): int {
+            DB::table('blogs')->where('id', $blogId)->lockForUpdate()->first();
+            app(OwnerContext::class)->resolve($actor, $blogId, true);
+            $used = (int) DB::table('media_assets')
+                ->where('blog_id', $blogId)->whereIn('status', ['READY', 'UPLOADING', 'DELETING'])
+                ->sum('bytes');
+            abort_if(
+                $used + $file->getSize() > (int) $blog->storage_quota_bytes,
+                422,
+                'Đã vượt quota lưu trữ của blog.',
+            );
+
+            return DB::table('media_assets')->insertGetId([
+                'scope' => 'BLOG',
+                'blog_id' => $blogId,
+                'uploaded_by' => $actor->id,
+                'cloud_name' => (string) config('services.cloudinary.cloud_name', 'pending'),
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'bytes' => $file->getSize(),
+                'alt_text' => $alt,
+                'status' => 'UPLOADING',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
         try {
             $result = $this->cloudinary->upload($file->getRealPath(), [
                 'folder' => "blogs/{$blogId}",
@@ -56,7 +62,7 @@ final class UploadBlogImageAction
             DB::table('media_assets')
                 ->where(['id' => $id, 'blog_id' => $blogId, 'status' => 'UPLOADING'])
                 ->update([
-                    'cloud_name' => $result['cloud_name'],
+                    'cloud_name' => $result['cloud_name'] ?? (string) config('services.cloudinary.cloud_name', 'pending'),
                     'cloudinary_asset_id' => $result['asset_id'],
                     'cloudinary_public_id' => $result['public_id'],
                     'cloudinary_version' => $result['version'] ?? null,
@@ -83,12 +89,14 @@ final class UploadBlogImageAction
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         $size = $file->getSize();
         $dimensions = @getimagesize($file->getRealPath());
+        $config = json_decode(DB::table('platform_settings')->where('id', 1)->value('config_json') ?? '{}', true);
+        $limit = min(10 * 1024 * 1024, max(1024, (int) data_get($config, 'limits.maxImageUploadBytes', 10 * 1024 * 1024)));
         if (
             ! $file->isValid() ||
             ! in_array($file->getMimeType(), $allowedMimeTypes, true) ||
             ! is_int($size) ||
             $size < 1 ||
-            $size > 10 * 1024 * 1024 ||
+            $size > $limit ||
             $dimensions === false ||
             $dimensions[0] > 12000 ||
             $dimensions[1] > 12000
