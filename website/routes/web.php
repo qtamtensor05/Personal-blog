@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogAdminController;
 use App\Http\Controllers\DiscoveryController;
@@ -30,6 +31,11 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
+
+Route::middleware(['auth', 'verified', 'account.active'])->group(function (): void {
+    Route::get('/account', [AccountController::class, 'show']);
+    Route::post('/account/{section}', [AccountController::class, 'update'])->whereIn('section', ['profile', 'email', 'password'])->middleware('throttle:6,1');
+});
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/email/verify', fn () => view('auth.verify-email'))->name('verification.notice');

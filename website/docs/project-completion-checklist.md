@@ -28,9 +28,12 @@ Trước khi làm song song, thống nhất OwnerContext/blog_id, JSON draft/liv
 - [x] Stack/lockfiles, migration/seed, session login/logout/register, email verification, CSRF/throttle cơ bản; schema đối chiếu trước đây là 29 bảng/59 FK.
 - [x] Password reset qua broker, đổi remember_token và thu hồi sessions; bootstrap admin, required 2FA và chặn portal session bỏ qua platform login.
 - [x] Guard ACTIVE/verified/locked_until/deleted_at tại canAccessApplication; moderation tài khoản thường có restriction lifecycle, session revoke và audit.
-- [ ] **1.1 — QA:** Test reset token sai/hết hạn/đã dùng, session cũ bị thu hồi; browser enroll/challenge/recovery 2FA và portal→platform không bypass. Đạt khi có test/báo cáo cho từng nhánh.
-- [ ] **1.2 — Triển khai:** Profile người dùng, đổi mật khẩu khi đã đăng nhập, đổi email và xác minh lại; test quyền, validation, session lifecycle. Không gộp với password reset đã có.
-- [ ] **1.3 — Xác nhận phạm vi:** CRUD role/admin và bảo vệ Super Admin cuối cùng nếu đưa vào phạm vi release. Chưa có workflow đầy đủ; cần chốt với đặc tả, không suy từ bảng DB rằng phải dựng thêm màn hình.
+- [x] **1.1a — Test server:** Reset token sai/hết hạn/đã dùng, thu hồi session; provider loại deleted user ở credential/session/remember/reset lookup; TOTP và recovery one-use; Livewire login yêu cầu challenge trước khi ghi platform session. Xem IdentityAccessTest và InterfaceFlowsTest.
+- [ ] **1.1b — QA browser:** Enroll/challenge/recovery 2FA và portal→platform; kiểm tra form account, lỗi validation và đăng xuất trên hai browser. Phiên hiện tại có browsers=[] nên chưa nghiệm thu trực quan. Test server không thay browser E2E.
+- [x] **1.2 — Triển khai:** /account sửa tên, đổi mật khẩu có current-password + logout toàn bộ, đổi email xác minh lại + thu hồi sessions/reset tokens/remember token. Có audit không chứa credential, kiểm tra quyền, unique/validation và test lifecycle. Platform profile giữ quản lý MFA, đổi credential qua cùng luồng /account.
+- [x] **1.3 — Triển khai:** Đối chiếu prompt gốc xác nhận quản lý vai trò là trong phạm vi. /platform-admin/access-management tạo/sửa/xóa vai trò tùy chỉnh và gán/thu hồi cho tài khoản sẵn có. Hai role hệ thống chỉ đọc, không xóa role đang được gán, không tự thay đổi grant, không cấp quyền vượt quyền actor, bảo vệ Super Admin cuối cùng cả khi đổi email. Audit + thu hồi session; không xóa tài khoản admin hoặc tạo password admin qua form này.
+- [x] **1.3a — Concurrency MySQL:** Bốn test hai tiến trình/kết nối độc lập, xác nhận LOCK WAIT: hai email change, revoke chéo, revoke cùng email change và recovery code dùng đồng thời. Chỉ một thao tác được phép thành công; giữ Super Admin khả dụng/recovery one-use.
+- [ ] **1.3b — QA browser:** Thao tác role/grant trên browser. Kịch bản [identity-browser-qa](setup/identity-browser-qa.md) đã có; inventory computer-use vẫn rỗng, chưa thể nghiệm thu trực quan.
 
 ## 2. Blog và tenant
 
@@ -88,11 +91,13 @@ Không đưa vào phân công mặc định: Comment, Invitation/Member/Follow/M
 
 ## Bằng chứng và giới hạn
 
+- Đợt hoàn thiện mục 1 tiếp theo: full suite **45 tests / 215 assertions đạt** (gồm 4 race MySQL thực); format/lint/build và Pint đạt. Sửa remember-token/audit moderation, Docker local rebuild + restart Nginx, login HTTP 200. Không chạy migration/seed DB ứng dụng; suite Concurrency chỉ reset schema DB test. Browser QA vẫn chưa thực hiện vì inventory rỗng.
+- Đợt triển khai mục 1: full suite **40 tests / 180 assertions** đạt, gồm IdentityAccessTest 10 test; format/lint/build đạt, Docker local rebuild. Browser inventory vẫn browsers=[]; không coi mục 1 đã nghiệm thu browser/concurrency toàn bộ. Chi tiết file/route và ràng buộc xem lịch sử, routes-permissions và README.
 - Lần kiểm tra UI trước: full suite **29 tests / 97 assertions**; format/lint/build và Composer/npm audit đạt. Xem bàn giao UI để biết phạm vi.
 - Lần sửa theme tiếp theo: **PanelThemeTest 1 test / 2 assertions**, Pint/Prettier đạt; Docker rebuild và HTTP login xác nhận light mode. Chưa chạy lại full suite gộp sau khi thêm test theme, không cộng thành kết quả full-suite mới.
 - Browser của phiên trước không khả dụng; responsive/keyboard/contrast, drag/drop và browser 2FA chưa nghiệm thu. HTTP 200 không chứng minh tương tác browser đúng.
 - Số bảng/FK là bằng chứng lần kiểm tra schema trước, không phải migration mới trong lần cập nhật tài liệu.
-- Lần cập nhật checklist này chỉ rà source/tài liệu, không chạy lại test/build, không migration/seed/deploy. Không biến ô đã có code thành cam kết production.
+- Lần cập nhật phân công ban đầu chỉ rà source/tài liệu; đợt mục 1 sau đó có test/build như ghi trên. Không migration/seed DB ứng dụng hoặc deploy production. Không biến ô đã có code thành cam kết production.
 - Các lỗi đã sửa và kết quả từng lượt lưu tại implementation-history.md; checklist này quản lý công việc hiện tại, không thay thế lịch sử.
 
 ## Đợt công việc đề xuất tiếp theo
@@ -100,4 +105,4 @@ Không đưa vào phân công mặc định: Comment, Invitation/Member/Follow/M
 1. QA P0: 1.1, 2.1, 2.3, 3.1–3.2, 4.1, 5.1; ghi issue tái hiện cụ thể, ưu tiên lỗi mất dữ liệu/tenant/auth.
 2. Triển khai song song: 2.2, 3.3–3.4, 4.2–4.3; 1.2 và 3.5 theo mức ưu tiên đã chốt.
 3. P1: 5.2–5.4 sau khi luồng tạo–viết–xuất bản–đọc ổn định.
-4. Release gate: 6.1–6.6; chốt phạm vi 1.3/4.4 trước khi ước lượng, không tự thêm tính năng ngoài yêu cầu.
+4. Release gate: 6.1–6.6; mục 1.3 đã triển khai, còn QA bổ sung; chốt phạm vi 4.4 trước khi ước lượng, không tự thêm tính năng ngoài yêu cầu.

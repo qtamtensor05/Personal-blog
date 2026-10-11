@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\PlatformLogin;
+use App\Filament\Auth\PlatformProfile;
 use App\Filament\Pages\Overview;
 use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\EnsurePlatformSession;
@@ -39,7 +40,7 @@ class PlatformPanelProvider extends PanelProvider
             ->navigationItems($this->navigationItems())
             ->renderHook('panels::head.end', fn () => Blade::render("@vite(['resources/css/app.css', 'resources/js/app.js'])"))
             ->login(PlatformLogin::class)
-            ->profile()
+            ->profile(PlatformProfile::class)
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)
             ->colors([
                 'primary' => Color::Teal,
