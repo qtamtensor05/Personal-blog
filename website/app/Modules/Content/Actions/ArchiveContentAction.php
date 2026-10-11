@@ -23,7 +23,7 @@ final class ArchiveContentAction
                 }
             }
             DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update(['status' => 'ARCHIVED', 'scheduled_at' => null, 'updated_at' => now(), 'updated_by' => $actor->id]);
-            app(AuditRecorder::class)->record($actor->id, rtrim($kind, 's').'.archived', rtrim($kind,'s'), $id, $blog);
+            app(AuditRecorder::class)->record($actor->id, rtrim($kind, 's').'.archived', rtrim($kind, 's'), $id, $blog);
         });
     }
 }

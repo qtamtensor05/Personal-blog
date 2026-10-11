@@ -28,6 +28,6 @@ final class PreviewController extends Controller
         abort_unless($design, 404);
         $posts = app(ContentWorkspace::class)->rows(auth()->user(), $blog, 'posts', '', 'PUBLISHED');
 
-        return response()->view('public.preview-design', ['blog' => $record, 'design' => json_decode($design->draft_data ?? $design->published_data, true), 'posts' => $posts])->header('X-Robots-Tag','noindex, nofollow')->header('Cache-Control','private, no-store');
+        return response()->view('public.preview-design', ['blog' => $record, 'design' => json_decode($design->draft_data ?? $design->published_data, true), 'posts' => $posts])->header('X-Robots-Tag', 'noindex, nofollow')->header('Cache-Control', 'private, no-store');
     }
 }

@@ -173,5 +173,5 @@ it('cancels scheduled publication when saving a new draft', function () {
     $id = app(SaveContentAction::class)->execute($owner, $blog, 'posts', null, $input, null, 'schedule');
     $row = DB::table('posts')->where('id', $id)->first();
     app(SaveContentAction::class)->execute($owner, $blog, 'posts', $id, interfaceContent('Saved draft'), SaveContentAction::fingerprint($row), 'draft');
-    $this->assertDatabaseHas('posts',['id' => $id, 'status' => 'DRAFT', 'scheduled_at' => null]);
+    $this->assertDatabaseHas('posts', ['id' => $id, 'status' => 'DRAFT', 'scheduled_at' => null]);
 });
