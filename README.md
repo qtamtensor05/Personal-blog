@@ -106,7 +106,7 @@ docker compose config --quiet
 
 ## Lưu ý và tài liệu
 
-Test cạnh tranh mục 1: php artisan test --testsuite=Concurrency (đã có trong full suite). Cần DB riêng có hậu tố _test, quyền đọc information_schema.innodb_trx; suite reset schema test, không chạy song song với suite khác trên cùng DB. Xem [kịch bản QA tài khoản/2FA](website/docs/setup/identity-browser-qa.md).
+Test cạnh tranh mục 1: php artisan test --testsuite=Concurrency (đã có trong full suite). Cần DB riêng có hậu tố _test, quyền đọc performance_schema.data_lock_waits và performance_schema.threads; suite reset schema test, không chạy song song với suite khác trên cùng DB. Xem [kịch bản QA tài khoản/2FA](website/docs/setup/identity-browser-qa.md).
 
 - Upload ảnh cần CLOUDINARY_URL server-only; không cần Cloudinary để xem gallery. SMTP local dùng Mailpit, không gửi email thật.
 - Tài khoản: /account sửa tên, đổi email/mật khẩu (cần mật khẩu hiện tại). Đổi mật khẩu đăng xuất các phiên; đổi email phải xác minh lại qua Mailpit. Super Admin cuối cùng cần có Super Admin thứ hai trước khi đổi email.

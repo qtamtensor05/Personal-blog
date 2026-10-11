@@ -34,4 +34,4 @@ Tại website/, dùng cấu hình MySQL test trong phpunit.xml:
 php artisan test --testsuite=Concurrency
 ```
 
-Suite reset schema **DB *_test** để fixture được commit và nhìn thấy từ hai tiến trình. Không chạy cùng lúc với suite khác trên cùng DB. Cần quyền đọc information_schema.innodb_trx để xác nhận LOCK WAIT (CI/local hiện dùng root). Thời gian chờ có giới hạn; không có skip âm thầm. DB ứng dụng không được dùng cho suite này.
+Suite reset schema **DB *_test** để fixture được commit và nhìn thấy từ hai tiến trình. Không chạy cùng lúc với suite khác trên cùng DB. Cần quyền đọc performance_schema.data_lock_waits và performance_schema.threads để xác nhận kết nối thứ hai đang chờ khóa của kết nối thứ nhất (CI/local hiện dùng root). Thời gian chờ có giới hạn; không có skip âm thầm. DB ứng dụng không được dùng cho suite này.

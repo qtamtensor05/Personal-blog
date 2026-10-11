@@ -102,8 +102,21 @@ class AccessRaceTest extends TestCase
             $processes[] = $two;
             $this->waitFor(fn () => str_contains($two->getOutput(), '"ready":true'), fn () => 'Second worker: '.$two->getErrorOutput().$two->getOutput());
             $id = json_decode(explode("\n", trim($two->getOutput()))[0], true)['connection'];
+            $blockingId = json_decode(explode("\n", trim($one->getOutput()))[0], true)['connection'];
             // Proves actual MySQL lock contention, not merely two sequential processes.
-            $this->waitFor(fn () => DB::table('information_schema.innodb_trx')->where('trx_mysql_thread_id', $id)->where('trx_state', 'LOCK WAIT')->exists(), fn () => 'Lock wait: '.$two->getErrorOutput().$two->getOutput());
+            // INNODB_TRX has a cached snapshot; rapid polling can keep it stale.
+            $this->waitFor(function () use ($one, $two, $id, $blockingId): bool {
+                if (! $one->isRunning() || ! $two->isRunning()) {
+                    $this->fail('Worker exited before lock contention: '.$one->getErrorOutput().$one->getOutput().$two->getErrorOutput().$two->getOutput());
+                }
+
+                return DB::table('performance_schema.data_lock_waits as waits')
+                    ->join('performance_schema.threads as waiter', 'waiter.THREAD_ID', '=', 'waits.REQUESTING_THREAD_ID')
+                    ->join('performance_schema.threads as blocker', 'blocker.THREAD_ID', '=', 'waits.BLOCKING_THREAD_ID')
+                    ->where('waiter.PROCESSLIST_ID', $id)
+                    ->where('blocker.PROCESSLIST_ID', $blockingId)
+                    ->exists();
+            }, fn () => 'Lock wait: '.$two->getErrorOutput().$two->getOutput());
             $this->assertTrue($two->isRunning(), 'Second connection must wait on the first transaction.');
             $barrier->write("release\n");
             $barrier->close();

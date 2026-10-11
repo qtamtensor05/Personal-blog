@@ -27,7 +27,7 @@ php artisan test
 ```
 
 Trên Windows nếu PHP chưa bật intl: `php -d extension=intl vendor/pestphp/pest/bin/pest`.
-Suite concurrency dùng hai tiến trình/kết nối MySQL và xác nhận trạng thái `LOCK WAIT`, không chỉ gọi tuần tự. Suite này chạy `migrate:fresh` trên database test, tuyệt đối không trỏ vào database ứng dụng.
+Suite concurrency dùng hai tiến trình/kết nối MySQL và xác nhận quan hệ chờ khóa qua `performance_schema.data_lock_waits` kết hợp `performance_schema.threads`, không chỉ gọi tuần tự. Cần quyền đọc hai bảng này. Không poll `INNODB_TRX` mỗi 20 ms vì snapshot cache có thể làm phép quan sát bị stale và timeout giả. Suite này chạy `migrate:fresh` trên database test, tuyệt đối không trỏ vào database ứng dụng.
 
 ### Kết quả local ngày 11/10/2026
 
@@ -35,3 +35,5 @@ Suite concurrency dùng hai tiến trình/kết nối MySQL và xác nhận tr�
 - Test phiên dùng driver array/file, bao gồm replay dấu phiên cũ và thu hồi trong request; chưa kiểm tra trực tiếp driver Redis/cookie bằng browser.
 - `npm run format:check`, `npm run lint`, `npm run build`, `docker compose config --quiet`, `git diff --check`: PASS. Build có cảnh báo chunk lớn và optional fontaine, không thất bại.
 - Không deploy, không chạy migration trên database ứng dụng, không có kết quả browser QA mới trong đợt này.
+
+Sau bản sửa phép quan sát khóa: cả 6 test concurrency PASS; riêng `test_reset_rechecks_a_prevalidated_token_after_email_change` chạy lại 3 lần liên tiếp đều PASS (mỗi lần 7 assertions). Pint và `git diff --check` PASS. Chưa chạy lại toàn bộ Feature/Unit hoặc xác nhận trên GitHub Actions sau thay đổi test này.
