@@ -49,7 +49,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             return true;
         }
 
-        return $this->hasPlatformPermission('platform.dashboard.view');
+        return $this->hasPlatformPermission('platform.dashboard.view') || $this->hasPlatformPermission('platform.roles.manage') || $this->hasPlatformPermission('platform.admins.manage');
     }
 
     public function canAccessApplication(): bool

@@ -111,6 +111,7 @@ Test cạnh tranh mục 1: php artisan test --testsuite=Concurrency (đã có tr
 - Upload ảnh cần CLOUDINARY_URL server-only; không cần Cloudinary để xem gallery. SMTP local dùng Mailpit, không gửi email thật.
 - Tài khoản: /account sửa tên, đổi email/mật khẩu (cần mật khẩu hiện tại). Đổi mật khẩu đăng xuất các phiên; đổi email phải xác minh lại qua Mailpit. Super Admin cuối cùng cần có Super Admin thứ hai trước khi đổi email.
 - Vai trò/quản trị viên: /platform-admin/access-management, chỉ người có quyền quản lý tương ứng. Gán cho tài khoản ACTIVE đã xác minh; thay đổi quyền thu hồi phiên. Role hệ thống chỉ đọc; không tự thay đổi grant của chính mình.
+- Gia cố xác thực: phiên cũ cần đăng nhập lại sau bản cập nhật dấu phiên; không cần migration. Xem [chống race xác thực và thu hồi phiên](website/docs/setup/auth-race-hardening.md).
 - Thời gian nhập lịch trong UI hiện là UTC. Chỉ giao diện đã xuất bản mới xuất hiện public; sửa mẫu không tự đổi blog live.
 - Lỗi thiếu key: kiểm tra APP_KEY trong .env trên máy rồi recreate app/worker/scheduler. Lỗi email Docker: kiểm tra MAIL_HOST=mailpit và profile local.
 - Lỗi port bị chiếm: dừng dịch vụ trùng hoặc đổi port forwarding trong Compose/.env; đồng bộ APP_URL khi đổi cổng web.

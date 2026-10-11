@@ -8,9 +8,9 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\PublicBlogController;
 use App\Http\Controllers\TemplateController;
+use App\Modules\Identity\Actions\VerifyCurrentEmailAction;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [TemplateController::class, 'index']);
@@ -40,11 +40,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function (): vo
 Route::middleware('auth')->group(function (): void {
     Route::get('/email/verify', fn () => view('auth.verify-email'))->name('verification.notice');
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-        DB::table('users')
-            ->where('id', $request->user()->id)
-            ->where('status', 'PENDING_VERIFICATION')
-            ->update(['status' => 'ACTIVE', 'updated_at' => now()]);
+        app(VerifyCurrentEmailAction::class)->execute((int) $request->user()->id, (string) $request->route('hash'));
 
         return redirect('/workspace');
     })

@@ -16,7 +16,7 @@ final class AccountController extends Controller
     public function update(Request $request, string $section, UpdateAccountAction $action)
     {
         $user = $request->user();
-        $action->execute($user, $section, $request->all());
+        $stamp = $action->execute($user, $section, $request->all());
         if ($section === 'password') {
             Auth::logout();
             $request->session()->invalidate();
@@ -26,6 +26,8 @@ final class AccountController extends Controller
         }
         if ($section === 'email') {
             $user->refresh();
+            // Bind only this mutation's epoch, never a later concurrent revocation.
+            $request->session()->put('identity_stamp', $stamp);
             $request->session()->forget('platform_authenticated_user');
             $request->session()->regenerate(true);
             try {

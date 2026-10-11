@@ -4,6 +4,7 @@ namespace App\Modules\Identity\Actions;
 
 use App\Models\User;
 use App\Modules\AccessControl\LastSuperAdminGuard;
+use App\Modules\Identity\Auth\SessionStamp;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -16,10 +17,11 @@ use Illuminate\Validation\ValidationException;
 
 final class UpdateAccountAction
 {
-    public function execute(User $actor, string $section, array $input): void
+    public function execute(User $actor, string $section, array $input): string
     {
         abort_unless(in_array($section, ['profile', 'email', 'password'], true), 404);
-        DB::transaction(function () use ($actor, $section, $input): void {
+
+        return DB::transaction(function () use ($actor, $section, $input): string {
             if ($section === 'email') {
                 DB::table('platform_roles')->orderBy('id')->lockForUpdate()->get();
                 app(LastSuperAdminGuard::class)->assertCanDeactivate($actor->id);
@@ -46,7 +48,7 @@ final class UpdateAccountAction
             if ($section !== 'profile') {
                 $values['remember_token'] = Str::random(60);
                 DB::table('sessions')->where('user_id', $user->id)->delete();
-                DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                \Illuminate\Support\Facades\Password::deleteToken($user);
             }
             try {
                 DB::table('users')->where('id', $user->id)->update([...$values, 'updated_at' => now()]);
@@ -57,6 +59,8 @@ final class UpdateAccountAction
                 throw ValidationException::withMessages(['email' => 'Email không khả dụng. Hãy chọn địa chỉ khác.']);
             }
             app(AuditRecorder::class)->record($user->id, 'identity.'.$section.'.updated', 'users', $user->id);
+
+            return SessionStamp::value($user->forceFill($values));
         });
     }
 }

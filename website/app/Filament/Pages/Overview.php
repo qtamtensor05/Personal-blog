@@ -19,6 +19,11 @@ class Overview extends Page
 
     protected string $view = 'filament.platform.overview';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->canAccessApplication() && auth()->user()->hasPlatformPermission('platform.dashboard.view');
+    }
+
     protected function getViewData(): array
     {
         return ['stats' => app(PlatformWorkspace::class)->overview(auth()->user())];

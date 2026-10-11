@@ -7,6 +7,7 @@ use App\Modules\AccessControl\LastSuperAdminGuard;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -82,6 +83,8 @@ final class ManageAccessAction
     private function revokeSessions(array $ids): void
     {
         DB::table('sessions')->whereIn('user_id', $ids)->delete();
-        DB::table('users')->whereIn('id', $ids)->update(['remember_token' => null]);
+        foreach ($ids as $id) {
+            DB::table('users')->where('id', $id)->update(['remember_token' => Str::random(60)]);
+        }
     }
 }

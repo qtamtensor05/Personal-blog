@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Auth\Events\PasswordReset;
+use App\Modules\Identity\Actions\ResetCurrentPasswordAction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 
 final class PasswordController extends Controller
@@ -22,11 +20,7 @@ final class PasswordController extends Controller
     public function reset(Request $request)
     {
         $data = $request->validate(['token' => 'required', 'email' => 'required|email', 'password' => ['required', 'confirmed', PasswordRule::defaults()]]);
-        $status = Password::reset($data, function ($user, $password): void {
-            $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();
-            \DB::table('sessions')->where('user_id', $user->id)->delete();
-            event(new PasswordReset($user));
-        });
+        $status = app(ResetCurrentPasswordAction::class)->execute($data);
 
         return $status === Password::PasswordReset
             ? redirect('/login')->with('status', 'Đã đặt lại mật khẩu. Vui lòng đăng nhập.')

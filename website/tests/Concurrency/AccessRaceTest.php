@@ -7,6 +7,7 @@ use Database\Seeders\PlatformSeeder;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
@@ -60,6 +61,23 @@ class AccessRaceTest extends TestCase
         $this->assertCount(count($codes) - 1, $user->fresh()->getAppAuthenticationRecoveryCodes());
     }
 
+    public function test_verification_rechecks_email_after_waiting_for_a_change(): void
+    {
+        [$a] = $this->admins();
+        $old = User::findOrFail($a);
+        $this->race(['actor' => $a, 'operation' => 'email', 'email' => 'changed@example.test'], ['actor' => $a, 'operation' => 'verify', 'hash' => sha1($old->email)]);
+        $this->assertDatabaseHas('users', ['id' => $a, 'email' => 'changed@example.test', 'email_verified_at' => null, 'status' => 'PENDING_VERIFICATION']);
+    }
+
+    public function test_reset_rechecks_a_prevalidated_token_after_email_change(): void
+    {
+        [$a] = $this->admins();
+        $old = User::findOrFail($a);
+        $token = Password::createToken($old);
+        $this->race(['actor' => $a, 'operation' => 'email', 'email' => 'changed@example.test'], ['actor' => $a, 'operation' => 'reset', 'email' => $old->email, 'token' => $token]);
+        $this->assertSame($old->password, $old->fresh()->password);
+    }
+
     private function admins(): array
     {
         $role = DB::table('platform_roles')->where('code', 'SUPER_ADMIN')->value('id');
@@ -79,13 +97,13 @@ class AccessRaceTest extends TestCase
         try {
             [$one, $barrier] = $this->worker($first, true);
             $processes[] = $one;
-            $this->waitFor(fn () => str_contains($one->getOutput(), '"ready":true'));
+            $this->waitFor(fn () => str_contains($one->getOutput(), '"ready":true'), fn () => 'First worker: '.$one->getErrorOutput().$one->getOutput());
             [$two] = $this->worker($second, false);
             $processes[] = $two;
-            $this->waitFor(fn () => str_contains($two->getOutput(), '"ready":true'));
+            $this->waitFor(fn () => str_contains($two->getOutput(), '"ready":true'), fn () => 'Second worker: '.$two->getErrorOutput().$two->getOutput());
             $id = json_decode(explode("\n", trim($two->getOutput()))[0], true)['connection'];
             // Proves actual MySQL lock contention, not merely two sequential processes.
-            $this->waitFor(fn () => DB::table('information_schema.innodb_trx')->where('trx_mysql_thread_id', $id)->where('trx_state', 'LOCK WAIT')->exists());
+            $this->waitFor(fn () => DB::table('information_schema.innodb_trx')->where('trx_mysql_thread_id', $id)->where('trx_state', 'LOCK WAIT')->exists(), fn () => 'Lock wait: '.$two->getErrorOutput().$two->getOutput());
             $this->assertTrue($two->isRunning(), 'Second connection must wait on the first transaction.');
             $barrier->write("release\n");
             $barrier->close();
@@ -119,12 +137,12 @@ class AccessRaceTest extends TestCase
         return [$process, $stream];
     }
 
-    private function waitFor(callable $ready): void
+    private function waitFor(callable $ready, callable $diagnostic): void
     {
         $deadline = microtime(true) + 15;
         while (! $ready()) {
             if (microtime(true) > $deadline) {
-                $this->fail('Concurrency barrier timed out.');
+                $this->fail('Concurrency barrier timed out. '.$diagnostic());
             }
             usleep(20000);
         }
