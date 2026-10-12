@@ -1,6 +1,6 @@
 # Checklist hoàn thành và phân công
 
-Cập nhật: 2026-10-11. Đối chiếu source hiện tại, [đặc tả UI](DESIGN_REQUIREMENTS_BLOG_PLATFORM.md), [bàn giao UI](ui-implementation-handoff.md) và [lịch sử](implementation-history.md). Đây là checklist hiện hành, thay bản baseline trước đợt triển khai UI.
+Cập nhật: 2026-10-12. Đối chiếu source hiện tại, [đặc tả UI](DESIGN_REQUIREMENTS_BLOG_PLATFORM.md), [bàn giao UI](ui-implementation-handoff.md) và [lịch sử](implementation-history.md). Đây là checklist hiện hành, thay bản baseline trước đợt triển khai UI.
 
 ## Cách đọc và giao việc
 
@@ -39,9 +39,11 @@ Trước khi làm song song, thống nhất OwnerContext/blog_id, JSON draft/liv
 
 - [x] Create/list/detail owner-only, khóa owner khi kiểm tra quota; onboarding giữ mẫu qua auth, template PUBLISHED và snapshot độc lập.
 - [x] Selector blog trong Studio, OwnerContext phía server, settings tên/visibility/SEO/media; private reader hiện chỉ Owner hợp lệ.
-- [ ] **2.1 — QA:** E2E hai tài khoản: tạo blog, chuyển selector, sửa settings, giả mạo blog/content/media ID; tài khoản B không đọc/sửa nháp A.
-- [ ] **2.2 — Triển khai + test:** Hoàn thiện các trường/settings/slug theo đặc tả chưa được form hỗ trợ; xử lý unique collision thành lỗi form. Test quota/slug bằng nhiều connection, không chỉ tuần tự.
-- [ ] **2.3 — QA:** PUBLIC/UNLISTED/PRIVATE và hidden/suspended/deleted đúng ở discovery, URL trực tiếp và preview. Không thêm member/moderator hoặc support bypass khi chưa được yêu cầu.
+- [x] **2.1 — QA:** E2E hai tài khoản: tạo blog, chuyển selector, sửa settings, giả mạo blog/content/media ID; tài khoản B không đọc/sửa nháp A. Bằng chứng browser do người thực hiện báo cáo và các test owner isolation/forged ID trong `BlogTenantTest.php`; Bình mở đúng URL preview nháp của An nhận 404.
+- [x] **2.2 — Triển khai + test:** Hoàn thiện các trường/settings/slug theo đặc tả chưa được form hỗ trợ; xử lý unique collision thành lỗi form. Test quota/slug bằng nhiều connection, không chỉ tuần tự. Regression test dùng template PUBLISHED hợp lệ, khẳng định lỗi `slug` và old input; fallback slug rỗng được kiểm tra qua Action và HTTP.
+- [x] **2.3 — QA:** PUBLIC/UNLISTED/PRIVATE và hidden/suspended/deleted đúng ở discovery, URL trực tiếp và preview. Browser QA cho ba chế độ visibility do người thực hiện báo cáo; `BlogTenantTest.php` kiểm tra discovery/direct URL theo trạng thái và chặn preview nháp khác owner; `OwnerContext` giới hạn preview theo owner, loại blog đã xóa. Không thêm member/moderator hoặc support bypass.
+
+**Bằng chứng Task 2 (người thực hiện báo cáo ngày 2026-10-12):** Bốn bước browser tạo blog, lỗi slug trùng, sửa settings/slug và kiểm tra discovery/URL đã đạt; thêm browser QA An tạo bài nháp, Bình mở đúng URL preview nhận 404. Sau bản sửa `CreateBlogAction` và `BlogTenantTest`, Antigravity báo cáo Pint đạt (109 tệp), feature **34 tests / 90 assertions** và MySQL concurrency **3 tests / 21 assertions** đạt trên `blog_test`. Đây là kết quả do người thực hiện cung cấp, không phải kết quả full suite hoặc nghiệm thu release. Lỗi thông báo `validation.regex` khi nhập slug bài viết không hợp lệ thuộc luồng editor ở mục 3, cần ghi nhận riêng.
 
 ## 3. Content/media
 
@@ -102,7 +104,7 @@ Không đưa vào phân công mặc định: Comment, Invitation/Member/Follow/M
 
 ## Đợt công việc đề xuất tiếp theo
 
-1. QA P0: 1.1, 2.1, 2.3, 3.1–3.2, 4.1, 5.1; ghi issue tái hiện cụ thể, ưu tiên lỗi mất dữ liệu/tenant/auth.
-2. Triển khai song song: 2.2, 3.3–3.4, 4.2–4.3; 1.2 và 3.5 theo mức ưu tiên đã chốt.
+1. QA P0: 1.1, 3.1–3.2, 4.1, 5.1; ghi issue tái hiện cụ thể, ưu tiên lỗi mất dữ liệu/tenant/auth.
+2. Triển khai song song: 3.3–3.4, 4.2–4.3; 1.2 và 3.5 theo mức ưu tiên đã chốt.
 3. P1: 5.2–5.4 sau khi luồng tạo–viết–xuất bản–đọc ổn định.
 4. Release gate: 6.1–6.6; mục 1.3 đã triển khai, còn QA bổ sung; chốt phạm vi 4.4 trước khi ước lượng, không tự thêm tính năng ngoài yêu cầu.

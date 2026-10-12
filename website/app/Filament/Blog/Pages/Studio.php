@@ -22,6 +22,7 @@ use App\Modules\Templates\Queries\TemplateLibrary;
 use App\Shared\Support\JsonFingerprint;
 use Filament\Pages\Page;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
 
@@ -50,6 +51,9 @@ class Studio extends Page
     public ?int $editing = null;
 
     public array $form = [];
+
+    #[Locked]
+    public array $originalSettings = [];
 
     public string $fingerprint = '';
 
@@ -86,6 +90,7 @@ class Studio extends Page
         app(OwnerContext::class)->resolve(auth()->user(), $this->blogId);
         $this->editing = null;
         $this->form = [];
+        $this->originalSettings = [];
         $this->resetErrorBag();
         $this->message = '';
         if (in_array($this->section, ['design', 'navigation'])) {
@@ -98,6 +103,7 @@ class Studio extends Page
         }
         if ($this->section === 'settings') {
             $this->form = app(BlogSettingsQuery::class)->find(auth()->user(), $this->blogId);
+            $this->originalSettings = $this->form;
         }
     }
 
@@ -151,7 +157,11 @@ class Studio extends Page
 
     public function saveSettings(): void
     {
-        app(SaveBlogSettingsAction::class)->execute(auth()->user(), $this->blogId, $this->form);
+        abort_unless($this->section === 'settings' && $this->originalSettings !== [], 422);
+        app(SaveBlogSettingsAction::class)->execute(auth()->user(), $this->blogId, $this->form, $this->originalSettings);
+        // Reload the form so it reflects the stored, normalized slug and other values.
+        $this->form = app(BlogSettingsQuery::class)->find(auth()->user(), $this->blogId);
+        $this->originalSettings = $this->form;
         $this->message = 'Đã lưu cài đặt.';
     }
 

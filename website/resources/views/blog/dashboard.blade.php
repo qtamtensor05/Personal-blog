@@ -7,11 +7,16 @@
         <form class="card" method="post" action="/workspace/blogs">
             @csrf
             <h2>Tạo blog mới</h2>
+            @if($errors->any())
+                <div role="alert" class="error">
+                    <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
             <label>Mẫu<select name="template_id" required><option value="">Chọn mẫu</option>@foreach($templates as $template)<option value="{{ $template->id }}" @selected(old('template_id', session('selected_template')) == $template->id)>{{ $template->name }}</option>@endforeach</select></label>
-            <label>Tên blog<input name="name" value="{{ old('name') }}" required /></label
-            ><label>Đường dẫn<input name="slug" placeholder="tu-dong-neu-de-trong" /></label
-            ><label>Giới thiệu<textarea name="description"></textarea></label
-            ><button class="button">Tạo blog</button>
+            <label>Tên blog<input name="name" value="{{ old('name') }}" required /></label>
+            <label>Đường dẫn<input name="slug" value="{{ old('slug') }}" placeholder="tu-dong-neu-de-trong" /><small>Chỉ dùng chữ thường, số và dấu gạch ngang. Để trống để tự sinh từ tên.</small></label>
+            <label>Giới thiệu<textarea name="description">{{ old('description') }}</textarea></label>
+            <button class="button">Tạo blog</button>
         </form>
         <section>
             <h2>Danh sách</h2>
@@ -26,5 +31,4 @@
             @endforelse
         </section>
     </div>
-    {{ $blogs->links() }}</x-layouts.app
->
+    {{ $blogs->links() }}</x-layouts.app>
