@@ -524,6 +524,123 @@ it('a published post in an UNLISTED blog is not reachable via another blog slug'
 // 2.2 – Blog settings: slug, additional fields, platform limits
 // ---------------------------------------------------------------------------
 
+it('rejects expanded slugs before creating or updating a blog', function () {
+    $owner = tenantActiveUser();
+    $expanded = str_repeat('ß', 81);
+    expect(Str::length($expanded))->toBeLessThan(160);
+    expect(Str::length(Str::slug($expanded)))->toBeGreaterThan(160);
+
+    foreach ([['name' => 'Long slug', 'slug' => $expanded], ['name' => $expanded]] as $input) {
+        try {
+            app(CreateBlogAction::class)->execute($owner, $input);
+            $this->fail('Expected slug validation error');
+        } catch (ValidationException $e) {
+            expect($e->errors())->toHaveKey('slug');
+        }
+    }
+    expect(DB::table('blogs')->where('owner_user_id', $owner->id)->count())->toBe(0);
+    $blog = app(CreateBlogAction::class)->execute($owner, ['name' => 'Boundary', 'slug' => str_repeat('ß', 80)]);
+    $original = app(BlogSettingsQuery::class)->find($owner, $blog);
+    try {
+        app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($original, ['slug' => $expanded, 'name' => 'Must not save']));
+        $this->fail('Expected slug validation error');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('slug');
+    }
+    expect(app(BlogSettingsQuery::class)->find($owner, $blog))->toBe($original);
+    app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($original, ['slug' => str_repeat('ß', 80)]));
+    $this->assertDatabaseHas('blogs', ['id' => $blog, 'slug' => str_repeat('ss', 80)]);
+});
+
+it('merges stale Studio settings without restoring unchanged values and refreshes the snapshot', function () {
+    $owner = tenantActiveUser();
+    $blog = app(CreateBlogAction::class)->execute($owner, ['name' => 'Concurrent settings', 'slug' => 'original-'.uniqid()]);
+    $this->actingAs($owner);
+    Filament::setCurrentPanel(Filament::getPanel('blog'));
+    $first = Livewire::test(Studio::class, ['blogId' => $blog, 'section' => 'settings']);
+    $second = Livewire::test(Studio::class, ['blogId' => $blog, 'section' => 'settings']);
+    $newSlug = 'updated-'.uniqid();
+    $first->set('form.slug', $newSlug)
+        ->set('form.seo_title', 'Latest SEO')
+        ->set('form.social_links.twitter', 'https://example.com/new')
+        ->call('saveSettings')->assertHasNoErrors();
+    $second->set('form.description', 'Second session edit')
+        ->set('form.social_links.github', 'https://github.com/example')
+        ->call('saveSettings')->assertHasNoErrors()
+        ->assertSet('form.slug', $newSlug)
+        ->assertSet('originalSettings.slug', $newSlug);
+    $stored = app(BlogSettingsQuery::class)->find($owner, $blog);
+    expect($stored['slug'])->toBe($newSlug);
+    expect($stored['seo_title'])->toBe('Latest SEO');
+    expect($stored['description'])->toBe('Second session edit');
+    expect($stored['social_links'])->toEqual([
+        'twitter' => 'https://example.com/new', 'github' => 'https://github.com/example',
+    ]);
+    $second->set('form.social_links.twitter', '')->set('form.description', '')
+        ->call('saveSettings')->assertHasNoErrors();
+    $stored = app(BlogSettingsQuery::class)->find($owner, $blog);
+    expect($stored['social_links'])->toBe(['github' => 'https://github.com/example']);
+    expect($stored['description'])->toBe('');
+});
+
+it('preserves omitted social links and merges explicit edits with or without a snapshot', function (?bool $snapshot) {
+    $owner = tenantActiveUser();
+    $blog = app(CreateBlogAction::class)->execute($owner, ['name' => 'Links', 'slug' => 'links-'.uniqid()]);
+    $base = app(BlogSettingsQuery::class)->find($owner, $blog);
+    app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($base, [
+        'social_links' => ['twitter' => 'https://example.com/twitter', 'github' => 'https://github.com/example'],
+    ]));
+    $base = app(BlogSettingsQuery::class)->find($owner, $blog);
+    $original = $snapshot ? $base : null;
+    unset($base['social_links']);
+    foreach ([[], ['social_links' => []], ['social_links' => null]] as $input) {
+        app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($base, $input), $original);
+        expect(app(BlogSettingsQuery::class)->find($owner, $blog)['social_links'])->toHaveCount(2);
+    }
+    app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($base, [
+        'social_links' => ['twitter' => '', 'facebook' => 'https://example.com/facebook'],
+    ]), $original);
+    expect(app(BlogSettingsQuery::class)->find($owner, $blog)['social_links'])->toEqual([
+        'github' => 'https://github.com/example', 'facebook' => 'https://example.com/facebook',
+    ]);
+})->with([false, true]);
+
+it('rejects null empty and unsupported locale and timezone settings', function (string $field, ?string $value) {
+    $owner = tenantActiveUser();
+    $blog = app(CreateBlogAction::class)->execute($owner, ['name' => 'Options', 'slug' => 'options-'.uniqid()]);
+    $base = app(BlogSettingsQuery::class)->find($owner, $blog);
+    try {
+        app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($base, [$field => $value]));
+        $this->fail('Expected field validation error');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey($field);
+    }
+    expect(app(BlogSettingsQuery::class)->find($owner, $blog))->toBe($base);
+})->with([['locale', null], ['locale', ''], ['locale', 'fr'], ['timezone', null], ['timezone', ''], ['timezone', 'Mars/Olympus']]);
+
+it('renders configured locale and safe social links on every public blog view', function () {
+    $owner = tenantActiveUser();
+    $slug = 'public-settings-'.uniqid();
+    $blog = tenantBlog($owner, $slug);
+    tenantSettings($blog);
+    tenantPost($blog, $owner, 'sample');
+    DB::table('pages')->insert([
+        'blog_id' => $blog, 'title' => 'Sample', 'slug' => 'sample',
+        'created_by' => $owner->id, 'updated_by' => $owner->id,
+        'page_key' => 'sample', 'status' => 'PUBLISHED', 'content_json' => '{"type":"doc","content":[]}',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $settings = app(BlogSettingsQuery::class)->find($owner, $blog);
+    app(SaveBlogSettingsAction::class)->execute($owner, $blog, array_replace($settings, [
+        'locale' => 'en', 'timezone' => 'UTC',
+        'social_links' => ['github' => 'https://github.com/example', 'twitter' => 'javascript:alert(1)'],
+    ]));
+    foreach (["/b/$slug", "/b/$slug/posts/sample", "/b/$slug/pages/sample"] as $url) {
+        $this->get($url)->assertOk()->assertSee('lang="en"', false)
+            ->assertSee('href="https://github.com/example"', false)->assertDontSee('javascript:alert(1)', false);
+    }
+});
+
 it('BlogSettingsQuery returns slug locale timezone discoverable social_links and excludes quota', function () {
     $owner = tenantActiveUser('sq1');
     $blogId = app(CreateBlogAction::class)->execute(

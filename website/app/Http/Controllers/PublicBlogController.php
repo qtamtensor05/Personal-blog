@@ -81,9 +81,18 @@ final class PublicBlogController extends Controller
         $design = json_decode(DB::table('blog_designs')->where('blog_id', $blog->id)->value('published_data') ?? '{}', true);
         $keys = data_get($design, 'navigation.pageKeys');
         $pages = DB::table('pages')->where(['blog_id' => $blog->id, 'status' => 'PUBLISHED'])->whereNull('deleted_at')->when(is_array($keys), fn ($q) => $q->whereIn('page_key', $keys))->get(['title', 'slug']);
-        $logoId = DB::table('blog_settings')->where('blog_id', $blog->id)->value('logo_media_id');
+        $settings = DB::table('blog_settings')->where('blog_id', $blog->id)->first();
+        $locale = in_array($settings?->locale, ['vi', 'en'], true) ? $settings->locale : 'vi';
+        $links = json_decode($settings?->social_links ?? '{}', true);
+        // Existing data may predate URL validation: never render executable URLs.
+        $socialLinks = array_filter(
+            array_intersect_key(is_array($links) ? $links : [], array_flip(['twitter', 'facebook', 'instagram', 'youtube', 'github', 'linkedin'])),
+            fn ($url) => is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
+                && in_array(strtolower(parse_url($url, PHP_URL_SCHEME) ?? ''), ['http', 'https'], true),
+        );
+        $logoId = $settings?->logo_media_id;
         $logo = DB::table('media_assets')->where(['id' => $logoId, 'blog_id' => $blog->id, 'status' => 'READY'])->whereNull('deleted_at')->value('secure_url');
 
-        return compact('design', 'pages', 'logo');
+        return compact('design', 'pages', 'logo', 'locale', 'socialLinks');
     }
 }

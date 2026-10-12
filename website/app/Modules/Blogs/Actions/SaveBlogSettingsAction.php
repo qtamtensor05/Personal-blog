@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 final class SaveBlogSettingsAction
 {
-    public function execute(User $actor, int $blog, array $input): void
+    public function execute(User $actor, int $blog, array $input, ?array $original = null): void
     {
         app(OwnerContext::class)->resolve($actor, $blog, true);
 
@@ -23,8 +23,8 @@ final class SaveBlogSettingsAction
             'description' => 'nullable|string|max:2000',
             'visibility' => 'required|in:PUBLIC,UNLISTED,PRIVATE',
             'discoverable' => 'boolean',
-            'locale' => 'nullable|string|max:20',
-            'timezone' => 'nullable|string|max:80',
+            'locale' => 'sometimes|required|string|in:vi,en',
+            'timezone' => 'sometimes|required|string|in:Asia/Ho_Chi_Minh,UTC,Asia/Bangkok,Asia/Singapore,Asia/Tokyo,Europe/London,America/New_York',
             'seo_title' => 'nullable|string|max:255',
             'seo_description' => 'nullable|string|max:500',
             'posts_per_page' => 'required|integer|min:1|max:50',
@@ -43,6 +43,9 @@ final class SaveBlogSettingsAction
 
         // Normalize slug
         $normalizedSlug = Str::slug($data['slug']);
+        if (Str::length($normalizedSlug) > 160) {
+            throw ValidationException::withMessages(['slug' => 'Đường dẫn sau chuẩn hóa không được vượt quá 160 ký tự.']);
+        }
         if ($normalizedSlug === '') {
             throw ValidationException::withMessages([
                 'slug' => 'Đường dẫn không hợp lệ sau chuẩn hóa. Vui lòng dùng chữ thường, số và dấu gạch ngang.',
@@ -50,16 +53,37 @@ final class SaveBlogSettingsAction
         }
         $data['slug'] = $normalizedSlug;
 
-        // social_links: strip empties, encode
-        $socialLinks = array_filter(
-            $data['social_links'] ?? [],
-            fn ($v) => is_string($v) && trim($v) !== '',
-        );
-        $socialLinksJson = $socialLinks !== [] ? json_encode($socialLinks, JSON_UNESCAPED_UNICODE) : null;
+        // Omitted keys are unchanged; an explicit empty value removes one link.
+        $socialLinks = array_intersect_key($data['social_links'] ?? [], array_flip([
+            'twitter', 'facebook', 'instagram', 'youtube', 'github', 'linkedin',
+        ]));
 
-        DB::transaction(function () use ($actor, $blog, $data, $socialLinksJson): void {
+        DB::transaction(function () use ($actor, $blog, $data, $socialLinks, $original): void {
             DB::table('blogs')->where('id', $blog)->lockForUpdate()->first();
             app(OwnerContext::class)->resolve($actor, $blog, true);
+
+            if ($original !== null) {
+                // Only write edits relative to this form's snapshot. Unchanged fields
+                // retain the latest stored values, including concurrent slug changes.
+                $data = array_filter($data, fn ($value, $key) => $key !== 'social_links'
+                    && ($key === 'discoverable'
+                        ? (bool) $value !== (bool) ($original[$key] ?? false)
+                        : (string) $value !== (string) ($original[$key] ?? '')), ARRAY_FILTER_USE_BOTH);
+            }
+
+            $settings = DB::table('blog_settings')->where('blog_id', $blog)->lockForUpdate()->first();
+            $latestLinks = json_decode($settings?->social_links ?? '{}', true) ?? [];
+            foreach ($socialLinks as $key => $value) {
+                $value = trim($value ?? '');
+                if ($original !== null && $value === trim($original['social_links'][$key] ?? '')) {
+                    continue;
+                }
+                if ($value === '') {
+                    unset($latestLinks[$key]);
+                } else {
+                    $latestLinks[$key] = $value;
+                }
+            }
 
             // Validate media assets belong to this blog
             foreach (
@@ -99,7 +123,9 @@ final class SaveBlogSettingsAction
                 'locale', 'timezone', 'seo_title', 'seo_description',
                 'posts_per_page', 'logo_media_id', 'favicon_media_id', 'og_media_id',
             ]));
-            $settingsData['social_links'] = $socialLinksJson;
+            if ($socialLinks !== []) {
+                $settingsData['social_links'] = $latestLinks !== [] ? json_encode($latestLinks, JSON_UNESCAPED_UNICODE) : null;
+            }
             $settingsData['updated_at'] = now();
 
             DB::table('blog_settings')->where('blog_id', $blog)->update($settingsData);

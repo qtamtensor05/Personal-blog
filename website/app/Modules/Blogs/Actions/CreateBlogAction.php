@@ -50,6 +50,9 @@ final class CreateBlogAction
                     ? (string) $input['slug']
                     : (string) ($input['name'] ?? '');
                 $slug = Str::slug($rawSlug);
+                if (Str::length($slug) > 160) {
+                    throw ValidationException::withMessages(['slug' => 'Đường dẫn sau chuẩn hóa không được vượt quá 160 ký tự.']);
+                }
                 if ($slug === '') {
                     throw ValidationException::withMessages(['slug' => 'Không thể sinh đường dẫn hợp lệ từ tên đã nhập. Hãy nhập đường dẫn thủ công.']);
                 }
