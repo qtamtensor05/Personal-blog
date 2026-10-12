@@ -27,6 +27,7 @@ use App\Modules\Media\Actions\UpdateMediaAction;
 use Filament\Facades\Filament;
 use Illuminate\Database\RecordNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -94,6 +95,27 @@ function tenantPost(
         'content_json' => json_encode(['type' => 'doc', 'content' => []]),
         'status' => $status,
         'published_at' => $status === 'PUBLISHED' ? now() : null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
+function tenantPublishedTemplate(User $user, string $slug = 'tenant-tmpl'): int
+{
+    return DB::table('templates')->insertGetId([
+        'name' => 'Mẫu chuẩn',
+        'slug' => $slug.'-'.uniqid(),
+        'status' => 'PUBLISHED',
+        'created_by' => $user->id,
+        'updated_by' => $user->id,
+        'published_by' => $user->id,
+        'published_at' => now(),
+        'version_number' => 1,
+        'template_data' => json_encode([
+            'schemaVersion' => 1,
+            'project' => ['pages' => [['id' => 'home', 'sections' => [['type' => 'hero', 'content' => 'Xin chào'], ['type' => 'post-list']]]]],
+            'themeDefaults' => ['accent' => '#147d73', 'layout' => 'journal'],
+        ]),
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -654,19 +676,128 @@ it('ignores storage_quota_bytes and post_limit even when submitted by owner', fu
 
 it('create blog form redirects back with errors preserving slug and description on slug collision', function () {
     $owner = tenantActiveUser('preserve1');
-    $takenSlug = 'taken-slug-'.uniqid();
-    tenantBlog($owner, $takenSlug);
+    $enteredSlug = 'Collision-Slug-'.uniqid();
+    $normalizedSlug = Str::slug($enteredSlug);
+    tenantBlog($owner, $normalizedSlug);
 
     $other = tenantActiveUser('preserve2');
-    $this->actingAs($other)
+    $templateId = tenantPublishedTemplate($other);
+
+    $response = $this->actingAs($other)
+        ->from('/workspace')
         ->post('/workspace/blogs', [
             'name' => 'Clash blog',
-            'slug' => $takenSlug,
+            'slug' => $enteredSlug,
             'description' => 'My description',
-            'template_id' => 1,
-        ])
-        ->assertRedirect()
-        ->assertSessionHasErrors();
+            'template_id' => $templateId,
+        ]);
+
+    $response->assertRedirect('/workspace')
+        ->assertSessionHasErrors(['slug'])
+        ->assertSessionDoesntHaveErrors(['template_id'])
+        ->assertSessionHasInput('slug', $enteredSlug)
+        ->assertSessionHasInput('description', 'My description');
+});
+
+it('CreateBlogAction falls back to name when slug is null, empty string, or whitespace', function () {
+    $owner = tenantActiveUser('fallback1');
+
+    // 1. null slug
+    $name1 = 'Alpha Blog '.uniqid();
+    $id1 = app(CreateBlogAction::class)->execute($owner, [
+        'name' => $name1,
+        'slug' => null,
+    ]);
+    expect(DB::table('blogs')->where('id', $id1)->value('slug'))->toBe(Str::slug($name1));
+
+    // 2. empty string slug
+    $name2 = 'Beta Blog '.uniqid();
+    $id2 = app(CreateBlogAction::class)->execute($owner, [
+        'name' => $name2,
+        'slug' => '',
+    ]);
+    expect(DB::table('blogs')->where('id', $id2)->value('slug'))->toBe(Str::slug($name2));
+
+    // 3. whitespace-only slug
+    $name3 = 'Gamma Blog '.uniqid();
+    $id3 = app(CreateBlogAction::class)->execute($owner, [
+        'name' => $name3,
+        'slug' => '    ',
+    ]);
+    expect(DB::table('blogs')->where('id', $id3)->value('slug'))->toBe(Str::slug($name3));
+});
+
+it('CreateBlogAction rejects creation when neither slug nor name can produce a valid slug', function () {
+    $owner = tenantActiveUser('fallback2');
+
+    // Name has no sluggable characters and slug is empty
+    expect(fn () => app(CreateBlogAction::class)->execute($owner, [
+        'name' => '??? !!!',
+        'slug' => '',
+    ]))->toThrow(ValidationException::class);
+
+    // Name has no sluggable characters and slug is whitespace
+    expect(fn () => app(CreateBlogAction::class)->execute($owner, [
+        'name' => '??? !!!',
+        'slug' => '   ',
+    ]))->toThrow(ValidationException::class);
+});
+
+it('create blog form generates slug from name when slug is empty or whitespace', function () {
+    $user = tenantActiveUser('formblank');
+    $templateId = tenantPublishedTemplate($user);
+
+    // Empty string slug
+    $uniqueName1 = 'Blank Slug Blog '.uniqid();
+    $response1 = $this->actingAs($user)
+        ->post('/workspace/blogs', [
+            'name' => $uniqueName1,
+            'slug' => '',
+            'description' => 'Test description',
+            'template_id' => $templateId,
+        ]);
+
+    $expectedSlug1 = Str::slug($uniqueName1);
+    $response1->assertRedirect();
+    $this->assertDatabaseHas('blogs', [
+        'name' => $uniqueName1,
+        'slug' => $expectedSlug1,
+        'owner_user_id' => $user->id,
+    ]);
+
+    // Whitespace slug
+    $uniqueName2 = 'Whitespace Slug Blog '.uniqid();
+    $response2 = $this->actingAs($user)
+        ->post('/workspace/blogs', [
+            'name' => $uniqueName2,
+            'slug' => '   ',
+            'description' => 'Test description 2',
+            'template_id' => $templateId,
+        ]);
+
+    $expectedSlug2 = Str::slug($uniqueName2);
+    $response2->assertRedirect();
+    $this->assertDatabaseHas('blogs', [
+        'name' => $uniqueName2,
+        'slug' => $expectedSlug2,
+        'owner_user_id' => $user->id,
+    ]);
+});
+
+it('create blog form rejects unsluggable name when slug is omitted or empty', function () {
+    $user = tenantActiveUser('unsluggable');
+    $templateId = tenantPublishedTemplate($user);
+
+    $response = $this->actingAs($user)
+        ->from('/workspace')
+        ->post('/workspace/blogs', [
+            'name' => '??? ###',
+            'slug' => '',
+            'template_id' => $templateId,
+        ]);
+
+    $response->assertRedirect('/workspace')
+        ->assertSessionHasErrors(['slug']);
 });
 
 it('Studio saveSettings reloads form and shows normalized slug after save', function () {

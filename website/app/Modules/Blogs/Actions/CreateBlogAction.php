@@ -46,7 +46,10 @@ final class CreateBlogAction
                     ]);
                 }
 
-                $slug = Str::slug($input['slug'] ?? $input['name']);
+                $rawSlug = isset($input['slug']) && trim((string) $input['slug']) !== ''
+                    ? (string) $input['slug']
+                    : (string) ($input['name'] ?? '');
+                $slug = Str::slug($rawSlug);
                 if ($slug === '') {
                     throw ValidationException::withMessages(['slug' => 'Không thể sinh đường dẫn hợp lệ từ tên đã nhập. Hãy nhập đường dẫn thủ công.']);
                 }
