@@ -4,6 +4,8 @@ namespace App\Modules\Content\Actions;
 
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Support\Facades\DB;
+use App\Modules\Media\MediaReferenceGuard;
+use Illuminate\Validation\ValidationException;
 
 final class PublishScheduledContentAction
 {
@@ -57,8 +59,15 @@ final class PublishScheduledContentAction
                     if ($table === 'pages') {
                         unset($changes['excerpt'],$changes['cover_media_id']);
                     }
-                    if (isset($changes['content_json']) && is_array($changes['content_json'])) {
-                        $changes['content_json'] = json_encode($changes['content_json'], JSON_THROW_ON_ERROR);
+                    try {
+                        app(MediaReferenceGuard::class)->assertReadyForBlog(
+                            (int) $row->blog_id,
+                            array_replace((array) $row, $changes)
+                        );
+                    } catch (ValidationException $e) {
+                        // Ảnh không hợp lệ, chưa được xuất bản
+                        // Giữ nguyên lịch để chủ blog xử lý
+                        return false;
                     }
                     if ($table === 'posts') {
                         foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $terms => $key) {

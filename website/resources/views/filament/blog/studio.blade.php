@@ -10,16 +10,118 @@
 @elseif(in_array($section,['posts','pages']))
 @if($editing===null)<div class="filter-bar"><label>Tìm kiếm<input wire:model.live.debounce.400ms="q" type="search" /></label><label>Trạng thái<select wire:model.live="status"><option value="">Tất cả</option>@foreach(['DRAFT'=>'Nháp','PUBLISHED'=>'Đã xuất bản','SCHEDULED'=>'Đã lên lịch','ARCHIVED'=>'Lưu trữ'] as $value=>$label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select></label><button class="button" wire:click="edit">Tạo {{ $section==='posts'?'bài viết':'trang' }}</button></div><div class="table-scroll"><table><thead><tr><th>Tiêu đề</th><th>Trạng thái</th><th>Lịch (UTC)</th><th>Thao tác</th></tr></thead><tbody>@forelse($rows as $row)<tr><td>{{ $row->title }}@if($row->draft_data)<span class="badge">Có thay đổi nháp</span>@endif</td><td>{{ $row->status }}</td><td>{{ $row->scheduled_at ?? $row->published_at }}</td><td><button wire:click="edit({{ $row->id }})">Chỉnh sửa</button><button wire:click="archive({{ $row->id }})" wire:confirm="Lưu trữ {{ $row->title }}? Nội dung sẽ ngừng hiển thị công khai.">Lưu trữ</button></td></tr>@empty<tr><td colspan="4">Chưa có nội dung phù hợp.</td></tr>@endforelse</tbody></table></div>
 @else
-<div class="editor-form" wire:key="content-{{ $section }}-{{ $editing }}-{{ $fingerprint }}" x-data="{ dirty: false }" x-on:input="dirty=true" x-on:beforeunload.window="if(dirty) { $event.preventDefault(); $event.returnValue=''; }">
+<div
+    class="editor-form"
+    wire:key="content-{{ $section }}-{{ $editing }}-{{ $fingerprint }}"
+    x-data="{ dirty: false }"
+    x-on:input="dirty=true"
+    x-on:editor-saved.window="dirty=false"
+    x-on:beforeunload.window="
+        if (dirty) {
+            $event.preventDefault();
+            $event.returnValue = '';
+        }
+    "
+>
 <div class="card"><div class="form-grid"><label>Tiêu đề<input wire:model="form.title" required maxlength="160" /></label><label>Đường dẫn<input wire:model="form.slug" required /><small>Đường dẫn bài live được giữ nguyên khi sửa nháp.</small></label></div>@if($section==='posts')<label>Mô tả ngắn<textarea wire:model="form.excerpt"></textarea></label>@endif
 <div wire:ignore x-data x-init="$nextTick(() => { const mount = () => window.ButMayEditors.content($el, $wire, @js($form['content_json'])); if(window.ButMayEditors) mount(); else window.addEventListener('butmay-editors-ready', mount, {once:true}); })"><div class="editor-toolbar"><button type="button" data-command="bold">Đậm</button><button type="button" data-command="italic">Nghiêng</button><button type="button" data-command="heading">Tiêu đề</button><button type="button" data-command="bulletList">Danh sách</button><button type="button" data-command="undo">Hoàn tác</button><label>Chèn ảnh<select data-media><option value="">Chọn ảnh trong blog</option>@foreach($media->where('status','READY') as $asset)<option value="{{ $asset->id }}" data-src="{{ $asset->secure_url }}" data-alt="{{ $asset->alt_text }}">{{ $asset->original_name }}</option>@endforeach</select></label></div><div data-tiptap class="prose tiptap-area" aria-label="Nội dung bài viết"></div></div>
-<div class="form-grid"><label>SEO tiêu đề<input wire:model="form.seo_title" maxlength="255" /></label><label>SEO mô tả<textarea wire:model="form.seo_description" maxlength="500"></textarea></label></div>
+<div class="form-grid"><label>SEO tiêu đề<input wire:model="form.seo_title" maxlength="255" /></label>
+                        
+                        <div class="form-grid">
+                            <label>
+                                Ảnh chia sẻ (Open Graph)
+
+                                <select wire:model="form.og_media_id">
+                                    <option value="">Không có</option>
+
+                                    @foreach($media->where('status', 'READY') as $asset)
+                                        <option value="{{ $asset->id }}">
+                                            {{ $asset->original_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label>
+                                Robots
+
+                                <select wire:model="form.robots">
+                                    <option value="index,follow">index,follow</option>
+                                    <option value="noindex,follow">noindex,follow</option>
+                                    <option value="index,nofollow">index,nofollow</option>
+                                    <option value="noindex,nofollow">noindex,nofollow</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <label>
+                            Canonical URL (có thể để trống)
+
+                            <input type="url"
+                                wire:model="form.canonical_url"
+                                maxlength="2048" />
+                        </label>
+
+                        <label>SEO mô tả<textarea wire:model="form.seo_description" maxlength="500"></textarea></label></div>
 @if($section==='posts')<div class="form-grid"><label>Ảnh bìa<select wire:model="form.cover_media_id"><option value="">Không có ảnh bìa</option>@foreach($media->where('status','READY') as $asset)<option value="{{ $asset->id }}">{{ $asset->original_name }}</option>@endforeach</select></label><label>Danh mục<select wire:model="form.category_ids" multiple>@foreach($categories as $term)<option value="{{ $term->id }}">{{ $term->name }}</option>@endforeach</select></label><label>Thẻ<select wire:model="form.tag_ids" multiple>@foreach($tags as $term)<option value="{{ $term->id }}">{{ $term->name }}</option>@endforeach</select></label></div>@endif
-<label>Lịch xuất bản (UTC)<input type="datetime-local" wire:model="form.scheduled_at" /></label><p>Nháp của bài đang live không thay nội dung công khai. Sửa nháp sẽ hủy lịch cũ nếu không lên lịch lại.</p></div>
+<label>Lịch xuất bản ({{ app(\App\Modules\Content\Support\PublicationTime::class)->timezone($blogId) }})<input type="datetime-local" wire:model="form.scheduled_at" /></label><p>Nháp của bài đang live không thay nội dung công khai. Sửa nháp sẽ hủy lịch cũ nếu không lên lịch lại.</p></div>
 <div class="sticky-actions"><button wire:click="save('draft')" wire:loading.attr="disabled" class="button">Lưu nháp</button><button wire:click="save('publish')" wire:loading.attr="disabled" wire:confirm="Xuất bản nội dung này lên blog?" class="button">Xuất bản</button><button wire:click="save('schedule')" wire:loading.attr="disabled">Lên lịch</button>@if($editing)<a target="_blank" rel="noopener" href="/workspace/blogs/{{ $blogId }}/preview/{{ $section }}/{{ $editing }}">Xem trước nháp đã lưu ↗</a>@endif<button wire:click="$set('editing',null)" x-on:click="if(dirty && !confirm('Rời editor? Thay đổi chưa lưu sẽ mất.')) $event.stopImmediatePropagation()">Quay lại</button></div>
 </div>@endif
-@elseif(in_array($section,['categories','tags']))<form class="card" wire:submit="addTerm"><h2>Thêm {{ $section==='tags'?'thẻ':'danh mục' }}</h2><div class="form-grid"><label>Tên<input wire:model="form.name" required /></label><label>Đường dẫn<input wire:model="form.slug" required /></label></div><button class="button" wire:loading.attr="disabled">Thêm</button></form><ul class="card">@forelse($rows as $row)<li>{{ $row->name }} · {{ $row->slug }}</li>@empty<li>Chưa có phân loại.</li>@endforelse</ul>
-@elseif($section==='media')<form class="card" wire:submit="upload"><h2>Thư viện media</h2><label>Ảnh JPEG/PNG/WebP/GIF<input type="file" wire:model="image" accept="image/jpeg,image/png,image/webp,image/gif" /></label><label>Văn bản thay thế<input wire:model="alt" maxlength="500" /></label><button class="button" wire:loading.attr="disabled">Tải lên</button><p wire:loading wire:target="image">Đang tải tệp…</p></form><label>Tìm ảnh<input wire:model.live.debounce.400ms="q" type="search" /></label><div class="template-grid">@forelse($media as $asset)<article class="card">@if($asset->status==='READY')<img src="{{ $asset->secure_url }}" alt="{{ $asset->alt_text }}" loading="lazy" />@endif<h3>{{ $asset->original_name }}</h3><p>{{ $asset->status }} · {{ $asset->width }} × {{ $asset->height }} · {{ number_format(($asset->bytes ?? 0)/1024) }} KB</p><p>{{ $asset->alt_text }}</p>@if($asset->status==='READY')<button wire:click="editMedia({{ $asset->id }})">Sửa alt text</button>@endif<button wire:click="deleteMedia({{ $asset->id }})" wire:loading.attr="disabled" wire:confirm="Xóa {{ $asset->original_name }}? Tài nguyên sẽ bị xóa ở nhà cung cấp nếu không còn được sử dụng.">{{ $asset->status==='DELETING'?'Thử xóa lại':'Xóa tài nguyên' }}</button></article>@empty<p class="empty-state">Chưa có ảnh. Ảnh chỉ được chèn sau khi tải lên thành công.</p>@endforelse</div>@if($editing)<form wire:submit="saveMedia" class="card"><label>Văn bản thay thế<textarea wire:model="form.alt_text" maxlength="500"></textarea></label><button class="button" wire:loading.attr="disabled">Lưu alt text</button></form>@endif<p>Xóa bị chặn nếu tài nguyên còn nằm trong nội dung, nháp, giao diện hoặc cài đặt.</p>
+@elseif(in_array($section, ['categories','tags']))
+
+<form class="card"
+      wire:submit="{{ $editing ? 'saveTerm' : 'addTerm' }}">
+
+    <h2>
+        {{ $editing ? 'Chỉnh sửa' : 'Thêm' }}
+        {{ $section === 'tags' ? 'thẻ' : 'danh mục' }}
+    </h2>
+
+    <div class="form-grid">
+        <label>
+            Tên
+            <input wire:model="form.name" required maxlength="160" />
+        </label>
+
+        <label>
+            Đường dẫn
+            <input wire:model="form.slug" required maxlength="160" />
+        </label>
+    </div>
+
+    <button class="button" wire:loading.attr="disabled">
+        {{ $editing ? 'Lưu thay đổi' : 'Thêm mới' }}
+    </button>
+
+    @if($editing)
+        <button type="button" wire:click="cancelTermEdit">
+            Hủy sửa
+        </button>
+    @endif
+</form>
+
+<ul class="card">
+    @forelse($rows as $row)
+        <li>
+            {{ $row->name }} · {{ $row->slug }}
+
+            <button type="button"
+                    wire:click="editTerm({{ $row->id }})">
+                Sửa
+            </button>
+
+            <button type="button"
+                    wire:click="deleteTerm({{ $row->id }})"
+                    wire:confirm="Xóa phân loại này? Không thể xóa nếu đang được sử dụng.">
+                Xóa
+            </button>
+        </li>
+    @empty
+        <li>Chưa có phân loại.</li>
+    @endforelse
+</ul>
+
+@elseif($section==='media')<form class="card" wire:submit="uploadBlogMedia"><h2>Thư viện media</h2><label>Ảnh JPEG/PNG/WebP/GIF<input type="file" wire:model="image" accept="image/jpeg,image/png,image/webp,image/gif" /></label><label>Văn bản thay thế<input wire:model="alt" maxlength="500" /></label><button class="button" wire:loading.attr="disabled">Tải lên</button><p wire:loading wire:target="image">Đang tải tệp…</p></form><label>Tìm ảnh<input wire:model.live.debounce.400ms="q" type="search" /></label><div class="template-grid">@forelse($media as $asset)<article class="card">@if($asset->status==='READY')<img src="{{ $asset->secure_url }}" alt="{{ $asset->alt_text }}" loading="lazy" />@endif<h3>{{ $asset->original_name }}</h3><p>{{ $asset->status }} · {{ $asset->width }} × {{ $asset->height }} · {{ number_format(($asset->bytes ?? 0)/1024) }} KB</p><p>{{ $asset->alt_text }}</p>@if($asset->status==='READY')<button wire:click="editMedia({{ $asset->id }})">Sửa alt text</button>@endif<button wire:click="deleteMedia({{ $asset->id }})" wire:loading.attr="disabled" wire:confirm="Xóa {{ $asset->original_name }}? Tài nguyên sẽ bị xóa ở nhà cung cấp nếu không còn được sử dụng.">{{ $asset->status==='DELETING'?'Thử xóa lại':'Xóa tài nguyên' }}</button></article>@empty<p class="empty-state">Chưa có ảnh. Ảnh chỉ được chèn sau khi tải lên thành công.</p>@endforelse</div>@if($editing)<form wire:submit="saveMedia" class="card"><label>Văn bản thay thế<textarea wire:model="form.alt_text" maxlength="500"></textarea></label><button class="button" wire:loading.attr="disabled">Lưu alt text</button></form>@endif<p>Xóa bị chặn nếu tài nguyên còn nằm trong nội dung, nháp, giao diện hoặc cài đặt.</p>
 @elseif(in_array($section,['design','navigation']))<div class="card"><h2>Giao diện nháp</h2><p>Đổi mẫu chỉ ảnh hưởng bản nháp. Bài viết, trang và media được giữ nguyên.</p><label>Mẫu nguồn<select wire:model="templateId">@foreach($templates as $template)<option value="{{ $template->id }}">{{ $template->name }}</option>@endforeach</select></label>@include('filament.shared.design-fields')<label>Trang trong menu<select multiple wire:model="form.menu_page_keys">@foreach($pages as $item)<option value="{{ $item->page_key }}">{{ $item->title }}</option>@endforeach</select></label><div class="actions"><button class="button" wire:click="saveDesign" wire:loading.attr="disabled">Lưu nháp</button><a href="/workspace/blogs/{{ $blogId }}/preview-design" target="_blank" rel="noopener">Xem trước nháp đã lưu</a><button class="button" wire:click="saveDesign(true)" wire:loading.attr="disabled" wire:confirm="Xuất bản giao diện nháp và đưa blog lên live?">Xuất bản giao diện</button></div></div>
 @elseif($section==='settings')
 <form class="card" wire:submit="saveSettings">

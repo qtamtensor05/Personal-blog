@@ -43,8 +43,8 @@ final class PublicBlogController extends Controller
             json_decode($post->content_json, true, 512, JSON_THROW_ON_ERROR),
             (int) $blog->id,
         );
-
-        return view('public.post', compact('blog', 'post', 'content') + $this->shell($blog));
+        $seo = $this->seo($blog, $post, 'posts');
+        return view('public.post', compact('blog', 'post', 'content','seo') + $this->shell($blog));
     }
 
     public function page(string $blogSlug, string $pageSlug): View
@@ -60,9 +60,67 @@ final class PublicBlogController extends Controller
             json_decode($page->content_json, true, 512, JSON_THROW_ON_ERROR),
             (int) $blog->id,
         );
+        $seo = $this->seo($blog, $page, 'pages');
 
-        return view('public.page', compact('blog', 'page', 'content') + $this->shell($blog));
+        return view('public.page', compact('blog', 'page', 'content', 'seo') + $this->shell($blog));
     }
+
+    
+    private function seo(
+        object $blog,
+        object $content,
+        string $kind
+    ): array {
+        $path = '/b/'.$blog->slug.'/'.$kind.'/'.$content->slug;
+
+        $canonical = $content->canonical_url ?: url($path);
+
+        if (
+            !filter_var($canonical, FILTER_VALIDATE_URL) ||
+            !in_array(
+                strtolower(parse_url($canonical, PHP_URL_SCHEME) ?: ''),
+                ['http', 'https'],
+                true
+            )
+        ) {
+            $canonical = url($path);
+        }
+
+        $mediaId = $content->og_media_id
+            ?: ($kind === 'posts' ? $content->cover_media_id : null);
+
+        $image = $mediaId
+            ? DB::table('media_assets')
+                ->where([
+                    'id' => $mediaId,
+                    'blog_id' => $blog->id,
+                    'scope' => 'BLOG',
+                    'status' => 'READY',
+                ])
+                ->whereNull('deleted_at')
+                ->value('secure_url')
+            : null;
+
+        $allowedRobots = [
+            'index,follow',
+            'index,nofollow',
+            'noindex,follow',
+            'noindex,nofollow',
+        ];
+
+        return [
+            'title' => $content->seo_title ?: $content->title,
+            'description' => $content->seo_description
+                ?: ($content->excerpt ?? ''),
+            'canonical' => $canonical,
+            'robots' => $blog->visibility === 'PUBLIC'
+                && in_array($content->robots, $allowedRobots, true)
+                    ? $content->robots
+                    : 'noindex,nofollow',
+            'image' => $image,
+        ];
+    }
+
 
     private function blog(string $slug): object
     {

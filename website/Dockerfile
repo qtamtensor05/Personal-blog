@@ -23,6 +23,11 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --opti
 
 FROM php:8.4-fpm-alpine AS application
 RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev $PHPIZE_DEPS && docker-php-ext-install intl mbstring pdo_mysql zip && pecl install redis && docker-php-ext-enable redis && apk del $PHPIZE_DEPS
+# Cau hinh upload PHP
+RUN printf '%s\n' \
+    'upload_max_filesize=12M' \
+    'post_max_size=16M' \
+    > /usr/local/etc/php/conf.d/uploads.ini
 WORKDIR /var/www/html
 COPY --from=vendor /src/vendor ./vendor
 COPY . .

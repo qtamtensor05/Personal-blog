@@ -11,6 +11,11 @@ use App\Modules\Templates\Actions\SaveTemplateAction;
 use App\Shared\Support\JsonFingerprint;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
+use App\Modules\Media\Actions\UploadPlatformImageAction;
+use App\Modules\Media\Actions\DeletePlatformImageAction;
+use Livewire\WithFileUploads;
+use Illuminate\Validation\ValidationException;
+
 
 class Management extends Page
 {
@@ -21,6 +26,14 @@ class Management extends Page
     protected static ?string $title = 'Platform Admin';
 
     protected static bool $shouldRegisterNavigation = false;
+
+    
+    use WithFileUploads;
+
+    public $platformImage;
+
+    public string $platformAlt = '';
+
 
     #[Url]
     public string $section = 'templates';
@@ -148,6 +161,57 @@ class Management extends Page
         $this->editing = null;
         $this->message = 'Đã cập nhật và ghi nhật ký.';
     }
+
+    
+    public function uploadPlatformMedia(): void
+    {
+        app(PlatformWorkspace::class)
+            ->authorize(auth()->user(), 'media');
+
+        $this->validate([
+            'platformImage' =>
+                'required|image|mimes:jpeg,png,webp,gif|max:10240',
+            'platformAlt' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            app(UploadPlatformImageAction::class)->execute(
+                auth()->user(),
+                $this->platformImage,
+                $this->platformAlt
+            );
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+
+            $this->addError(
+                'platformImage',
+                'Không tải được ảnh nền tảng.'
+            );
+
+            return;
+        }
+
+        $this->reset('platformImage', 'platformAlt');
+        $this->message =
+            'Ảnh nền tảng đã sẵn sàng trong thư viện.';
+    }
+
+    public function deletePlatformMedia(int $id): void
+    {
+        app(PlatformWorkspace::class)
+            ->authorize(auth()->user(), 'media');
+
+        app(DeletePlatformImageAction::class)->execute(
+            auth()->user(),
+            $id
+        );
+
+        $this->message =
+            'Đã xóa ảnh nền tảng không còn được sử dụng.';
+    }
+
 
     public function addTopic(): void
     {

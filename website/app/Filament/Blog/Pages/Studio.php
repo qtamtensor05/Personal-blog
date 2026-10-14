@@ -26,6 +26,9 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
 
+use App\Modules\Content\Actions\ManageTermAction;
+use App\Modules\Content\Support\PublicationTime;
+
 class Studio extends Page
 {
     use WithFileUploads;
@@ -112,12 +115,41 @@ class Studio extends Page
         abort_unless(in_array($this->section, ['posts', 'pages']), 404);
         $this->resetErrorBag();
         $this->editing = $id ?? 0;
-        $this->form = ['title' => '', 'slug' => '', 'excerpt' => '', 'content_json' => ['type' => 'doc', 'content' => [['type' => 'paragraph']]], 'seo_title' => '', 'seo_description' => '', 'cover_media_id' => null, 'scheduled_at' => null, 'category_ids' => [], 'tag_ids' => []];
+        #$this->form = ['title' => '', 'slug' => '', 'excerpt' => '', 'content_json' => ['type' => 'doc', 'content' => [['type' => 'paragraph']]], 'seo_title' => '', 'seo_description' => '', 'cover_media_id' => null, 'scheduled_at' => null, 'category_ids' => [], 'tag_ids' => []];
+        $this->form = [
+            'title' => '',
+            'slug' => '',
+            'excerpt' => '',
+
+            'content_json' => [
+                'type' => 'doc',
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                    ],
+                ],
+            ],
+
+            'seo_title' => '',
+            'seo_description' => '',
+
+            'cover_media_id' => null,
+            'og_media_id' => null,
+
+            'canonical_url' => '',
+            'robots' => 'index,follow',
+
+            'scheduled_at' => null,
+
+            'category_ids' => [],
+            'tag_ids' => [],
+        ];
         $this->fingerprint = '';
         if ($id) {
             $row = app(ContentWorkspace::class)->find(auth()->user(), $this->blogId, $this->section, $id);
             $this->fingerprint = SaveContentAction::fingerprint($row);
             $data = (array) $row;
+            $data['scheduled_at'] = app(PublicationTime::class)->toLocalInput($this->blogId, $row->scheduled_at);
             $draft = json_decode($row->draft_data ?? '{}', true);
             foreach (array_keys($this->form) as $key) {
                 $this->form[$key] = $draft[$key] ?? $data[$key] ?? $this->form[$key];
@@ -140,8 +172,16 @@ class Studio extends Page
         $id = app(SaveContentAction::class)->execute(auth()->user(), $this->blogId, $this->section, $this->editing ?: null, $this->form, $this->fingerprint, $intent);
         $this->edit($id);
         $this->message = match ($intent) {
-            'publish' => 'Đã xuất bản.', 'schedule' => 'Đã lên lịch (UTC).', default => 'Đã lưu nháp. Nội dung live không thay đổi.'
+            'publish' => 'Đã xuất bản.',
+
+            'schedule' =>
+            'Đã lên lịch theo múi giờ của blog.',
+
+            default =>
+            'Đã lưu nháp. Nội dung live không thay đổi.',
         };
+
+        $this->dispatch('editor-saved');
     }
 
     public function saveDesign(bool $publish = false): void
@@ -165,14 +205,20 @@ class Studio extends Page
         $this->message = 'Đã lưu cài đặt.';
     }
 
-    public function upload(): void
+    public function uploadBlogMedia(): void
     {
         $this->validate(['image' => 'required|image|max:10240', 'alt' => 'nullable|string|max:500']);
         try {
             app(UploadBlogImageAction::class)->execute(auth()->user(), $this->blogId, $this->image, $this->alt);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
-            $this->addError('image', 'Không tải được ảnh. Kiểm tra kết nối dịch vụ rồi thử lại.');
+
+            $this->addError(
+                'image',
+                'Không tải được ảnh. Kiểm tra kết nối dịch vụ rồi thử lại.'
+            );
 
             return;
         }
@@ -186,6 +232,78 @@ class Studio extends Page
         $this->form = [];
         $this->message = 'Đã thêm phân loại.';
     }
+
+
+    public function editTerm(int $id): void
+    {
+        abort_unless(
+            in_array($this->section, ['categories', 'tags'], true),
+            404
+        );
+
+        $term = app(ContentWorkspace::class)->find(
+            auth()->user(),
+            $this->blogId,
+            $this->section,
+            $id
+        );
+
+        $this->editing = $id;
+        $this->form = [
+            'name' => $term->name,
+            'slug' => $term->slug
+        ];
+    }
+
+    public function saveTerm(): void
+    {
+        abort_unless(
+            $this->editing &&
+                in_array($this->section, ['categories', 'tags'], true),
+            422
+        );
+
+        app(ManageTermAction::class)->update(
+            auth()->user(),
+            $this->blogId,
+            $this->section,
+            $this->editing,
+            $this->form
+        );
+
+        $this->editing = null;
+        $this->form = [];
+        $this->message = 'Đã cập nhật danh mục/thẻ.';
+    }
+
+    public function deleteTerm(int $id): void
+    {
+        abort_unless(
+            in_array(
+                $this->section,
+                ['categories', 'tags'],
+                true
+            ),
+            404
+        );
+        app(ManageTermAction::class)->delete(
+            auth()->user(),
+            $this->blogId,
+            $this->section,
+            $id
+        );
+
+        $this->editing = null;
+        $this->form = [];
+        $this->message = 'Đã xóa danh mục/thẻ chưa được sử dụng.';
+    }
+
+    public function cancelTermEdit(): void
+    {
+        $this->editing = null;
+        $this->form = [];
+    }
+
 
     public function archive(int $id): void
     {

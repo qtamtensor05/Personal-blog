@@ -14,9 +14,153 @@
 @foreach(\App\Modules\Platform\Actions\SavePlatformSettingsAction::RULES[$group] as $key=>$rule)<label>{{ $labels[$key] }}@if(str_contains($rule,'boolean') || str_contains($rule,'accepted'))<select wire:model="form.{{ $key }}"><option value="1">Bật</option>@unless(str_contains($rule,'accepted'))<option value="0">Tắt</option>@endunless</select>@else<input wire:model="form.{{ $key }}" type="{{ str_contains($rule,'integer')?'number':'text' }}" />@endif</label>@endforeach<button class="button" wire:click="saveSettings" wire:loading.attr="disabled">Lưu nhóm</button><p>Không nhập khóa API, SMTP hay Cloudinary vào cài đặt.</p></div>
 @else
 <div class="filter-bar"><label>Tìm kiếm<input wire:model.live.debounce.400ms="q" type="search" /></label></div>
+
+@if($section === 'media')
+    <form class="card" wire:submit="uploadPlatformMedia">
+        <h2>Tải ảnh dùng chung lên Cloudinary</h2>
+
+        <label>
+            Ảnh JPEG/PNG/WebP/GIF
+
+            <input type="file"
+                   wire:model="platformImage"
+                   accept="image/jpeg,image/png,image/webp,image/gif" />
+        </label>
+
+        <label>
+            Văn bản thay thế
+            <input wire:model="platformAlt" maxlength="500" />
+        </label>
+
+        <button class="button" wire:loading.attr="disabled">
+            Tải lên
+        </button>
+
+        <p wire:loading wire:target="platformImage">
+            Đang tải tệp…
+        </p>
+    </form>
+@endif
+
 @if($section==='topics')<form wire:submit="addTopic" class="card"><h2>Thêm chủ đề</h2><label>Tên<input wire:model="form.name" required /></label><label>Slug<input wire:model="form.slug" required /></label><button class="button" wire:loading.attr="disabled">Thêm chủ đề</button></form>@endif
 @if($editing && in_array($section,['users','blogs','reports']))<form wire:submit="moderate" class="card"><h2>Xử lý {{ $section }} #{{ $editing }}</h2><label>Trạng thái<select wire:model="form.status" required><option value="">Chọn trạng thái</option>@foreach(match($section){'users'=>['ACTIVE'=>'Mở hạn chế','SUSPENDED'=>'Đình chỉ','DISABLED'=>'Vô hiệu hóa'],'blogs'=>['PUBLISHED'=>'Công khai','HIDDEN'=>'Ẩn','SUSPENDED'=>'Đình chỉ'],default=>['REVIEWING'=>'Đang xem xét','RESOLVED'=>'Đã xử lý','DISMISSED'=>'Bỏ qua']} as $key=>$label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select></label><label>Lý do / ghi chú xử lý<textarea wire:model="form.reason" required minlength="10"></textarea></label><button class="button" wire:loading.attr="disabled" wire:confirm="Xác nhận thay đổi trạng thái đối tượng này?">Xác nhận xử lý</button></form>@endif
-<div class="table-scroll"><table><thead><tr><th>Đối tượng</th><th>Thông tin</th><th>Trạng thái / thời gian</th><th>Thao tác</th></tr></thead><tbody>@forelse($rows as $row)<tr><td>{{ $row->name ?? $row->original_name ?? $row->action ?? $row->type ?? ('Báo cáo #'.$row->id) }}</td><td>{{ $row->email ?? $row->reason ?? $row->resource_type ?? $row->slug ?? $row->alt_text ?? '' }}@if($section==='audit')<p>Actor #{{ $row->actor_user_id }} · {{ $row->resource_id }} · Blog {{ $row->blog_id }}</p>@endif</td><td>{{ $row->status ?? '' }}<br>{{ $row->created_at }}</td><td>@if(in_array($section,['users','blogs','reports']))<button wire:click="edit({{ $row->id }})">Xem / xử lý</button>@endif @if($section==='blogs')<a href="/b/{{ $row->slug }}" target="_blank" rel="noopener">Xem blog</a>@endif @if($section==='media' && $row->status==='READY')<img width="100" src="{{ $row->secure_url }}" alt="{{ $row->alt_text }}" />@endif</td></tr>@empty<tr><td colspan="4">Chưa có dữ liệu phù hợp.</td></tr>@endforelse</tbody></table></div>
-@endif
+
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Đối tượng</th>
+                <th>Thông tin</th>
+                <th>Trạng thái / thời gian</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse($rows as $row)
+                <tr>
+                    <td>
+                        {{ $row->name
+                            ?? $row->original_name
+                            ?? $row->action
+                            ?? $row->type
+                            ?? ('Báo cáo #'.$row->id) }}
+                    </td>
+
+                    <td>
+                        {{ $row->email
+                            ?? $row->reason
+                            ?? $row->resource_type
+                            ?? $row->slug
+                            ?? $row->alt_text
+                            ?? '' }}
+
+                        @if($section === 'audit')
+                            <p>
+                                Actor #{{ $row->actor_user_id }}
+                                · {{ $row->resource_id }}
+                                · Blog {{ $row->blog_id }}
+                            </p>
+                        @endif
+                    </td>
+
+                    <td>
+                        {{ $row->status ?? '' }}
+                        <p>{{ $row->created_at }}</p>
+                    </td>
+
+                    <td>
+                        @if(in_array($section, ['users', 'blogs', 'reports']))
+                            <button type="button"
+                                    wire:click="edit({{ $row->id }})">
+                                Xem / xử lý
+                            </button>
+                        @endif
+
+                        @if($section === 'blogs')
+                            <a href="/b/{{ $row->slug }}"
+                               target="_blank"
+                               rel="noopener">
+                                Xem blog
+                            </a>
+                        @endif
+
+                        @if($section === 'media')
+                            @if($row->status === 'READY')
+                                <img width="100"
+                                     src="{{ $row->secure_url }}"
+                                     alt="{{ $row->alt_text }}"
+                                     loading="lazy" />
+                            @endif
+
+                            @if(in_array($row->status, ['READY', 'FAILED', 'DELETING']))
+                                <button type="button"
+                                        wire:click="deletePlatformMedia({{ $row->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:confirm="Xóa ảnh này nếu không còn được sử dụng?">
+                                    {{ $row->status === 'DELETING'
+                                        ? 'Thử xóa lại'
+                                        : 'Xóa' }}
+                                </button>
+                            @endif
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4">
+                        Chưa có dữ liệu phù hợp.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+
 @if($rows instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $editing===null)<div class="actions"><button wire:click="$set('page',{{ max(1,$page-1) }})" @disabled($page<=1)>Trang trước</button><p>Trang {{ $rows->currentPage() }} / {{ $rows->lastPage() }} · {{ $rows->total() }} kết quả</p><button wire:click="$set('page',{{ $page+1 }})" @disabled(!$rows->hasMorePages())>Trang sau</button></div>@endif
-</div></x-filament-panels::page>
+@if($rows instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $editing===null)
+    <div class="actions">
+        <button wire:click="$set('page',{{ max(1,$page-1) }})"
+                @disabled($page<=1)>
+            Trang trước
+        </button>
+
+        <p>
+            Trang {{ $rows->currentPage() }}
+            / {{ $rows->lastPage() }}
+            · {{ $rows->total() }} kết quả
+        </p>
+
+        <button wire:click="$set('page',{{ $page+1 }})"
+                @disabled(!$rows->hasMorePages())>
+            Trang sau
+        </button>
+    </div>
+@endif
+
+{{-- Đóng nhánh templates / settings / các mục quản lý khác --}}
+@endif
+
+</div>
+</x-filament-panels::page>
