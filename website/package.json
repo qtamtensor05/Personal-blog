@@ -17,6 +17,7 @@
         "@eslint/js": "^10.0.1",
         "@prettier/plugin-php": "^0.25.0",
         "@tailwindcss/vite": "^4.0.0",
+        "blade-formatter": "^1.19.0",
         "concurrently": "^10.0.3",
         "eslint": "^10.10.0",
         "eslint-config-prettier": "^10.1.8",
