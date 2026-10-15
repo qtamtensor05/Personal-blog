@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Content\Support;
 
 use Carbon\CarbonImmutable;
@@ -21,7 +22,6 @@ final class PublicationTime
             : 'Asia/Ho_Chi_Minh';
     }
 
-    
     public function toUtc(int $blogId, string $localInput): string
     {
         $timezone = $this->timezone($blogId);
@@ -64,14 +64,12 @@ final class PublicationTime
             )
         ) {
             throw ValidationException::withMessages([
-                'scheduled_at' =>
-                    'Lịch đăng không hợp lệ hoặc đã qua. Hãy chọn lại thời gian.',
+                'scheduled_at' => 'Lịch đăng không hợp lệ hoặc đã qua. Hãy chọn lại thời gian.',
             ]);
         }
 
         return $time->utc()->format('Y-m-d H:i:s');
     }
-
 
     public function toLocalInput(
         int $blogId,

@@ -39,11 +39,8 @@ window.ButMayEditors = {
             onUpdate: ({ editor: instance }) => {
                 wire.set('form.content_json', instance.getJSON(), false);
 
-                root.closest('.editor-form')?.dispatchEvent(
-                    new Event('input', { bubbles: true })
-                );
+                root.closest('.editor-form')?.dispatchEvent(new Event('input', { bubbles: true }));
             },
-
         });
         root.querySelectorAll('[data-command]').forEach((button) =>
             button.addEventListener('click', () => {

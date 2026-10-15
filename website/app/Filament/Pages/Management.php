@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Modules\Design\DesignDocument;
+use App\Modules\Media\Actions\DeletePlatformImageAction;
+use App\Modules\Media\Actions\UploadPlatformImageAction;
 use App\Modules\Moderation\Actions\ModerateAction;
 use App\Modules\Platform\Actions\SavePlatformSettingsAction;
 use App\Modules\Platform\Actions\SaveTopicAction;
@@ -10,12 +12,9 @@ use App\Modules\Platform\Queries\PlatformWorkspace;
 use App\Modules\Templates\Actions\SaveTemplateAction;
 use App\Shared\Support\JsonFingerprint;
 use Filament\Pages\Page;
-use Livewire\Attributes\Url;
-use App\Modules\Media\Actions\UploadPlatformImageAction;
-use App\Modules\Media\Actions\DeletePlatformImageAction;
-use Livewire\WithFileUploads;
 use Illuminate\Validation\ValidationException;
-
+use Livewire\Attributes\Url;
+use Livewire\WithFileUploads;
 
 class Management extends Page
 {
@@ -27,13 +26,11 @@ class Management extends Page
 
     protected static bool $shouldRegisterNavigation = false;
 
-    
     use WithFileUploads;
 
     public $platformImage;
 
     public string $platformAlt = '';
-
 
     #[Url]
     public string $section = 'templates';
@@ -162,15 +159,13 @@ class Management extends Page
         $this->message = 'Đã cập nhật và ghi nhật ký.';
     }
 
-    
     public function uploadPlatformMedia(): void
     {
         app(PlatformWorkspace::class)
             ->authorize(auth()->user(), 'media');
 
         $this->validate([
-            'platformImage' =>
-                'required|image|mimes:jpeg,png,webp,gif|max:10240',
+            'platformImage' => 'required|image|mimes:jpeg,png,webp,gif|max:10240',
             'platformAlt' => 'nullable|string|max:500',
         ]);
 
@@ -211,7 +206,6 @@ class Management extends Page
         $this->message =
             'Đã xóa ảnh nền tảng không còn được sử dụng.';
     }
-
 
     public function addTopic(): void
     {

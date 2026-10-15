@@ -9,8 +9,8 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 use RuntimeException;
+use Throwable;
 
 final class UploadBlogImageAction
 {
@@ -61,10 +61,10 @@ final class UploadBlogImageAction
                 'folder' => "blogs/{$blogId}",
                 'resource_type' => 'image',
             ]);
-            
+
             foreach (['asset_id', 'public_id', 'secure_url'] as $key) {
                 if (
-                    !is_string($result[$key] ?? null) ||
+                    ! is_string($result[$key] ?? null) ||
                     trim($result[$key]) === ''
                 ) {
                     throw new RuntimeException(
@@ -77,7 +77,7 @@ final class UploadBlogImageAction
                 strlen($result['asset_id']) > 128 ||
                 strlen($result['public_id']) > 255 ||
                 strlen($result['secure_url']) > 2048 ||
-                !filter_var($result['secure_url'], FILTER_VALIDATE_URL) ||
+                ! filter_var($result['secure_url'], FILTER_VALIDATE_URL) ||
                 parse_url($result['secure_url'], PHP_URL_SCHEME) !== 'https'
             ) {
                 throw new RuntimeException(
@@ -100,13 +100,13 @@ final class UploadBlogImageAction
                     'status' => 'READY',
                     'updated_at' => now(),
                 ]);
-                if ($updated !== 1) {
-                    throw new RuntimeException(
-                        'Upload không còn ở trạng thái UPLOADING.'
-                    );
-                }
+            if ($updated !== 1) {
+                throw new RuntimeException(
+                    'Upload không còn ở trạng thái UPLOADING.'
+                );
+            }
         } catch (Throwable $exception) {
-            
+
             $publicId = is_array($result)
                 && is_string($result['public_id'] ?? null)
                 && strlen($result['public_id']) <= 255

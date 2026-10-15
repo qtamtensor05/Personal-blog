@@ -7,12 +7,12 @@ use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PreviewController;
 use App\Http\Controllers\PublicBlogController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TemplateController;
 use App\Modules\Identity\Actions\VerifyCurrentEmailAction;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SitemapController;
 
 Route::get('/', [TemplateController::class, 'index']);
 Route::get('/blogs', [DiscoveryController::class, 'index']);
@@ -71,3 +71,7 @@ Route::get('/sitemaps/{page}.xml', [SitemapController::class, 'part'])->whereNum
 Route::get('/b/{blogSlug}', [PublicBlogController::class, 'home']);
 Route::get('/b/{blogSlug}/posts/{postSlug}', [PublicBlogController::class, 'post']);
 Route::get('/b/{blogSlug}/pages/{pageSlug}', [PublicBlogController::class, 'page']);
+
+Route::get('/', function () {
+    return 'home';
+});

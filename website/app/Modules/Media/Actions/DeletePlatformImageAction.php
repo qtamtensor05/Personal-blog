@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Media\Actions;
 
 use App\Models\User;
@@ -48,7 +49,7 @@ final class DeletePlatformImageAction
                 foreach ($columns as $column) {
                     if (DB::table($table)->where($column, $id)->exists()) {
                         throw ValidationException::withMessages([
-                            'media' => 'Ảnh đang được hệ thống sử dụng.'
+                            'media' => 'Ảnh đang được hệ thống sử dụng.',
                         ]);
                     }
                 }
@@ -57,11 +58,11 @@ final class DeletePlatformImageAction
             $contains = function (mixed $value) use (
                 &$contains, $id
             ): bool {
-                if (!is_array($value)) {
+                if (! is_array($value)) {
                     return false;
                 }
 
-                foreach ($value as $key => $child) {                   
+                foreach ($value as $key => $child) {
                     if (
                         in_array($key, [
                             'mediaId',
@@ -96,8 +97,7 @@ final class DeletePlatformImageAction
 
             foreach ($jsonReferences as $table => $columns) {
                 foreach (
-                    DB::table($table)->select($columns)->cursor()
-                    as $item
+                    DB::table($table)->select($columns)->cursor() as $item
                 ) {
                     foreach ($columns as $column) {
                         if (
@@ -105,8 +105,7 @@ final class DeletePlatformImageAction
                             $contains(json_decode($item->$column, true))
                         ) {
                             throw ValidationException::withMessages([
-                                'media' =>
-                                    'Ảnh còn được dùng trong nội dung hoặc giao diện.'
+                                'media' => 'Ảnh còn được dùng trong nội dung hoặc giao diện.',
                             ]);
                         }
                     }
@@ -125,13 +124,12 @@ final class DeletePlatformImageAction
 
         if (
             $asset->cloudinary_public_id &&
-            !$this->cloudinary->destroy(
+            ! $this->cloudinary->destroy(
                 $asset->cloudinary_public_id
             )
         ) {
             throw ValidationException::withMessages([
-                'media' =>
-                    'Cloudinary chưa xóa được ảnh. Có thể thử lại.'
+                'media' => 'Cloudinary chưa xóa được ảnh. Có thể thử lại.',
             ]);
         }
 
@@ -139,7 +137,7 @@ final class DeletePlatformImageAction
             ->where([
                 'id' => $id,
                 'scope' => 'PLATFORM',
-                'status' => 'DELETING'
+                'status' => 'DELETING',
             ])
             ->update([
                 'status' => 'DELETED',

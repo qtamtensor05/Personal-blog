@@ -6,10 +6,12 @@ use App\Modules\Blogs\Actions\SaveBlogSettingsAction;
 use App\Modules\Blogs\OwnerContext;
 use App\Modules\Blogs\Queries\BlogSettingsQuery;
 use App\Modules\Content\Actions\ArchiveContentAction;
+use App\Modules\Content\Actions\ManageTermAction;
 use App\Modules\Content\Actions\SaveContentAction;
 use App\Modules\Content\Actions\SaveTermAction;
 use App\Modules\Content\Queries\ContentRelations;
 use App\Modules\Content\Queries\ContentWorkspace;
+use App\Modules\Content\Support\PublicationTime;
 use App\Modules\Design\Actions\PublishDesignAction;
 use App\Modules\Design\Actions\SaveDesignAction;
 use App\Modules\Design\DesignDocument;
@@ -25,9 +27,6 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
-
-use App\Modules\Content\Actions\ManageTermAction;
-use App\Modules\Content\Support\PublicationTime;
 
 class Studio extends Page
 {
@@ -115,7 +114,7 @@ class Studio extends Page
         abort_unless(in_array($this->section, ['posts', 'pages']), 404);
         $this->resetErrorBag();
         $this->editing = $id ?? 0;
-        #$this->form = ['title' => '', 'slug' => '', 'excerpt' => '', 'content_json' => ['type' => 'doc', 'content' => [['type' => 'paragraph']]], 'seo_title' => '', 'seo_description' => '', 'cover_media_id' => null, 'scheduled_at' => null, 'category_ids' => [], 'tag_ids' => []];
+        // $this->form = ['title' => '', 'slug' => '', 'excerpt' => '', 'content_json' => ['type' => 'doc', 'content' => [['type' => 'paragraph']]], 'seo_title' => '', 'seo_description' => '', 'cover_media_id' => null, 'scheduled_at' => null, 'category_ids' => [], 'tag_ids' => []];
         $this->form = [
             'title' => '',
             'slug' => '',
@@ -174,11 +173,9 @@ class Studio extends Page
         $this->message = match ($intent) {
             'publish' => 'Đã xuất bản.',
 
-            'schedule' =>
-            'Đã lên lịch theo múi giờ của blog.',
+            'schedule' => 'Đã lên lịch theo múi giờ của blog.',
 
-            default =>
-            'Đã lưu nháp. Nội dung live không thay đổi.',
+            default => 'Đã lưu nháp. Nội dung live không thay đổi.',
         };
 
         $this->dispatch('editor-saved');
@@ -233,7 +230,6 @@ class Studio extends Page
         $this->message = 'Đã thêm phân loại.';
     }
 
-
     public function editTerm(int $id): void
     {
         abort_unless(
@@ -251,7 +247,7 @@ class Studio extends Page
         $this->editing = $id;
         $this->form = [
             'name' => $term->name,
-            'slug' => $term->slug
+            'slug' => $term->slug,
         ];
     }
 
@@ -303,7 +299,6 @@ class Studio extends Page
         $this->editing = null;
         $this->form = [];
     }
-
 
     public function archive(int $id): void
     {

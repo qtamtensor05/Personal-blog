@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Media\Actions;
 
 use App\Models\User;
@@ -67,7 +68,7 @@ final class UploadPlatformImageAction
                 ['asset_id', 'public_id', 'secure_url'] as $key
             ) {
                 if (
-                    !is_string($result[$key] ?? null) ||
+                    ! is_string($result[$key] ?? null) ||
                     trim($result[$key]) === ''
                 ) {
                     throw new RuntimeException(
@@ -80,7 +81,7 @@ final class UploadPlatformImageAction
                 strlen($result['asset_id']) > 128 ||
                 strlen($result['public_id']) > 255 ||
                 strlen($result['secure_url']) > 2048 ||
-                !filter_var(
+                ! filter_var(
                     $result['secure_url'],
                     FILTER_VALIDATE_URL
                 ) ||
@@ -98,8 +99,7 @@ final class UploadPlatformImageAction
                 ->where('id', $id)
                 ->where('status', 'UPLOADING')
                 ->update([
-                    'cloud_name' =>
-                        $result['cloud_name']
+                    'cloud_name' => $result['cloud_name']
                         ?? (string) config('services.cloudinary.cloud_name'),
                     'cloudinary_asset_id' => $result['asset_id'],
                     'cloudinary_public_id' => $result['public_id'],
@@ -149,8 +149,7 @@ final class UploadPlatformImageAction
             report($e);
 
             throw ValidationException::withMessages([
-                'image' =>
-                    'Không tải được ảnh lên Cloudinary. Vui lòng thử lại.'
+                'image' => 'Không tải được ảnh lên Cloudinary. Vui lòng thử lại.',
             ]);
         }
     }

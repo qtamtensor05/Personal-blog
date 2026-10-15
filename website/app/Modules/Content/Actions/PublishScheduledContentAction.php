@@ -2,9 +2,10 @@
 
 namespace App\Modules\Content\Actions;
 
+use App\Modules\Media\MediaReferenceGuard;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Support\Facades\DB;
-use App\Modules\Media\MediaReferenceGuard;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 final class PublishScheduledContentAction
@@ -64,7 +65,7 @@ final class PublishScheduledContentAction
                             (int) $row->blog_id,
                             array_replace((array) $row, $changes)
                         );
-                   } catch (ValidationException $e) {
+                    } catch (ValidationException $e) {
                         return $this->blockFailedSchedule(
                             $table,
                             $row,
@@ -121,7 +122,6 @@ final class PublishScheduledContentAction
         return $published;
     }
 
-    
     private function blockFailedSchedule(
         string $table,
         object $row,
@@ -152,7 +152,7 @@ final class PublishScheduledContentAction
             (int) $row->blog_id
         );
 
-        \Illuminate\Support\Facades\Log::warning(
+        Log::warning(
             'Scheduled content blocked',
             [
                 'type' => $table,
@@ -164,5 +164,4 @@ final class PublishScheduledContentAction
 
         return false;
     }
-
 }

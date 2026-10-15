@@ -48,7 +48,7 @@ final class PublishPostAction
                     'canonical_url',
                     'robots',
                 ]),
-            );           
+            );
             app(MediaReferenceGuard::class)->assertReadyForBlog(
                 $blogId,
                 array_replace((array) $post, $allowed)

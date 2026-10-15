@@ -27,7 +27,6 @@ final class PublicBlogController extends Controller
         $categories = DB::table('categories')->where('blog_id', $blog->id)->where('is_active', true)->get();
         $tags = DB::table('tags')->where('blog_id', $blog->id)->get();
 
-        
         $settings = DB::table('blog_settings')
             ->where('blog_id', $blog->id)
             ->first();
@@ -80,7 +79,8 @@ final class PublicBlogController extends Controller
             (int) $blog->id,
         );
         $seo = $this->seo($blog, $post, 'posts');
-        return view('public.post', compact('blog', 'post', 'content','seo') + $this->shell($blog));
+
+        return view('public.post', compact('blog', 'post', 'content', 'seo') + $this->shell($blog));
     }
 
     public function page(string $blogSlug, string $pageSlug): View
@@ -101,7 +101,6 @@ final class PublicBlogController extends Controller
         return view('public.page', compact('blog', 'page', 'content', 'seo') + $this->shell($blog));
     }
 
-    
     private function seo(
         object $blog,
         object $content,
@@ -112,8 +111,8 @@ final class PublicBlogController extends Controller
         $canonical = $content->canonical_url ?: url($path);
 
         if (
-            !filter_var($canonical, FILTER_VALIDATE_URL) ||
-            !in_array(
+            ! filter_var($canonical, FILTER_VALIDATE_URL) ||
+            ! in_array(
                 strtolower(parse_url($canonical, PHP_URL_SCHEME) ?: ''),
                 ['http', 'https'],
                 true
@@ -156,7 +155,6 @@ final class PublicBlogController extends Controller
             'image' => $image,
         ];
     }
-
 
     private function blog(string $slug): object
     {

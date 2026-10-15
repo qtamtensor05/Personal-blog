@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Media;
 
 use Illuminate\Support\Facades\DB;
@@ -28,12 +29,11 @@ final class MediaReferenceGuard
         }
 
         if (
-            !is_array($document) ||
+            ! is_array($document) ||
             ($document['type'] ?? null) !== 'doc'
         ) {
             throw ValidationException::withMessages([
-                'content_json' =>
-                    'Nội dung Tiptap không hợp lệ.'
+                'content_json' => 'Nội dung Tiptap không hợp lệ.',
             ]);
         }
 
@@ -65,16 +65,15 @@ final class MediaReferenceGuard
                     'id' => $id,
                     'blog_id' => $blogId,
                     'scope' => 'BLOG',
-                    'status' => 'READY'
+                    'status' => 'READY',
                 ])
                 ->whereNull('deleted_at')
                 ->lockForUpdate()
                 ->first();
 
-            if (!$asset) {
+            if (! $asset) {
                 throw ValidationException::withMessages([
-                    'media' =>
-                        'Ảnh không thuộc blog, đã bị xóa hoặc chưa sẵn sàng.'
+                    'media' => 'Ảnh không thuộc blog, đã bị xóa hoặc chưa sẵn sàng.',
                 ]);
             }
         }
@@ -83,12 +82,11 @@ final class MediaReferenceGuard
     private function validId(mixed $value): int
     {
         if (
-            !is_int($value) &&
-            !(is_string($value) && ctype_digit($value))
+            ! is_int($value) &&
+            ! (is_string($value) && ctype_digit($value))
         ) {
             throw ValidationException::withMessages([
-                'media' =>
-                    'Ảnh phải được chọn từ thư viện media của blog.'
+                'media' => 'Ảnh phải được chọn từ thư viện media của blog.',
             ]);
         }
 
@@ -100,7 +98,7 @@ final class MediaReferenceGuard
 
         if ($id === false) {
             throw ValidationException::withMessages([
-                'media' => 'Mã ảnh không hợp lệ.'
+                'media' => 'Mã ảnh không hợp lệ.',
             ]);
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Database\Query\Builder;
@@ -14,7 +15,7 @@ final class SitemapController extends Controller
         $total = $this->urlsQuery()->count();
         $pages = (int) ceil($total / self::URLS_PER_FILE);
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         for ($page = 1; $page <= $pages; $page++) {
@@ -39,7 +40,7 @@ final class SitemapController extends Controller
 
         abort_if($urls->isEmpty(), 404);
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         foreach ($urls as $location) {

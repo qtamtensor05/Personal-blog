@@ -4,17 +4,15 @@ namespace App\Modules\Content\Actions;
 
 use App\Models\User;
 use App\Modules\Blogs\OwnerContext;
+use App\Modules\Content\Support\PublicationTime;
 use App\Modules\Media\MediaReferenceGuard;
 use App\Shared\Contracts\AuditRecorder;
 use App\Shared\Contracts\RichTextRenderer;
 use App\Shared\Support\JsonFingerprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
-use App\Modules\Content\Support\PublicationTime;
 use Illuminate\Validation\Rule;
-
-
+use Illuminate\Validation\ValidationException;
 
 final class SaveContentAction
 {
@@ -54,10 +52,10 @@ final class SaveContentAction
             'category_ids.*' => 'integer',
 
             'tag_ids' => 'array',
-            'tag_ids.*' => 'integer',        
+            'tag_ids.*' => 'integer',
         ])->validate();
         if ($id === null) {
-        $data['robots'] = $data['robots'] ?? 'index,follow';
+            $data['robots'] = $data['robots'] ?? 'index,follow';
         } elseif (
             array_key_exists('robots', $data) &&
             $data['robots'] === null
@@ -70,8 +68,7 @@ final class SaveContentAction
             && empty($data['scheduled_at'])
         ) {
             throw ValidationException::withMessages([
-                'scheduled_at' =>
-                    'Chọn thời gian xuất bản trong tương lai theo múi giờ blog.',
+                'scheduled_at' => 'Chọn thời gian xuất bản trong tương lai theo múi giờ blog.',
             ]);
         }
 

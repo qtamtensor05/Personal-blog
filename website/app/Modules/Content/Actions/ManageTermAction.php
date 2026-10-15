@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Content\Actions;
 
 use App\Models\User;
@@ -24,7 +25,7 @@ final class ManageTermAction
                 'required',
                 'string',
                 'max:160',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             ],
         ])->validate();
 
@@ -52,7 +53,7 @@ final class ManageTermAction
 
             if ($exists) {
                 throw ValidationException::withMessages([
-                    'slug' => 'Đường dẫn đã tồn tại trong blog.'
+                    'slug' => 'Đường dẫn đã tồn tại trong blog.',
                 ]);
             }
 
@@ -98,7 +99,7 @@ final class ManageTermAction
                 ->where(['blog_id' => $blogId, $column => $id])
                 ->exists()) {
                 throw ValidationException::withMessages([
-                    'term' => 'Danh mục/thẻ đang được bài viết sử dụng.'
+                    'term' => 'Danh mục/thẻ đang được bài viết sử dụng.',
                 ]);
             }
 
@@ -106,10 +107,10 @@ final class ManageTermAction
                 DB::table('categories')
                     ->where([
                         'blog_id' => $blogId,
-                        'parent_id' => $id
+                        'parent_id' => $id,
                     ])->exists()) {
                 throw ValidationException::withMessages([
-                    'term' => 'Danh mục đang có danh mục con.'
+                    'term' => 'Danh mục đang có danh mục con.',
                 ]);
             }
 
@@ -129,7 +130,7 @@ final class ManageTermAction
                 foreach ($draft[$draftKey] ?? [] as $linkedId) {
                     if ((int) $linkedId === $id) {
                         throw ValidationException::withMessages([
-                            'term' => 'Danh mục/thẻ còn nằm trong bản nháp hoặc lịch đăng.'
+                            'term' => 'Danh mục/thẻ còn nằm trong bản nháp hoặc lịch đăng.',
                         ]);
                     }
                 }

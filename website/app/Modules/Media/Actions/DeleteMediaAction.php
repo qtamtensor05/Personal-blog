@@ -51,7 +51,6 @@ final class DeleteMediaAction
                     }
                 }
 
-
                 return false;
             };
             foreach (['templates' => ['template_data', 'draft_data'], 'blog_designs' => ['published_data', 'draft_data'], 'posts' => ['content_json', 'draft_data'], 'pages' => ['content_json', 'draft_data'], 'platform_settings' => ['config_json'], 'blog_settings' => ['social_links']] as $table => $columns) {
