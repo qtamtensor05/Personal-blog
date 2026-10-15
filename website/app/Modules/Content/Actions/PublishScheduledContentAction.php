@@ -4,6 +4,8 @@ namespace App\Modules\Content\Actions;
 
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Support\Facades\DB;
+use App\Modules\Media\MediaReferenceGuard;
+use Illuminate\Validation\ValidationException;
 
 final class PublishScheduledContentAction
 {
@@ -57,13 +59,28 @@ final class PublishScheduledContentAction
                     if ($table === 'pages') {
                         unset($changes['excerpt'],$changes['cover_media_id']);
                     }
-                    if (isset($changes['content_json']) && is_array($changes['content_json'])) {
-                        $changes['content_json'] = json_encode($changes['content_json'], JSON_THROW_ON_ERROR);
+                    try {
+                        app(MediaReferenceGuard::class)->assertReadyForBlog(
+                            (int) $row->blog_id,
+                            array_replace((array) $row, $changes)
+                        );
+                   } catch (ValidationException $e) {
+                        return $this->blockFailedSchedule(
+                            $table,
+                            $row,
+                            (int) $ownerId,
+                            'invalid_media'
+                        );
                     }
                     if ($table === 'posts') {
                         foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $terms => $key) {
                             if (isset($draft[$key]) && DB::table($terms)->where('blog_id', $row->blog_id)->whereIn('id', $draft[$key])->count() !== count(array_unique($draft[$key]))) {
-                                return false;
+                                return $this->blockFailedSchedule(
+                                    $table,
+                                    $row,
+                                    (int) $ownerId,
+                                    'invalid_'.$terms
+                                );
                             }
                         }
                         foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $terms => $key) {
@@ -103,4 +120,49 @@ final class PublishScheduledContentAction
 
         return $published;
     }
+
+    
+    private function blockFailedSchedule(
+        string $table,
+        object $row,
+        int $ownerId,
+        string $reason
+    ): bool {
+        // Bài chưa xuất bản trở về DRAFT.
+        // Bài đã PUBLISHED vẫn giữ nội dung live hiện tại.
+        $newStatus = $row->status === 'SCHEDULED'
+            ? 'DRAFT'
+            : 'PUBLISHED';
+
+        DB::table($table)
+            ->where('id', $row->id)
+            ->where('blog_id', $row->blog_id)
+            ->update([
+                'status' => $newStatus,
+                'scheduled_at' => null,
+                'updated_at' => now(),
+            ]);
+
+        // Ghi lại sự kiện để kiểm tra khi cần.
+        $this->audit->record(
+            $ownerId,
+            rtrim($table, 's').'.schedule_blocked',
+            rtrim($table, 's'),
+            (int) $row->id,
+            (int) $row->blog_id
+        );
+
+        \Illuminate\Support\Facades\Log::warning(
+            'Scheduled content blocked',
+            [
+                'type' => $table,
+                'content_id' => $row->id,
+                'blog_id' => $row->blog_id,
+                'reason' => $reason,
+            ]
+        );
+
+        return false;
+    }
+
 }

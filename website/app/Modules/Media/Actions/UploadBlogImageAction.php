@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use RuntimeException;
 
 final class UploadBlogImageAction
 {
@@ -54,12 +55,37 @@ final class UploadBlogImageAction
                 'updated_at' => now(),
             ]);
         });
+        $result = null;
         try {
             $result = $this->cloudinary->upload($file->getRealPath(), [
                 'folder' => "blogs/{$blogId}",
                 'resource_type' => 'image',
             ]);
-            DB::table('media_assets')
+            
+            foreach (['asset_id', 'public_id', 'secure_url'] as $key) {
+                if (
+                    !is_string($result[$key] ?? null) ||
+                    trim($result[$key]) === ''
+                ) {
+                    throw new RuntimeException(
+                        'Cloudinary trả về dữ liệu ảnh không đầy đủ.'
+                    );
+                }
+            }
+
+            if (
+                strlen($result['asset_id']) > 128 ||
+                strlen($result['public_id']) > 255 ||
+                strlen($result['secure_url']) > 2048 ||
+                !filter_var($result['secure_url'], FILTER_VALIDATE_URL) ||
+                parse_url($result['secure_url'], PHP_URL_SCHEME) !== 'https'
+            ) {
+                throw new RuntimeException(
+                    'Thông tin ảnh từ Cloudinary không hợp lệ.'
+                );
+            }
+
+            $updated = DB::table('media_assets')
                 ->where(['id' => $id, 'blog_id' => $blogId, 'status' => 'UPLOADING'])
                 ->update([
                     'cloud_name' => $result['cloud_name'] ?? (string) config('services.cloudinary.cloud_name', 'pending'),
@@ -74,10 +100,36 @@ final class UploadBlogImageAction
                     'status' => 'READY',
                     'updated_at' => now(),
                 ]);
+                if ($updated !== 1) {
+                    throw new RuntimeException(
+                        'Upload không còn ở trạng thái UPLOADING.'
+                    );
+                }
         } catch (Throwable $exception) {
+            
+            $publicId = is_array($result)
+                && is_string($result['public_id'] ?? null)
+                && strlen($result['public_id']) <= 255
+                    ? $result['public_id']
+                    : null;
+
+            if ($publicId !== null) {
+                try {
+                    if ($this->cloudinary->destroy($publicId)) {
+                        $publicId = null;
+                    }
+                } catch (Throwable $cleanupError) {
+                    report($cleanupError);
+                }
+            }
             DB::table('media_assets')
                 ->where('id', $id)
-                ->update(['status' => 'FAILED', 'updated_at' => now()]);
+                ->update([
+                    'status' => 'FAILED',
+                    'cloudinary_public_id' => $publicId,
+                    'updated_at' => now(),
+                ]);
+
             throw $exception;
         }
 

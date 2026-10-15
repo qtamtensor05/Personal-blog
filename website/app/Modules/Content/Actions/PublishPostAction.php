@@ -3,6 +3,7 @@
 namespace App\Modules\Content\Actions;
 
 use App\Models\User;
+use App\Modules\Media\MediaReferenceGuard;
 use App\Shared\Contracts\AuditRecorder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -47,8 +48,11 @@ final class PublishPostAction
                     'canonical_url',
                     'robots',
                 ]),
+            );           
+            app(MediaReferenceGuard::class)->assertReadyForBlog(
+                $blogId,
+                array_replace((array) $post, $allowed)
             );
-            $this->assertMediaBelongsToBlog(array_replace((array) $post, $allowed), $blogId);
             if (isset($allowed['content_json']) && is_array($allowed['content_json'])) {
                 $allowed['content_json'] = json_encode($allowed['content_json'], JSON_THROW_ON_ERROR);
             }
@@ -73,44 +77,44 @@ final class PublishPostAction
         });
     }
 
-    private function assertMediaBelongsToBlog(array $changes, int $blogId): void
-    {
-        $mediaIds = collect([$changes['cover_media_id'] ?? null, $changes['og_media_id'] ?? null])
-            ->filter()
-            ->map(fn (mixed $id): int => (int) $id);
+    // private function assertMediaBelongsToBlog(array $changes, int $blogId): void
+    // {
+    //     $mediaIds = collect([$changes['cover_media_id'] ?? null, $changes['og_media_id'] ?? null])
+    //         ->filter()
+    //         ->map(fn (mixed $id): int => (int) $id);
 
-        $content = $changes['content_json'] ?? null;
-        if (is_string($content)) {
-            $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        }
-        $walk = function (mixed $value) use (&$walk, $mediaIds): void {
-            if (! is_array($value)) {
-                return;
-            }
-            if (array_key_exists('mediaId', $value) && filter_var($value['mediaId'], FILTER_VALIDATE_INT)) {
-                $mediaIds->push((int) $value['mediaId']);
-            }
-            foreach ($value as $child) {
-                $walk($child);
-            }
-        };
-        $walk($content);
-        $mediaIds = $mediaIds->unique()->values();
-        if ($mediaIds->isEmpty()) {
-            return;
-        }
+    //     $content = $changes['content_json'] ?? null;
+    //     if (is_string($content)) {
+    //         $content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+    //     }
+    //     $walk = function (mixed $value) use (&$walk, $mediaIds): void {
+    //         if (! is_array($value)) {
+    //             return;
+    //         }
+    //         if (array_key_exists('mediaId', $value) && filter_var($value['mediaId'], FILTER_VALIDATE_INT)) {
+    //             $mediaIds->push((int) $value['mediaId']);
+    //         }
+    //         foreach ($value as $child) {
+    //             $walk($child);
+    //         }
+    //     };
+    //     $walk($content);
+    //     $mediaIds = $mediaIds->unique()->values();
+    //     if ($mediaIds->isEmpty()) {
+    //         return;
+    //     }
 
-        $validCount = DB::table('media_assets')
-            ->where('blog_id', $blogId)
-            ->where('scope', 'BLOG')
-            ->where('status', 'READY')
-            ->whereNull('deleted_at')
-            ->whereIn('id', $mediaIds)
-            ->count();
-        if ($validCount !== $mediaIds->count()) {
-            throw ValidationException::withMessages([
-                'media' => 'Nội dung chứa media không thuộc blog hoặc chưa sẵn sàng.',
-            ]);
-        }
-    }
+    //     $validCount = DB::table('media_assets')
+    //         ->where('blog_id', $blogId)
+    //         ->where('scope', 'BLOG')
+    //         ->where('status', 'READY')
+    //         ->whereNull('deleted_at')
+    //         ->whereIn('id', $mediaIds)
+    //         ->count();
+    //     if ($validCount !== $mediaIds->count()) {
+    //         throw ValidationException::withMessages([
+    //             'media' => 'Nội dung chứa media không thuộc blog hoặc chưa sẵn sàng.',
+    //         ]);
+    //     }
+    // }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schedule;
+use App\Modules\Media\Actions\ReconcileMediaAction;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -50,3 +51,17 @@ Schedule::call(
     ->name('publish-scheduled-content')
     ->everyMinute()
     ->withoutOverlapping();
+
+
+    Artisan::command('media:reconcile', function (): void {
+        $stats = app(ReconcileMediaAction::class)->execute();
+
+        $this->info(
+            json_encode($stats, JSON_UNESCAPED_UNICODE)
+        );
+    })->purpose('Retry Cloudinary deletes and flag stale uploads');
+
+    Schedule::command('media:reconcile')
+        ->hourly()
+        ->withoutOverlapping();
+

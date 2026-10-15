@@ -2,7 +2,7 @@
 
 return [
     'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME') ?: parse_url((string) env('CLOUDINARY_URL'), PHP_URL_HOST)],
-    'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME')],
+    // 'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME')],
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

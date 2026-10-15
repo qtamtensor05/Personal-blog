@@ -4,12 +4,17 @@ namespace App\Modules\Content\Actions;
 
 use App\Models\User;
 use App\Modules\Blogs\OwnerContext;
+use App\Modules\Media\MediaReferenceGuard;
 use App\Shared\Contracts\AuditRecorder;
 use App\Shared\Contracts\RichTextRenderer;
 use App\Shared\Support\JsonFingerprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use App\Modules\Content\Support\PublicationTime;
+use Illuminate\Validation\Rule;
+
+
 
 final class SaveContentAction
 {
@@ -26,12 +31,57 @@ final class SaveContentAction
             'title' => 'required|string|max:160', 'slug' => 'required|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/|max:160',
             'excerpt' => 'nullable|string|max:2000', 'content_json' => 'required|array',
             'seo_title' => 'nullable|string|max:255', 'seo_description' => 'nullable|string|max:500',
-            'cover_media_id' => 'nullable|integer', 'scheduled_at' => 'nullable|date|after:now',
-            'category_ids' => 'array', 'category_ids.*' => 'integer', 'tag_ids' => 'array', 'tag_ids.*' => 'integer',
+            // 'cover_media_id' => 'nullable|integer', 'scheduled_at' => 'nullable|date|after:now',
+            // 'category_ids' => 'array', 'category_ids.*' => 'integer', 'tag_ids' => 'array', 'tag_ids.*' => 'integer',
+            'cover_media_id' => 'nullable|integer',
+            'og_media_id' => 'nullable|integer',
+
+            'canonical_url' => 'nullable|url:http,https|max:2048',
+
+            'robots' => [
+                'nullable',
+                Rule::in([
+                    'index,follow',
+                    'index,nofollow',
+                    'noindex,follow',
+                    'noindex,nofollow',
+                ]),
+            ],
+
+            'scheduled_at' => 'nullable|date',
+
+            'category_ids' => 'array',
+            'category_ids.*' => 'integer',
+
+            'tag_ids' => 'array',
+            'tag_ids.*' => 'integer',        
         ])->validate();
+        if ($id === null) {
+        $data['robots'] = $data['robots'] ?? 'index,follow';
+        } elseif (
+            array_key_exists('robots', $data) &&
+            $data['robots'] === null
+        ) {
+            unset($data['robots']);
+        }
         abort_unless(in_array($intent, ['draft', 'publish', 'schedule']), 422);
-        if ($intent === 'schedule' && empty($data['scheduled_at'])) {
-            throw ValidationException::withMessages(['scheduled_at' => 'Chọn thời gian xuất bản trong tương lai (UTC).']);
+        if (
+            $intent === 'schedule'
+            && empty($data['scheduled_at'])
+        ) {
+            throw ValidationException::withMessages([
+                'scheduled_at' =>
+                    'Chọn thời gian xuất bản trong tương lai theo múi giờ blog.',
+            ]);
+        }
+
+        if ($intent === 'schedule') {
+            $data['scheduled_at'] = app(
+                PublicationTime::class
+            )->toUtc(
+                $blog,
+                (string) $data['scheduled_at']
+            );
         }
         try {
             app(RichTextRenderer::class)->render($data['content_json'], $blog);
@@ -50,25 +100,23 @@ final class SaveContentAction
             if (DB::table($kind)->where('blog_id', $blog)->where('slug', $data['slug'])->when($id, fn ($q) => $q->where('id', '!=', $id))->exists()) {
                 throw ValidationException::withMessages(['slug' => 'Đường dẫn đã được sử dụng trong blog.']);
             }
-            $media = collect([$data['cover_media_id'] ?? null])->filter();
-            $walk = function ($node) use (&$walk, $media): void {
-                if (! is_array($node)) {
-                    return;
-                }
-                if (isset($node['mediaId'])) {
-                    $media->push((int) $node['mediaId']);
-                }
-                foreach ($node as $child) {
-                    $walk($child);
-                }
-            };
-            $walk($data['content_json']);
-            foreach ($media->unique()->sort() as $mediaId) {
-                if (! DB::table('media_assets')->where(['id' => $mediaId, 'blog_id' => $blog, 'scope' => 'BLOG', 'status' => 'READY'])->whereNull('deleted_at')->lockForUpdate()->first()) {
-                    throw ValidationException::withMessages(['media' => 'Ảnh không thuộc blog hoặc chưa sẵn sàng.']);
-                }
-            }
-            $values = array_intersect_key($data, array_flip(['title', 'slug', 'excerpt', 'content_json', 'seo_title', 'seo_description', 'cover_media_id']));
+            app(MediaReferenceGuard::class)->assertReadyForBlog($blog, $data);
+            // $values = array_intersect_key($data, array_flip(['title', 'slug', 'excerpt', 'content_json', 'seo_title', 'seo_description', 'cover_media_id']));
+            $values = array_intersect_key(
+                $data,
+                array_flip([
+                    'title',
+                    'slug',
+                    'excerpt',
+                    'content_json',
+                    'seo_title',
+                    'seo_description',
+                    'cover_media_id',
+                    'og_media_id',
+                    'canonical_url',
+                    'robots',
+                ])
+            );
             if ($kind === 'pages') {
                 unset($values['excerpt'], $values['cover_media_id']);
             }

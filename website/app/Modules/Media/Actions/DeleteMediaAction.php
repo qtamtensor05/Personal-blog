@@ -30,13 +30,27 @@ final class DeleteMediaAction
                     return false;
                 }
                 foreach ($value as $key => $child) {
-                    if (in_array($key, ['mediaId', 'media_id', 'asset_id', 'logoMediaId', 'previewMediaId', 'og_media_id', 'cover_media_id'], true) && (string) $child === (string) $id) {
+                    if (
+                        in_array($key, [
+                            'mediaId',
+                            'media_id',
+                            'asset_id',
+                            'logoMediaId',
+                            'previewMediaId',
+                            'og_media_id',
+                            'cover_media_id',
+                        ], true)
+                        && (is_int($child) || is_string($child))
+                        && (string) $child === (string) $id
+                    ) {
                         return true;
                     }
+
                     if (is_array($child) && $contains($child)) {
                         return true;
                     }
                 }
+
 
                 return false;
             };

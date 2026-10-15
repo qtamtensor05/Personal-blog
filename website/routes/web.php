@@ -12,6 +12,7 @@ use App\Modules\Identity\Actions\VerifyCurrentEmailAction;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SitemapController;
 
 Route::get('/', [TemplateController::class, 'index']);
 Route::get('/blogs', [DiscoveryController::class, 'index']);
@@ -65,6 +66,8 @@ Route::prefix('workspace')
         Route::get('/blogs/{blog}/preview-design', [PreviewController::class, 'design'])->whereNumber('blog');
     });
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/sitemaps/{page}.xml', [SitemapController::class, 'part'])->whereNumber('page');
 Route::get('/b/{blogSlug}', [PublicBlogController::class, 'home']);
 Route::get('/b/{blogSlug}/posts/{postSlug}', [PublicBlogController::class, 'post']);
 Route::get('/b/{blogSlug}/pages/{pageSlug}', [PublicBlogController::class, 'page']);

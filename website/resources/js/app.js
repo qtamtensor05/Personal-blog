@@ -36,8 +36,14 @@ window.ButMayEditors = {
             element: root.querySelector('[data-tiptap]'),
             content,
             extensions: [StarterKit, MediaImage],
-            onUpdate: ({ editor: instance }) =>
-                wire.set('form.content_json', instance.getJSON(), false),
+            onUpdate: ({ editor: instance }) => {
+                wire.set('form.content_json', instance.getJSON(), false);
+
+                root.closest('.editor-form')?.dispatchEvent(
+                    new Event('input', { bubbles: true })
+                );
+            },
+
         });
         root.querySelectorAll('[data-command]').forEach((button) =>
             button.addEventListener('click', () => {
