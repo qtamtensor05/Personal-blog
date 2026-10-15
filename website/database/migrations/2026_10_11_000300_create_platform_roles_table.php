@@ -13,6 +13,9 @@ return new class extends Migration
         }
 
         Schema::create('platform_roles', function (Blueprint $table): void {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->string('code', 60)->unique('u_0');
             $table->string('name', 160);

@@ -13,14 +13,28 @@ return new class extends Migration
             throw new RuntimeException('The business schema requires MySQL 8.0.16 or newer.');
         }
 
+        $serverVersion = (string) DB::scalar('SELECT VERSION()');
+
+        if (str_contains(strtolower($serverVersion), 'mariadb')
+            || preg_match('/^\d+(?:\.\d+){0,2}/', $serverVersion, $matches) !== 1
+            || version_compare($matches[0], '8.0.16', '<')) {
+            throw new RuntimeException(sprintf(
+                'The business schema requires MySQL 8.0.16 or newer; connected server reports %s.',
+                $serverVersion,
+            ));
+        }
+
         if (Schema::hasTable('users')) {
             return;
         }
 
         Schema::create('users', function (Blueprint $table): void {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->string('name', 160);
-            $table->string('email', 254)->unique('u_0');
+            $table->string('email', 254)->collation('utf8mb4_unicode_ci')->unique('u_0');
             $table->dateTime('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('status', ['PENDING_VERIFICATION', 'ACTIVE', 'LOCKED', 'SUSPENDED', 'DISABLED'])->default('PENDING_VERIFICATION');

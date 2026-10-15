@@ -13,6 +13,9 @@ return new class extends Migration
         }
 
         Schema::create('posts', function (Blueprint $table): void {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->unsignedBigInteger('blog_id');
             $table->string('title', 160);

@@ -13,6 +13,9 @@ return new class extends Migration
         }
 
         Schema::create('platform_role_permissions', function (Blueprint $table): void {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+            $table->collation = 'utf8mb4_unicode_ci';
             $table->id();
             $table->unsignedBigInteger('role_id');
             $table->unsignedBigInteger('permission_id');
