@@ -8,8 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Fresh installations already include this column in the canonical schema.
-        if (! Schema::hasColumn('blog_settings', 'social_links')) {
+        if (Schema::hasTable('blog_settings') && ! Schema::hasColumn('blog_settings', 'social_links')) {
             Schema::table('blog_settings', function (Blueprint $table): void {
                 $table->json('social_links')->nullable();
             });
