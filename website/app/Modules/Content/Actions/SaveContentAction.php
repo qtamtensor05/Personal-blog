@@ -56,6 +56,14 @@ final class SaveContentAction
             'tag_ids' => 'array',
             'tag_ids.*' => 'integer',        
         ])->validate();
+        if ($id === null) {
+        $data['robots'] = $data['robots'] ?? 'index,follow';
+        } elseif (
+            array_key_exists('robots', $data) &&
+            $data['robots'] === null
+        ) {
+            unset($data['robots']);
+        }
         abort_unless(in_array($intent, ['draft', 'publish', 'schedule']), 422);
         if (
             $intent === 'schedule'

@@ -22,7 +22,7 @@
 @endif
 
 @if($seo)
-    <meta property="og:type" content="article" />
+    <meta property="og:type" content="{{ data_get($seo, 'type', 'article') }}" />
 
     <meta property="og:title"
           content="{{ data_get($seo, 'title') }}" />

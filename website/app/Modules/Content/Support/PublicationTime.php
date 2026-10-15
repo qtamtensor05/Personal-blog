@@ -21,45 +21,57 @@ final class PublicationTime
             : 'Asia/Ho_Chi_Minh';
     }
 
+    
     public function toUtc(int $blogId, string $localInput): string
     {
         $timezone = $this->timezone($blogId);
 
-        try {
-            $time = CarbonImmutable::createFromFormat(
-                '!Y-m-d\TH:i',
-                $localInput,
-                $timezone
-            );
+        // HTML datetime-local dùng múi giờ của blog.
+        // SQL datetime cũ được hiểu là UTC để giữ tương thích.
+        $formats = [
+            ['Y-m-d\TH:i', $timezone],
+            ['Y-m-d\TH:i:s', $timezone],
+            ['Y-m-d H:i:s', 'UTC'],
+            ['Y-m-d H:i', 'UTC'],
+        ];
 
-            if (
-                $time === false ||
-                $time->format('Y-m-d\TH:i') !== $localInput
-            ) {
-                throw new \InvalidArgumentException(
-                    'Thời gian không hợp lệ.'
+        $time = null;
+
+        foreach ($formats as [$format, $inputTimezone]) {
+            try {
+                $candidate = CarbonImmutable::createFromFormat(
+                    '!'.$format,
+                    $localInput,
+                    $inputTimezone
                 );
+
+                if (
+                    $candidate !== false &&
+                    $candidate->format($format) === $localInput
+                ) {
+                    $time = $candidate;
+                    break;
+                }
+            } catch (\Throwable) {
+                // Thử định dạng tiếp theo.
             }
+        }
 
-            if (
-                $time->utc()->lessThanOrEqualTo(
-                    CarbonImmutable::now('UTC')
-                )
-            ) {
-                throw new \InvalidArgumentException(
-                    'Hãy chọn thời gian trong tương lai.'
-                );
-            }
-
-            return $time->utc()->format('Y-m-d H:i:s');
-
-        } catch (\Throwable $e) {
+        if (
+            $time === null ||
+            $time->utc()->lessThanOrEqualTo(
+                CarbonImmutable::now('UTC')
+            )
+        ) {
             throw ValidationException::withMessages([
                 'scheduled_at' =>
-                    'Lịch đăng không hợp lệ hoặc đã qua. Hãy chọn lại giờ theo múi giờ blog.'
+                    'Lịch đăng không hợp lệ hoặc đã qua. Hãy chọn lại thời gian.',
             ]);
         }
+
+        return $time->utc()->format('Y-m-d H:i:s');
     }
+
 
     public function toLocalInput(
         int $blogId,

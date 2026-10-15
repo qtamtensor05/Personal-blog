@@ -138,7 +138,6 @@
 </div>
 
 
-@if($rows instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $editing===null)<div class="actions"><button wire:click="$set('page',{{ max(1,$page-1) }})" @disabled($page<=1)>Trang trước</button><p>Trang {{ $rows->currentPage() }} / {{ $rows->lastPage() }} · {{ $rows->total() }} kết quả</p><button wire:click="$set('page',{{ $page+1 }})" @disabled(!$rows->hasMorePages())>Trang sau</button></div>@endif
 @if($rows instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $editing===null)
     <div class="actions">
         <button wire:click="$set('page',{{ max(1,$page-1) }})"

@@ -67,6 +67,7 @@ Route::prefix('workspace')
     });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/sitemaps/{page}.xml', [SitemapController::class, 'part'])->whereNumber('page');
 Route::get('/b/{blogSlug}', [PublicBlogController::class, 'home']);
 Route::get('/b/{blogSlug}/posts/{postSlug}', [PublicBlogController::class, 'post']);
 Route::get('/b/{blogSlug}/pages/{pageSlug}', [PublicBlogController::class, 'page']);

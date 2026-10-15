@@ -19,43 +19,42 @@ final class ReconcileMediaAction
             'stale_uploads' => 0,
         ];
 
-        $rows = DB::table('media_assets')
-            ->whereIn('status', ['DELETING', 'FAILED'])
-            ->whereNotNull('cloudinary_public_id')
-            ->where('updated_at', '<', now()->subMinutes(10))
-            ->orderBy('id')
-            ->limit(100)
-            ->get(['id', 'cloudinary_public_id']);
+        
+    $cutoff = now()->subMinutes(10);
 
-        foreach ($rows as $row) {
-            try {
-                if (
-                    !$this->cloudinary->destroy(
+    DB::table('media_assets')
+        ->whereIn('status', ['DELETING', 'FAILED'])
+        ->whereNotNull('cloudinary_public_id')
+        ->where('updated_at', '<', $cutoff)
+        ->chunkById(100, function ($rows) use (&$result): void {
+            foreach ($rows as $row) {
+                try {
+                    if (!$this->cloudinary->destroy(
                         $row->cloudinary_public_id
-                    )
-                ) {
+                    )) {
+                        $result['failed']++;
+                        continue;
+                    }
+
+                    $result['deleted'] += DB::table('media_assets')
+                        ->where('id', $row->id)
+                        ->whereIn('status', ['DELETING', 'FAILED'])
+                        ->where(
+                            'cloudinary_public_id',
+                            $row->cloudinary_public_id
+                        )
+                        ->update([
+                            'status' => 'DELETED',
+                            'deleted_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                } catch (\Throwable $e) {
+                    report($e);
                     $result['failed']++;
-                    continue;
                 }
-
-                $result['deleted'] += DB::table('media_assets')
-                    ->where('id', $row->id)
-                    ->whereIn('status', ['DELETING', 'FAILED'])
-                    ->where(
-                        'cloudinary_public_id',
-                        $row->cloudinary_public_id
-                    )
-                    ->update([
-                        'status' => 'DELETED',
-                        'deleted_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-            } catch (Throwable $e) {
-                report($e);
-                $result['failed']++;
             }
-        }
+        });
+
 
         $result['stale_uploads'] = DB::table('media_assets')
             ->where('status', 'UPLOADING')
