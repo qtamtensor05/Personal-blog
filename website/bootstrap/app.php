@@ -1,5 +1,6 @@
 <?php
 
+use App\Presentation\Web\Middleware\ServeCustomDomain;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Before routing: answers requests for ACTIVE custom blog domains.
+        $middleware->prepend(ServeCustomDomain::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

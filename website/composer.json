@@ -22,7 +22,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^5.1",
-        "pestphp/pest-plugin-laravel": "^5.0"
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "psy/psysh": "0.12.x-dev"
     },
     "autoload": {
         "psr-4": {

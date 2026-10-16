@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -61,15 +59,11 @@ return [
     */
 
     'providers' => [
+        // The project uses Query Builder only, so no Eloquent model backs auth.
         'users' => [
-            'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            'driver' => 'database',
+            'table' => 'users',
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
