@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(AccessControlSeeder::class);
+
         DB::table('users')->updateOrInsert(
             ['email' => 'test@example.com'],
             [
