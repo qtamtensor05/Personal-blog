@@ -4,6 +4,7 @@ use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\BlogDesignController;
+use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
@@ -240,6 +241,14 @@ Route::middleware('auth')->group(function () {
     // User's blogs
     Route::resource('blogs', BlogController::class)->except(['index']);
     Route::get('/my-blogs', [BlogController::class, 'index'])->name('blogs.index');
+
+    // Blog Settings
+    Route::get('/blogs/{blog}/settings', [BlogSettingsController::class, 'edit'])
+        ->whereNumber('blog')
+        ->name('blogs.settings.edit');
+    Route::put('/blogs/{blog}/settings', [BlogSettingsController::class, 'update'])
+        ->whereNumber('blog')
+        ->name('blogs.settings.update');
 
     // Blog Design Editor
     Route::prefix('/blogs/{blog}/design')

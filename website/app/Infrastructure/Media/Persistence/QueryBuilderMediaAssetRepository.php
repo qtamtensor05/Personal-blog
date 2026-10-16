@@ -104,6 +104,17 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
         );
     }
 
+    public function isUsableForBlog(int $id, int $blogId): bool
+    {
+        return DB::table(self::TABLE)
+            ->where('id', $id)
+            ->where('scope', MediaScope::Blog->value)
+            ->where('blog_id', $blogId)
+            ->where('status', MediaStatus::Ready->value)
+            ->whereNull('deleted_at')
+            ->exists();
+    }
+
     public function markDeleting(int $id): bool
     {
         return DB::table(self::TABLE)

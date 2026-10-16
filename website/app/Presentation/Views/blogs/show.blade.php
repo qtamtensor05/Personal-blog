@@ -43,7 +43,7 @@
         <div class="card">
             <h2 class="text-lg font-semibold text-primary mb-4">Settings</h2>
             <p class="text-sm text-secondary mb-4">Configure blog settings and preferences.</p>
-            <a href="#" class="btn-primary text-sm" onclick="alert('Blog settings is next'); return false;">
+            <a href="{{ route('blogs.settings.edit', $blog->id) }}" class="btn-primary text-sm">
                 Open Settings
             </a>
         </div>

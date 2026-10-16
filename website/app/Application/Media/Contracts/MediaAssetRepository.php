@@ -30,6 +30,12 @@ interface MediaAssetRepository
     public function find(int $id): ?MediaAssetRecord;
 
     /**
+     * READY, not deleted, BLOG-scoped media that belongs to this blog.
+     * FKs only check existence, so cross-blog references must be blocked here.
+     */
+    public function isUsableForBlog(int $id, int $blogId): bool;
+
+    /**
      * Move READY/FAILED to DELETING. Returns false if another request got there first.
      */
     public function markDeleting(int $id): bool;
