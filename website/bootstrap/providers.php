@@ -6,6 +6,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\BlogDesignServiceProvider;
 use App\Providers\BlogServiceProvider;
 use App\Providers\ContentServiceProvider;
+use App\Providers\DomainServiceProvider;
 use App\Providers\IdentityServiceProvider;
 use App\Providers\MediaServiceProvider;
 use App\Providers\ModerationServiceProvider;
@@ -19,6 +20,7 @@ return [
     BlogServiceProvider::class,
     BlogDesignServiceProvider::class,
     ContentServiceProvider::class,
+    DomainServiceProvider::class,
     MediaServiceProvider::class,
     ModerationServiceProvider::class,
     TemplateServiceProvider::class,

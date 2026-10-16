@@ -6,6 +6,7 @@ use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateCo
 use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
 use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\BlogDesignController;
+use App\Presentation\Web\Controllers\BlogDomainController;
 use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
@@ -320,6 +321,19 @@ Route::middleware('auth')->group(function () {
             Route::post('/{page}/publish', [PageController::class, 'publish'])->name('publish');
             Route::patch('/{page}/status', [PageController::class, 'changeStatus'])->name('status');
             Route::delete('/{page}', [PageController::class, 'destroy'])->name('destroy');
+        });
+
+    // Custom domains
+    Route::prefix('/blogs/{blog}/domains')
+        ->whereNumber(['blog', 'domain'])
+        ->name('blogs.domains.')
+        ->group(function () {
+            Route::get('/', [BlogDomainController::class, 'index'])->name('index');
+            Route::post('/', [BlogDomainController::class, 'store'])->name('store');
+            Route::post('/{domain}/verify', [BlogDomainController::class, 'verify'])->middleware('throttle:10,1')->name('verify');
+            Route::post('/{domain}/activate', [BlogDomainController::class, 'activate'])->name('activate');
+            Route::post('/{domain}/disable', [BlogDomainController::class, 'disable'])->name('disable');
+            Route::delete('/{domain}', [BlogDomainController::class, 'destroy'])->name('destroy');
         });
 
     // Blog Design Editor
