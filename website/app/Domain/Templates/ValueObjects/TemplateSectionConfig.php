@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Templates\ValueObjects;
 
+use App\Domain\Templates\Enums\TemplateSection;
 use InvalidArgumentException;
 use JsonSerializable;
 
@@ -26,6 +27,11 @@ final readonly class TemplateSectionConfig implements JsonSerializable
     ) {
         if (trim($key) === '') {
             throw new InvalidArgumentException('Section key cannot be empty.');
+        }
+
+        // Only controlled components; never arbitrary HTML/JS.
+        if (TemplateSection::tryFrom($section) === null) {
+            throw new InvalidArgumentException("Unknown section type: {$section}");
         }
     }
 

@@ -27,7 +27,8 @@ final class QueryBuilderBlogRepository implements BlogRepository
 
     public function slugExists(string $slug, ?int $exceptId = null): bool
     {
-        $query = DB::table(self::TABLE)->where('slug', $slug)->whereNull('deleted_at');
+        // Unique index u_0 also covers soft-deleted rows.
+        $query = DB::table(self::TABLE)->where('slug', $slug);
 
         if ($exceptId !== null) {
             $query->where('id', '!=', $exceptId);

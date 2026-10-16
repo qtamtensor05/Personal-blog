@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers\Admin;
 
 use App\Application\Templates\Contracts\TemplateRepository;
-use App\Application\Templates\DTOs\TemplateRecord;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Application\Templates\Exceptions\TemplateSlugTaken;
 use App\Application\Templates\UseCases\ChangeTemplateStatus\ChangeTemplateStatusUseCase;
@@ -22,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 final class TemplateController extends Controller
 {
@@ -51,7 +51,7 @@ final class TemplateController extends Controller
                 demoUrl: $request->validated('demo_url'),
                 draftData: $this->parseTemplateData($request->validated('draft_data')),
             );
-        } catch (TemplateSlugTaken $exception) {
+        } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
             return $this->error($exception->getMessage(), 422);
         }
 
@@ -89,7 +89,7 @@ final class TemplateController extends Controller
             );
         } catch (TemplateNotFound) {
             return $this->error('Template not found.', 404);
-        } catch (TemplateSlugTaken $exception) {
+        } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
             return $this->error($exception->getMessage(), 422);
         }
 
@@ -134,6 +134,8 @@ final class TemplateController extends Controller
             $change->execute((int) $request->user()->id, $template, $status);
         } catch (TemplateNotFound) {
             return $this->error('Template not found.', 404);
+        } catch (DomainException $exception) {
+            return $this->error($exception->getMessage(), 422);
         }
 
         return new JsonResponse(null, 204);
@@ -156,24 +158,6 @@ final class TemplateController extends Controller
     private function parseTemplateData(array $data): TemplateData
     {
         return TemplateData::fromArray($data);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function present(TemplateRecord $t): array
-    {
-        return [
-            'id' => $t->id,
-            'name' => $t->name,
-            'slug' => $t->slug,
-            'description' => $t->description,
-            'status' => $t->status->value,
-            'preview_media_id' => $t->previewMediaId,
-            'demo_url' => $t->demoUrl,
-            'version_number' => $t->versionNumber,
-            'published_at' => $t->publishedAt,
-        ];
     }
 
     private function error(string $message, int $status): JsonResponse
