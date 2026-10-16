@@ -6,8 +6,10 @@ namespace Tests\Unit;
 
 use App\Application\Identity\Contracts\PasswordHasher;
 use App\Application\Identity\Contracts\UserRepository;
+use App\Application\Identity\Contracts\VerificationUrlGenerator;
 use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
 use App\Application\Identity\UseCases\RegisterUser\RegisterUserService;
+use App\Application\Identity\UseCases\SendVerificationEmail\SendVerificationEmailUseCase;
 use App\Domain\Identity\Entities\User;
 use App\Domain\Identity\Enums\UserStatus;
 use App\Domain\Identity\ValueObjects\EmailAddress;
@@ -20,8 +22,15 @@ final class RegisterUserServiceTest extends TestCase
     {
         $repository = new FakeUserRepository;
         $hasher = new FakePasswordHasher;
+        $urlGenerator = new FakeVerificationUrlGenerator;
+        $emailSender = new FakeSendVerificationEmail;
 
-        $service = new RegisterUserService($repository, $hasher);
+        $service = new RegisterUserService(
+            $repository,
+            $hasher,
+            $urlGenerator,
+            $emailSender,
+        );
 
         $user = $service->execute(
             'Nguyen Van A',
@@ -51,6 +60,8 @@ final class RegisterUserServiceTest extends TestCase
         $service = new RegisterUserService(
             $repository,
             new FakePasswordHasher,
+            new FakeVerificationUrlGenerator,
+            new FakeSendVerificationEmail,
         );
 
         $this->expectException(EmailAlreadyRegistered::class);
@@ -67,6 +78,8 @@ final class RegisterUserServiceTest extends TestCase
         $service = new RegisterUserService(
             new FakeUserRepository,
             new FakePasswordHasher,
+            new FakeVerificationUrlGenerator,
+            new FakeSendVerificationEmail,
         );
 
         $this->expectException(DomainException::class);
@@ -83,6 +96,8 @@ final class RegisterUserServiceTest extends TestCase
         $service = new RegisterUserService(
             new FakeUserRepository,
             new FakePasswordHasher,
+            new FakeVerificationUrlGenerator,
+            new FakeSendVerificationEmail,
         );
 
         $this->expectException(DomainException::class);
@@ -145,5 +160,21 @@ final class FakePasswordHasher implements PasswordHasher
         $this->receivedPassword = $plainText;
 
         return 'hashed:'.$plainText;
+    }
+}
+
+final class FakeVerificationUrlGenerator implements VerificationUrlGenerator
+{
+    public function generate(int $userId): string
+    {
+        return "https://example.com/verify/{$userId}";
+    }
+}
+
+final class FakeSendVerificationEmail implements SendVerificationEmailUseCase
+{
+    public function execute(int $userId, string $verificationUrl): void
+    {
+        // No-op for testing
     }
 }

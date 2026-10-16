@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity\Persistence;
 
 use App\Application\Identity\Contracts\UserRepository;
+use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
 use App\Domain\Identity\Entities\User;
 use App\Domain\Identity\Enums\UserStatus;
 use App\Domain\Identity\ValueObjects\EmailAddress;
 use DateTimeImmutable;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -43,14 +45,27 @@ final class QueryBuilderUserRepository implements UserRepository
     ): User {
         $now = now();
 
-        $id = DB::table(self::TABLE)->insertGetId([
-            'name' => $name,
-            'email' => $email->value(),
-            'password' => $passwordHash,
-            'status' => UserStatus::PendingVerification->value,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        try {
+            $id = DB::table(self::TABLE)->insertGetId([
+                'name' => $name,
+                'email' => $email->value(),
+                'password' => $passwordHash,
+                'status' => UserStatus::PendingVerification->value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        } catch (QueryException $exception) {
+            $errorInfo = $exception->errorInfo ?? [];
+
+            $isDuplicateKey = ($errorInfo[0] ?? null) === '23000'
+                && (int) ($errorInfo[1] ?? 0) === 1062;
+
+            if ($isDuplicateKey) {
+                throw new EmailAlreadyRegistered;
+            }
+
+            throw $exception;
+        }
 
         return new User(
             id: (int) $id,

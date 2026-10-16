@@ -6,7 +6,9 @@ namespace App\Application\Identity\UseCases\RegisterUser;
 
 use App\Application\Identity\Contracts\PasswordHasher;
 use App\Application\Identity\Contracts\UserRepository;
+use App\Application\Identity\Contracts\VerificationUrlGenerator;
 use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
+use App\Application\Identity\UseCases\SendVerificationEmail\SendVerificationEmailUseCase;
 use App\Domain\Identity\Entities\User;
 use App\Domain\Identity\ValueObjects\EmailAddress;
 use DomainException;
@@ -16,6 +18,8 @@ final readonly class RegisterUserService implements RegisterUserUseCase
     public function __construct(
         private UserRepository $users,
         private PasswordHasher $passwordHasher,
+        private VerificationUrlGenerator $verificationUrlGenerator,
+        private SendVerificationEmailUseCase $sendVerificationEmail,
     ) {}
 
     public function execute(
@@ -43,10 +47,21 @@ final readonly class RegisterUserService implements RegisterUserUseCase
             );
         }
 
-        return $this->users->create(
+        $user = $this->users->create(
             name: $name,
             email: $emailAddress,
             passwordHash: $this->passwordHasher->hash($password),
         );
+
+        $verificationUrl = $this->verificationUrlGenerator->generate(
+            $user->id(),
+        );
+
+        $this->sendVerificationEmail->execute(
+            $user->id(),
+            $verificationUrl,
+        );
+
+        return $user;
     }
 }

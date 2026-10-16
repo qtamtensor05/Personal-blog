@@ -6,10 +6,20 @@ namespace App\Providers;
 
 use App\Application\Identity\Contracts\PasswordHasher;
 use App\Application\Identity\Contracts\UserRepository;
+use App\Application\Identity\Contracts\VerificationEmailSender;
+use App\Application\Identity\Contracts\VerificationUrlGenerator;
 use App\Application\Identity\UseCases\RegisterUser\RegisterUserService;
 use App\Application\Identity\UseCases\RegisterUser\RegisterUserUseCase;
+use App\Application\Identity\UseCases\ResendVerificationEmail\ResendVerificationEmailService;
+use App\Application\Identity\UseCases\ResendVerificationEmail\ResendVerificationEmailUseCase;
+use App\Application\Identity\UseCases\SendVerificationEmail\SendVerificationEmailService;
+use App\Application\Identity\UseCases\SendVerificationEmail\SendVerificationEmailUseCase;
+use App\Application\Identity\UseCases\VerifyEmail\VerifyEmailService;
+use App\Application\Identity\UseCases\VerifyEmail\VerifyEmailUseCase;
 use App\Infrastructure\Identity\Persistence\QueryBuilderUserRepository;
+use App\Infrastructure\Mail\LaravelVerificationEmailSender;
 use App\Infrastructure\Security\LaravelPasswordHasher;
+use App\Infrastructure\Security\LaravelVerificationUrlGenerator;
 use Illuminate\Support\ServiceProvider;
 
 final class IdentityServiceProvider extends ServiceProvider
@@ -29,6 +39,30 @@ final class IdentityServiceProvider extends ServiceProvider
         $this->app->bind(
             RegisterUserUseCase::class,
             RegisterUserService::class,
+        );
+
+        $this->app->bind(
+            SendVerificationEmailUseCase::class,
+            SendVerificationEmailService::class,
+        );
+
+        $this->app->bind(
+            VerificationUrlGenerator::class,
+            LaravelVerificationUrlGenerator::class,
+        );
+        $this->app->bind(
+            VerifyEmailUseCase::class,
+            VerifyEmailService::class,
+        );
+
+        $this->app->bind(
+            VerificationEmailSender::class,
+            LaravelVerificationEmailSender::class,
+        );
+
+        $this->app->bind(
+            ResendVerificationEmailUseCase::class,
+            ResendVerificationEmailService::class,
         );
     }
 }
