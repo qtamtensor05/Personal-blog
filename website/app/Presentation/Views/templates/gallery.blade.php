@@ -58,8 +58,8 @@
 @push('scripts')
 <script>
 function chooseTemplate(id) {
-    // TODO: integrate with Blog Design Editor (P1, next task)
-    alert(`Template ${id} chosen. Integration with Blog Design Editor is next.`);
+    // Templates are applied per blog from the Blog Design Editor.
+    location.href = '{{ route('blogs.index') }}';
 }
 </script>
 @endpush

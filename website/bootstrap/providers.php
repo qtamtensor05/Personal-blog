@@ -2,6 +2,7 @@
 
 use App\Providers\AccessControlServiceProvider;
 use App\Providers\AppServiceProvider;
+use App\Providers\BlogDesignServiceProvider;
 use App\Providers\BlogServiceProvider;
 use App\Providers\IdentityServiceProvider;
 use App\Providers\MediaServiceProvider;
@@ -12,6 +13,7 @@ return [
     IdentityServiceProvider::class,
     AccessControlServiceProvider::class,
     BlogServiceProvider::class,
+    BlogDesignServiceProvider::class,
     MediaServiceProvider::class,
     TemplateServiceProvider::class,
 ];

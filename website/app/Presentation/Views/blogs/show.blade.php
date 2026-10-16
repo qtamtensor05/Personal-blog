@@ -27,7 +27,7 @@
         <div class="card">
             <h2 class="text-lg font-semibold text-primary mb-4">Design</h2>
             <p class="text-sm text-secondary mb-4">Customize your blog's look and feel.</p>
-            <a href="#" class="btn-primary text-sm" onclick="alert('Blog Design Editor is next'); return false;">
+            <a href="{{ route('blogs.design.edit', $blog->id) }}" class="btn-primary text-sm">
                 Customize Design
             </a>
         </div>

@@ -35,9 +35,10 @@ final readonly class TemplateDesignTokens implements JsonSerializable
             }
         }
 
+        // Fonts end up inside a CSS style attribute, so allow plain font names only.
         foreach ([$headingFont, $bodyFont] as $font) {
-            if (trim($font) === '') {
-                throw new InvalidArgumentException('Font name cannot be empty.');
+            if (! preg_match('/^[A-Za-z0-9 \-]{1,120}$/', $font) || trim($font) === '') {
+                throw new InvalidArgumentException("Invalid font name: {$font}");
             }
         }
     }

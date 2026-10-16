@@ -3,6 +3,7 @@
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\BlogController;
+use App\Presentation\Web\Controllers\BlogDesignController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
@@ -239,6 +240,17 @@ Route::middleware('auth')->group(function () {
     // User's blogs
     Route::resource('blogs', BlogController::class)->except(['index']);
     Route::get('/my-blogs', [BlogController::class, 'index'])->name('blogs.index');
+
+    // Blog Design Editor
+    Route::prefix('/blogs/{blog}/design')
+        ->whereNumber('blog')
+        ->name('blogs.design.')
+        ->group(function () {
+            Route::get('/', [BlogDesignController::class, 'edit'])->name('edit');
+            Route::post('/template', [BlogDesignController::class, 'applyTemplate'])->name('template');
+            Route::put('/', [BlogDesignController::class, 'saveDraft'])->name('draft');
+            Route::post('/publish', [BlogDesignController::class, 'publish'])->name('publish');
+        });
 });
 
 Route::get('/email/verify/{user}', VerifyEmailController::class)
