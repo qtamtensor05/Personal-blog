@@ -4,167 +4,214 @@ namespace App\Modules\Content\Actions;
 
 use App\Models\User;
 use App\Modules\Blogs\OwnerContext;
-use App\Modules\Content\Support\PublicationTime;
+use App\Modules\Content\Enums\ContentStatus;
+use App\Modules\Content\Enums\SaveIntent;
+use App\Modules\Content\Support\ContentInputPreparer;
+use App\Modules\Content\Support\PostTermSynchronizer;
+use App\Modules\Content\Types\ContentType;
+use App\Modules\Content\Types\ContentTypeRegistry;
 use App\Modules\Media\MediaReferenceGuard;
 use App\Shared\Contracts\AuditRecorder;
-use App\Shared\Contracts\RichTextRenderer;
 use App\Shared\Support\JsonFingerprint;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 final class SaveContentAction
 {
+    public function __construct(
+        private readonly ContentTypeRegistry $types,
+        private readonly OwnerContext $owners,
+        private readonly ContentInputPreparer $inputs,
+        private readonly MediaReferenceGuard $media,
+        private readonly PostTermSynchronizer $terms,
+        private readonly AuditRecorder $audit,
+    ) {}
+
     public static function fingerprint(object $row): string
     {
         return JsonFingerprint::make((array) $row);
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function execute(User $actor, int $blog, string $kind, ?int $id, array $input, ?string $fingerprint, string $intent = 'draft'): int
     {
-        abort_unless(in_array($kind, ['posts', 'pages']), 404);
-        app(OwnerContext::class)->resolve($actor, $blog, true);
-        $data = Validator::make($input, [
-            'title' => 'required|string|max:160', 'slug' => 'required|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/|max:160',
-            'excerpt' => 'nullable|string|max:2000', 'content_json' => 'required|array',
-            'seo_title' => 'nullable|string|max:255', 'seo_description' => 'nullable|string|max:500',
-            // 'cover_media_id' => 'nullable|integer', 'scheduled_at' => 'nullable|date|after:now',
-            // 'category_ids' => 'array', 'category_ids.*' => 'integer', 'tag_ids' => 'array', 'tag_ids.*' => 'integer',
-            'cover_media_id' => 'nullable|integer',
-            'og_media_id' => 'nullable|integer',
+        $type = $this->types->for($kind);
+        $this->owners->resolve($actor, $blog, true);
+        [$data, $intent] = $this->inputs->prepare($blog, $id === null, $input, $intent);
 
-            'canonical_url' => 'nullable|url:http,https|max:2048',
-
-            'robots' => [
-                'nullable',
-                Rule::in([
-                    'index,follow',
-                    'index,nofollow',
-                    'noindex,follow',
-                    'noindex,nofollow',
-                ]),
-            ],
-
-            'scheduled_at' => 'nullable|date',
-
-            'category_ids' => 'array',
-            'category_ids.*' => 'integer',
-
-            'tag_ids' => 'array',
-            'tag_ids.*' => 'integer',
-        ])->validate();
-        if ($id === null) {
-            $data['robots'] = $data['robots'] ?? 'index,follow';
-        } elseif (
-            array_key_exists('robots', $data) &&
-            $data['robots'] === null
-        ) {
-            unset($data['robots']);
-        }
-        abort_unless(in_array($intent, ['draft', 'publish', 'schedule']), 422);
-        if (
-            $intent === 'schedule'
-            && empty($data['scheduled_at'])
-        ) {
-            throw ValidationException::withMessages([
-                'scheduled_at' => 'Chọn thời gian xuất bản trong tương lai theo múi giờ blog.',
-            ]);
-        }
-
-        if ($intent === 'schedule') {
-            $data['scheduled_at'] = app(
-                PublicationTime::class
-            )->toUtc(
-                $blog,
-                (string) $data['scheduled_at']
-            );
-        }
-        try {
-            app(RichTextRenderer::class)->render($data['content_json'], $blog);
-        } catch (\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['content_json' => $e->getMessage()]);
-        }
-
-        return DB::transaction(function () use ($actor, $blog, $kind, $id, $data, $fingerprint, $intent): int {
+        return DB::transaction(function () use ($actor, $blog, $type, $id, $data, $fingerprint, $intent): int {
             DB::table('blogs')->where('id', $blog)->lockForUpdate()->first();
-            app(OwnerContext::class)->resolve($actor, $blog, true);
-            $row = $id ? DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->whereNull('deleted_at')->lockForUpdate()->first() : null;
+            $this->owners->resolve($actor, $blog, true);
+
+            $row = $id ? $this->lockRow($type, $blog, $id) : null;
             abort_if($id && ! $row, 404);
-            if ($row && ! hash_equals(self::fingerprint($row), $fingerprint ?? '')) {
-                throw ValidationException::withMessages(['conflict' => 'Nội dung đã thay đổi. Hãy tải lại trước khi lưu; nội dung bạn đang sửa vẫn được giữ trên màn hình.']);
+
+            $this->assertNotStale($row, $fingerprint);
+            $this->assertSlugAvailable($type, $blog, $data['slug'], $id);
+            $this->media->assertReadyForBlog($blog, $data);
+
+            $id = $this->persist($actor, $blog, $type, $id, $row, $data, $intent);
+            $this->applyStatus($type, $blog, $id, $row, $intent);
+
+            if ($type->supportsTerms()) {
+                $this->syncTerms($blog, $id, $row, $data, $intent);
             }
-            if (DB::table($kind)->where('blog_id', $blog)->where('slug', $data['slug'])->when($id, fn ($q) => $q->where('id', '!=', $id))->exists()) {
-                throw ValidationException::withMessages(['slug' => 'Đường dẫn đã được sử dụng trong blog.']);
-            }
-            app(MediaReferenceGuard::class)->assertReadyForBlog($blog, $data);
-            // $values = array_intersect_key($data, array_flip(['title', 'slug', 'excerpt', 'content_json', 'seo_title', 'seo_description', 'cover_media_id']));
-            $values = array_intersect_key(
-                $data,
-                array_flip([
-                    'title',
-                    'slug',
-                    'excerpt',
-                    'content_json',
-                    'seo_title',
-                    'seo_description',
-                    'cover_media_id',
-                    'og_media_id',
-                    'canonical_url',
-                    'robots',
-                ])
-            );
-            if ($kind === 'pages') {
-                unset($values['excerpt'], $values['cover_media_id']);
-            }
-            if ($row?->status === 'PUBLISHED') {
-                unset($values['slug']);
-            }
-            $values['content_json'] = json_encode($values['content_json'], JSON_THROW_ON_ERROR);
-            $meta = ['updated_by' => $actor->id, 'updated_at' => now(), 'scheduled_at' => $intent === 'schedule' ? $data['scheduled_at'] : null];
-            if ($row?->status === 'SCHEDULED' && $intent !== 'schedule') {
-                $meta['status'] = 'DRAFT';
-            }
-            if (! $row) {
-                $quota = DB::table('blog_settings')->where('blog_id', $blog)->value('post_limit');
-                if ($kind === 'posts' && $quota !== null && DB::table('posts')->where('blog_id', $blog)->whereNull('deleted_at')->count() >= $quota) {
-                    throw ValidationException::withMessages(['quota' => 'Blog đã đạt giới hạn bài viết.']);
-                }
-                $id = DB::table($kind)->insertGetId([...$values, ...$meta, 'blog_id' => $blog,
-                    ...($kind === 'posts' ? ['author_user_id' => $actor->id] : ['created_by' => $actor->id, 'page_key' => $data['slug']]),
-                    'status' => 'DRAFT', 'created_at' => now()]);
-            } elseif ($row->status === 'PUBLISHED' && $intent !== 'publish') {
-                DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update([...$meta, 'draft_data' => json_encode($values + ($kind === 'posts' ? array_intersect_key($data, array_flip(['category_ids', 'tag_ids'])) : []), JSON_THROW_ON_ERROR)]);
-            } else {
-                DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update([...$values, ...$meta, 'draft_data' => null]);
-            }
-            if ($intent === 'publish') {
-                DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update(['status' => 'PUBLISHED', 'draft_data' => null, 'scheduled_at' => null, 'published_at' => $row?->published_at ?: now()]);
-            } elseif ($intent === 'schedule' && $row?->status !== 'PUBLISHED') {
-                DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update(['status' => 'SCHEDULED']);
-            } elseif ($intent === 'draft' && $row?->status === 'SCHEDULED') {
-                DB::table($kind)->where(['id' => $id, 'blog_id' => $blog])->update(['status' => 'DRAFT']);
-            }
-            if ($kind === 'posts') {
-                foreach (['categories' => 'category_ids', 'tags' => 'tag_ids'] as $table => $key) {
-                    $ids = $data[$key] ?? [];
-                    if (DB::table($table)->where('blog_id', $blog)->whereIn('id', $ids)->count() !== count(array_unique($ids))) {
-                        throw ValidationException::withMessages([$key => 'Phân loại không thuộc blog.']);
-                    }
-                    // Relations are live metadata; preserve them while editing a published draft.
-                    if ($row?->status !== 'PUBLISHED' || $intent === 'publish') {
-                        $join = $table === 'categories' ? 'post_categories' : 'post_tags';
-                        $column = $table === 'categories' ? 'category_id' : 'tag_id';
-                        DB::table($join)->where(['blog_id' => $blog, 'post_id' => $id])->delete();
-                        foreach (array_unique($ids) as $term) {
-                            DB::table($join)->insert(['blog_id' => $blog, 'post_id' => $id, $column => $term, 'created_at' => now(), 'updated_at' => now()]);
-                        }
-                    }
-                }
-            }
-            app(AuditRecorder::class)->record($actor->id, rtrim($kind, 's').'.'.$intent, rtrim($kind, 's'), $id, $blog);
+
+            $this->audit->record($actor->id, $type->singular().'.'.$intent->value, $type->singular(), $id, $blog);
 
             return $id;
         });
+    }
+
+    private function lockRow(ContentType $type, int $blog, int $id): ?object
+    {
+        return DB::table($type->table())
+            ->where(['id' => $id, 'blog_id' => $blog])
+            ->whereNull('deleted_at')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    private function assertNotStale(?object $row, ?string $fingerprint): void
+    {
+        if ($row && ! hash_equals(self::fingerprint($row), $fingerprint ?? '')) {
+            throw ValidationException::withMessages([
+                'conflict' => 'Nội dung đã thay đổi. Hãy tải lại trước khi lưu; nội dung bạn đang sửa vẫn được giữ trên màn hình.',
+            ]);
+        }
+    }
+
+    private function assertSlugAvailable(ContentType $type, int $blog, string $slug, ?int $ignoreId): void
+    {
+        $taken = DB::table($type->table())
+            ->where('blog_id', $blog)
+            ->where('slug', $slug)
+            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+            ->exists();
+
+        if ($taken) {
+            throw ValidationException::withMessages(['slug' => 'Đường dẫn đã được sử dụng trong blog.']);
+        }
+    }
+
+    /**
+     * Insert a new row, update a row directly, or stash the edit as a draft
+     * snapshot when the row is already live and the editor is not publishing.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function persist(User $actor, int $blog, ContentType $type, ?int $id, ?object $row, array $data, SaveIntent $intent): int
+    {
+        $isPublished = $row?->status === ContentStatus::Published->value;
+        $values = $this->columnValues($type, $data, $isPublished);
+        $meta = $this->metadata($actor, $row, $data, $intent);
+        $where = ['id' => $id, 'blog_id' => $blog];
+
+        if (! $row) {
+            $type->assertCanCreate($blog);
+
+            return DB::table($type->table())->insertGetId([
+                ...$values,
+                ...$meta,
+                ...$type->creationAttributes($actor, $data),
+                'blog_id' => $blog,
+                'status' => ContentStatus::Draft->value,
+                'created_at' => now(),
+            ]);
+        }
+
+        if ($isPublished && $intent !== SaveIntent::Publish) {
+            $snapshot = $values + ($type->supportsTerms()
+                ? array_intersect_key($data, array_flip(['category_ids', 'tag_ids']))
+                : []);
+
+            DB::table($type->table())->where($where)->update([
+                ...$meta,
+                'draft_data' => json_encode($snapshot, JSON_THROW_ON_ERROR),
+            ]);
+        } else {
+            DB::table($type->table())->where($where)->update([...$values, ...$meta, 'draft_data' => null]);
+        }
+
+        return $id;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function columnValues(ContentType $type, array $data, bool $isPublished): array
+    {
+        $values = array_intersect_key($data, array_flip(['slug', ...$type->draftFields()]));
+
+        // A live slug is immutable so public URLs never break.
+        if ($isPublished) {
+            unset($values['slug']);
+        }
+
+        $values['content_json'] = json_encode($values['content_json'], JSON_THROW_ON_ERROR);
+
+        return $values;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function metadata(User $actor, ?object $row, array $data, SaveIntent $intent): array
+    {
+        $meta = [
+            'updated_by' => $actor->id,
+            'updated_at' => now(),
+            'scheduled_at' => $intent === SaveIntent::Schedule ? $data['scheduled_at'] : null,
+        ];
+
+        // Editing a scheduled row without rescheduling it returns it to draft.
+        if ($row?->status === ContentStatus::Scheduled->value && $intent !== SaveIntent::Schedule) {
+            $meta['status'] = ContentStatus::Draft->value;
+        }
+
+        return $meta;
+    }
+
+    private function applyStatus(ContentType $type, int $blog, int $id, ?object $row, SaveIntent $intent): void
+    {
+        $query = DB::table($type->table())->where(['id' => $id, 'blog_id' => $blog]);
+
+        if ($intent === SaveIntent::Publish) {
+            $query->update([
+                'status' => ContentStatus::Published->value,
+                'draft_data' => null,
+                'scheduled_at' => null,
+                'published_at' => $row?->published_at ?: now(),
+            ]);
+        } elseif ($intent === SaveIntent::Schedule && $row?->status !== ContentStatus::Published->value) {
+            $query->update(['status' => ContentStatus::Scheduled->value]);
+        }
+    }
+
+    /**
+     * Terms must always belong to the blog, but relations are live metadata:
+     * they are only rewritten when the edit goes live (or the row is not live).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function syncTerms(int $blog, int $postId, ?object $row, array $data, SaveIntent $intent): void
+    {
+        $rewrite = $row?->status !== ContentStatus::Published->value || $intent === SaveIntent::Publish;
+
+        foreach (PostTermSynchronizer::TERMS as $termTable => $definition) {
+            $ids = $data[$definition['draftKey']] ?? [];
+
+            if (! $this->terms->allBelongToBlog($blog, $termTable, $ids)) {
+                throw ValidationException::withMessages([$definition['draftKey'] => 'Phân loại không thuộc blog.']);
+            }
+
+            if ($rewrite) {
+                $this->terms->replace($blog, $postId, $termTable, $ids);
+            }
+        }
     }
 }

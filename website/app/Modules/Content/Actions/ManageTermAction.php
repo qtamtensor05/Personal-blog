@@ -4,12 +4,17 @@ namespace App\Modules\Content\Actions;
 
 use App\Models\User;
 use App\Modules\Blogs\OwnerContext;
+use App\Modules\Content\Support\PostTermSynchronizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 final class ManageTermAction
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+    ) {}
+
     public function update(
         User $actor,
         int $blogId,
@@ -19,15 +24,7 @@ final class ManageTermAction
     ): void {
         $this->checkType($type);
 
-        $data = Validator::make($input, [
-            'name' => 'required|string|max:160',
-            'slug' => [
-                'required',
-                'string',
-                'max:160',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-            ],
-        ])->validate();
+        $data = Validator::make($input, PostTermSynchronizer::INPUT_RULES)->validate();
 
         DB::transaction(function () use (
             $actor, $blogId, $type, $id, $data
@@ -37,7 +34,7 @@ final class ManageTermAction
                 ->lockForUpdate()
                 ->first();
 
-            app(OwnerContext::class)
+            $this->owners
                 ->resolve($actor, $blogId, true);
 
             DB::table($type)
@@ -79,7 +76,7 @@ final class ManageTermAction
                 ->lockForUpdate()
                 ->first();
 
-            app(OwnerContext::class)
+            $this->owners
                 ->resolve($actor, $blogId, true);
 
             DB::table($type)
@@ -87,13 +84,7 @@ final class ManageTermAction
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $join = $type === 'categories'
-                ? 'post_categories'
-                : 'post_tags';
-
-            $column = $type === 'categories'
-                ? 'category_id'
-                : 'tag_id';
+            ['join' => $join, 'column' => $column, 'draftKey' => $draftKey] = PostTermSynchronizer::TERMS[$type];
 
             if (DB::table($join)
                 ->where(['blog_id' => $blogId, $column => $id])
@@ -113,10 +104,6 @@ final class ManageTermAction
                     'term' => 'Danh mục đang có danh mục con.',
                 ]);
             }
-
-            $draftKey = $type === 'categories'
-                ? 'category_ids'
-                : 'tag_ids';
 
             $posts = DB::table('posts')
                 ->where('blog_id', $blogId)

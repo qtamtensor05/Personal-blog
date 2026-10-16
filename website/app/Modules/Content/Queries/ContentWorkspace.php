@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 final class ContentWorkspace
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+    ) {}
+
     public function table(string $kind): string
     {
         abort_unless(in_array($kind, ['posts', 'pages', 'categories', 'tags']), 404);
@@ -17,7 +21,7 @@ final class ContentWorkspace
 
     public function rows(User $actor, int $blog, string $kind, string $q = '', string $status = '')
     {
-        app(OwnerContext::class)->resolve($actor, $blog);
+        $this->owners->resolve($actor, $blog);
         $query = DB::table($this->table($kind))->where('blog_id', $blog);
         if (in_array($kind, ['posts', 'pages'])) {
             $query->whereNull('deleted_at');
@@ -34,7 +38,7 @@ final class ContentWorkspace
 
     public function find(User $actor, int $blog, string $kind, int $id): object
     {
-        app(OwnerContext::class)->resolve($actor, $blog);
+        $this->owners->resolve($actor, $blog);
         $query = DB::table($this->table($kind))->where(['blog_id' => $blog, 'id' => $id]);
         if (in_array($kind, ['posts', 'pages'])) {
             $query->whereNull('deleted_at');
