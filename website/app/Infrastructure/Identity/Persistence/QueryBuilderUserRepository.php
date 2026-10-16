@@ -20,10 +20,7 @@ final class QueryBuilderUserRepository implements UserRepository
 
     public function findById(int $id): ?User
     {
-        $record = DB::table(self::TABLE)
-            ->where('id', $id)
-            ->whereNull('deleted_at')
-            ->first();
+        $record = DB::table(self::TABLE)->where('id', $id)->whereNull('deleted_at')->first();
 
         return $record === null ? null : $this->toDomain($record);
     }
@@ -38,11 +35,8 @@ final class QueryBuilderUserRepository implements UserRepository
         return $record === null ? null : $this->toDomain($record);
     }
 
-    public function create(
-        string $name,
-        EmailAddress $email,
-        string $passwordHash,
-    ): User {
+    public function create(string $name, EmailAddress $email, string $passwordHash): User
+    {
         $now = now();
 
         try {
@@ -57,8 +51,8 @@ final class QueryBuilderUserRepository implements UserRepository
         } catch (QueryException $exception) {
             $errorInfo = $exception->errorInfo ?? [];
 
-            $isDuplicateKey = ($errorInfo[0] ?? null) === '23000'
-                && (int) ($errorInfo[1] ?? 0) === 1062;
+            $isDuplicateKey =
+                ($errorInfo[0] ?? null) === '23000' && (int) ($errorInfo[1] ?? 0) === 1062;
 
             if ($isDuplicateKey) {
                 throw new EmailAlreadyRegistered;
@@ -83,9 +77,7 @@ final class QueryBuilderUserRepository implements UserRepository
             ->update([
                 'name' => $user->name(),
                 'status' => $user->status()->value,
-                'email_verified_at' => $user->emailVerifiedAt()?->format(
-                    'Y-m-d H:i:s'
-                ),
+                'email_verified_at' => $user->emailVerifiedAt()?->format('Y-m-d H:i:s'),
                 'updated_at' => now(),
             ]);
 
@@ -96,9 +88,7 @@ final class QueryBuilderUserRepository implements UserRepository
                 ->exists();
 
             if (! $exists) {
-                throw new RuntimeException(
-                    'Cannot update a user that does not exist.'
-                );
+                throw new RuntimeException('Cannot update a user that does not exist.');
             }
         }
     }

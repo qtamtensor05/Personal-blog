@@ -26,39 +26,18 @@ final class IdentityServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(
-            UserRepository::class,
-            QueryBuilderUserRepository::class,
-        );
+        $this->app->bind(UserRepository::class, QueryBuilderUserRepository::class);
 
-        $this->app->bind(
-            PasswordHasher::class,
-            LaravelPasswordHasher::class,
-        );
+        $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
 
-        $this->app->bind(
-            RegisterUserUseCase::class,
-            RegisterUserService::class,
-        );
+        $this->app->bind(RegisterUserUseCase::class, RegisterUserService::class);
 
-        $this->app->bind(
-            SendVerificationEmailUseCase::class,
-            SendVerificationEmailService::class,
-        );
+        $this->app->bind(SendVerificationEmailUseCase::class, SendVerificationEmailService::class);
 
-        $this->app->bind(
-            VerificationUrlGenerator::class,
-            LaravelVerificationUrlGenerator::class,
-        );
-        $this->app->bind(
-            VerifyEmailUseCase::class,
-            VerifyEmailService::class,
-        );
+        $this->app->bind(VerificationUrlGenerator::class, LaravelVerificationUrlGenerator::class);
+        $this->app->bind(VerifyEmailUseCase::class, VerifyEmailService::class);
 
-        $this->app->bind(
-            VerificationEmailSender::class,
-            LaravelVerificationEmailSender::class,
-        );
+        $this->app->bind(VerificationEmailSender::class, LaravelVerificationEmailSender::class);
 
         $this->app->bind(
             ResendVerificationEmailUseCase::class,

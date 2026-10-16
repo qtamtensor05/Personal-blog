@@ -22,17 +22,12 @@ final readonly class RegisterUserService implements RegisterUserUseCase
         private SendVerificationEmailUseCase $sendVerificationEmail,
     ) {}
 
-    public function execute(
-        string $name,
-        string $email,
-        string $password,
-    ): User {
+    public function execute(string $name, string $email, string $password): User
+    {
         $name = trim($name);
 
         if ($name === '' || mb_strlen($name) > 160) {
-            throw new DomainException(
-                'Name must contain between 1 and 160 characters.'
-            );
+            throw new DomainException('Name must contain between 1 and 160 characters.');
         }
 
         $emailAddress = new EmailAddress($email);
@@ -42,9 +37,7 @@ final readonly class RegisterUserService implements RegisterUserUseCase
         }
 
         if (strlen($password) < 8) {
-            throw new DomainException(
-                'Password must contain at least 8 characters.'
-            );
+            throw new DomainException('Password must contain at least 8 characters.');
         }
 
         $user = $this->users->create(
@@ -53,14 +46,9 @@ final readonly class RegisterUserService implements RegisterUserUseCase
             passwordHash: $this->passwordHasher->hash($password),
         );
 
-        $verificationUrl = $this->verificationUrlGenerator->generate(
-            $user->id(),
-        );
+        $verificationUrl = $this->verificationUrlGenerator->generate($user->id());
 
-        $this->sendVerificationEmail->execute(
-            $user->id(),
-            $verificationUrl,
-        );
+        $this->sendVerificationEmail->execute($user->id(), $verificationUrl);
 
         return $user;
     }

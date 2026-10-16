@@ -15,10 +15,8 @@ final readonly class SendVerificationEmailService implements SendVerificationEma
         private VerificationEmailSender $sender,
     ) {}
 
-    public function execute(
-        int $userId,
-        string $verificationUrl,
-    ): void {
+    public function execute(int $userId, string $verificationUrl): void
+    {
         $user = $this->users->findById($userId);
 
         if ($user === null) {
@@ -29,9 +27,6 @@ final readonly class SendVerificationEmailService implements SendVerificationEma
             throw new DomainException('Email is already verified.');
         }
 
-        $this->sender->send(
-            $user->email()->value(),
-            $verificationUrl,
-        );
+        $this->sender->send($user->email()->value(), $verificationUrl);
     }
 }

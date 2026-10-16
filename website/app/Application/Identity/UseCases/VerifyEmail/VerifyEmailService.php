@@ -11,9 +11,7 @@ use DomainException;
 
 final readonly class VerifyEmailService implements VerifyEmailUseCase
 {
-    public function __construct(
-        private UserRepository $users,
-    ) {}
+    public function __construct(private UserRepository $users) {}
 
     public function execute(int $userId): void
     {
@@ -28,9 +26,7 @@ final readonly class VerifyEmailService implements VerifyEmailUseCase
         }
 
         if ($user->status() !== UserStatus::PendingVerification) {
-            throw new DomainException(
-                'This account cannot be verified.'
-            );
+            throw new DomainException('This account cannot be verified.');
         }
 
         $user->verifyEmail(new DateTimeImmutable);

@@ -25,24 +25,12 @@ final class RegisterUserServiceTest extends TestCase
         $urlGenerator = new FakeVerificationUrlGenerator;
         $emailSender = new FakeSendVerificationEmail;
 
-        $service = new RegisterUserService(
-            $repository,
-            $hasher,
-            $urlGenerator,
-            $emailSender,
-        );
+        $service = new RegisterUserService($repository, $hasher, $urlGenerator, $emailSender);
 
-        $user = $service->execute(
-            'Nguyen Van A',
-            'user@example.com',
-            'password123',
-        );
+        $user = $service->execute('Nguyen Van A', 'user@example.com', 'password123');
 
         self::assertSame('Nguyen Van A', $user->name());
-        self::assertSame(
-            UserStatus::PendingVerification,
-            $user->status(),
-        );
+        self::assertSame(UserStatus::PendingVerification, $user->status());
         self::assertSame('hashed:password123', $repository->passwordHash);
         self::assertSame('password123', $hasher->receivedPassword);
     }
@@ -66,11 +54,7 @@ final class RegisterUserServiceTest extends TestCase
 
         $this->expectException(EmailAlreadyRegistered::class);
 
-        $service->execute(
-            'Nguyen Van B',
-            'user@example.com',
-            'password123',
-        );
+        $service->execute('Nguyen Van B', 'user@example.com', 'password123');
     }
 
     public function test_it_rejects_an_invalid_email(): void
@@ -84,11 +68,7 @@ final class RegisterUserServiceTest extends TestCase
 
         $this->expectException(DomainException::class);
 
-        $service->execute(
-            'Nguyen Van A',
-            'invalid-email',
-            'password123',
-        );
+        $service->execute('Nguyen Van A', 'invalid-email', 'password123');
     }
 
     public function test_it_rejects_a_short_password(): void
@@ -102,11 +82,7 @@ final class RegisterUserServiceTest extends TestCase
 
         $this->expectException(DomainException::class);
 
-        $service->execute(
-            'Nguyen Van A',
-            'user@example.com',
-            'short',
-        );
+        $service->execute('Nguyen Van A', 'user@example.com', 'short');
     }
 }
 
@@ -123,29 +99,18 @@ final class FakeUserRepository implements UserRepository
 
     public function findByEmail(EmailAddress $email): ?User
     {
-        if (
-            $this->existingUser !== null
-            && $this->existingUser->email()->equals($email)
-        ) {
+        if ($this->existingUser !== null && $this->existingUser->email()->equals($email)) {
             return $this->existingUser;
         }
 
         return null;
     }
 
-    public function create(
-        string $name,
-        EmailAddress $email,
-        string $passwordHash,
-    ): User {
+    public function create(string $name, EmailAddress $email, string $passwordHash): User
+    {
         $this->passwordHash = $passwordHash;
 
-        return new User(
-            1,
-            $name,
-            $email,
-            UserStatus::PendingVerification,
-        );
+        return new User(1, $name, $email, UserStatus::PendingVerification);
     }
 
     public function update(User $user): void {}

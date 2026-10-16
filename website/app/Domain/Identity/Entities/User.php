@@ -55,9 +55,7 @@ final class User
         $name = trim($name);
 
         if ($name === '' || mb_strlen($name) > 160) {
-            throw new DomainException(
-                'Name must contain between 1 and 160 characters.'
-            );
+            throw new DomainException('Name must contain between 1 and 160 characters.');
         }
 
         $this->name = $name;

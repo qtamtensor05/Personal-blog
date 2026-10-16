@@ -11,10 +11,8 @@ final class LaravelVerificationUrlGenerator implements VerificationUrlGenerator
 {
     public function generate(int $userId): string
     {
-        return URL::temporarySignedRoute(
-            'identity.email.verify',
-            now()->addMinutes(60),
-            ['user' => $userId],
-        );
+        return URL::temporarySignedRoute('identity.email.verify', now()->addMinutes(60), [
+            'user' => $userId,
+        ]);
     }
 }

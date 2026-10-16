@@ -8,9 +8,5 @@ use App\Domain\Identity\Entities\User;
 
 interface RegisterUserUseCase
 {
-    public function execute(
-        string $name,
-        string $email,
-        string $password,
-    ): User;
+    public function execute(string $name, string $email, string $password): User;
 }

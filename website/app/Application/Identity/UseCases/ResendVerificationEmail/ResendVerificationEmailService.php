@@ -24,9 +24,9 @@ final readonly class ResendVerificationEmailService implements ResendVerificatio
         $user = $this->users->findByEmail($emailAddress);
 
         if (
-            $user === null
-            || $user->emailVerifiedAt() !== null
-            || $user->status() !== UserStatus::PendingVerification
+            $user === null ||
+            $user->emailVerifiedAt() !== null ||
+            $user->status() !== UserStatus::PendingVerification
         ) {
             // Không tiết lộ email có tồn tại hay đã xác minh hay chưa.
             return;
@@ -34,9 +34,6 @@ final readonly class ResendVerificationEmailService implements ResendVerificatio
 
         $url = $this->urlGenerator->generate($user->id());
 
-        $this->sendVerificationEmail->execute(
-            $user->id(),
-            $url,
-        );
+        $this->sendVerificationEmail->execute($user->id(), $url);
     }
 }

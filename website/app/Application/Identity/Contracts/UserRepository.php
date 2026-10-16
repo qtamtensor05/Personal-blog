@@ -13,11 +13,7 @@ interface UserRepository
 
     public function findByEmail(EmailAddress $email): ?User;
 
-    public function create(
-        string $name,
-        EmailAddress $email,
-        string $passwordHash,
-    ): User;
+    public function create(string $name, EmailAddress $email, string $passwordHash): User;
 
     public function update(User $user): void;
 }

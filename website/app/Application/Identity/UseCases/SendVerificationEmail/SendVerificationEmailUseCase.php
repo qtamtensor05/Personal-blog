@@ -6,8 +6,5 @@ namespace App\Application\Identity\UseCases\SendVerificationEmail;
 
 interface SendVerificationEmailUseCase
 {
-    public function execute(
-        int $userId,
-        string $verificationUrl,
-    ): void;
+    public function execute(int $userId, string $verificationUrl): void;
 }
