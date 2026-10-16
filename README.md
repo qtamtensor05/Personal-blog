@@ -32,33 +32,45 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Sửa `website/.env`:
+`.env.example` đã có sẵn giá trị khớp với `docker-compose.yml` (MySQL database `blog`, Redis cho queue và cache, session lưu trong database). Thường chỉ cần điền SMTP và Cloudinary trong `website/.env`.
+
+### Biến môi trường
+
+| Biến                              | Giá trị                                            | Ghi chú                                                                                 |
+| --------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `APP_URL`                         | `http://localhost:8000`                            | Host của URL này là host của nền tảng. Mọi host khác được coi là domain riêng của blog. |
+| `DB_*`                            | `127.0.0.1`, `3306`, `blog`, `root`                | Chỉ MySQL 8.0.16 trở lên.                                                               |
+| `SESSION_DRIVER`                  | `database`                                         | Không đổi: khóa tài khoản và đặt lại mật khẩu xóa session trong bảng `sessions`.        |
+| `QUEUE_CONNECTION`, `CACHE_STORE` | `redis`                                            | Cần container `redis` đang chạy.                                                        |
+| `MAIL_*`                          | xem bên dưới                                       | Dùng `MAIL_MAILER=log` khi phát triển để ghi email vào `storage/logs` thay vì gửi.      |
+| `CLOUDINARY_URL`                  | `cloudinary://<api_key>:<api_secret>@<cloud_name>` | Chỉ dùng ở server, không đưa xuống frontend.                                            |
+| `CLOUDINARY_FOLDER_PREFIX`        | `personal-blog`                                    | Thư mục gốc trên Cloudinary, giúp nhiều môi trường dùng chung một tài khoản.            |
+| `MEDIA_MAX_UPLOAD_KB`             | `5120`                                             | Kích thước ảnh tối đa (KB). Định dạng cho phép: jpg, png, webp, gif.                    |
+
+### Gửi email qua Gmail
 
 ```env
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=blog
-DB_USERNAME=root
-DB_PASSWORD=
-
-SESSION_DRIVER=database
-QUEUE_CONNECTION=redis
-CACHE_STORE=redis
-
-# Khi phát triển có thể dùng MAIL_MAILER=log để ghi email vào storage/logs
 MAIL_MAILER=smtp
-MAIL_HOST=
+MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
-MAIL_USERNAME=
-MAIL_PASSWORD=
-MAIL_FROM_ADDRESS="no-reply@example.com"
-
-# cloudinary://<api_key>:<api_secret>@<cloud_name>
-CLOUDINARY_URL=
+MAIL_USERNAME=you@gmail.com
+MAIL_PASSWORD=<app password 16 ký tự>
+MAIL_FROM_ADDRESS="you@gmail.com"
 ```
+
+- `MAIL_HOST` là tên server SMTP, không phải địa chỉ email. Địa chỉ Gmail đặt ở `MAIL_USERNAME`.
+- `MAIL_PASSWORD` là App Password tạo ở Google Account > Security > App passwords (cần bật xác minh 2 bước), không phải mật khẩu Gmail.
+- Nếu `MAIL_FROM_ADDRESS` khác tài khoản đăng nhập, Gmail sẽ đổi người gửi về tài khoản đó, trừ khi địa chỉ này đã được thêm vào "Send mail as".
+
+### Cloudinary
+
+Lấy `CLOUDINARY_URL` ở Cloudinary Console > Settings > API Keys (dòng "API environment variable"). Chỉ dán phần giá trị:
+
+```env
+CLOUDINARY_URL=cloudinary://123456789012345:abcdefGHIJ@my-cloud
+```
+
+Không dán cả dòng `CLOUDINARY_URL=...` vào sau dấu `=`. Nếu giá trị sai, việc upload sẽ báo lỗi `CLOUDINARY_URL must look like cloudinary://...`.
 
 Khởi động database, chạy migration, seed role/permission và cài frontend:
 
