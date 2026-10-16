@@ -1,5 +1,6 @@
 <?php
 
+use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
@@ -173,15 +174,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', RegisterUserController::class)
         ->name('register.store');
 
-    // Login (placeholder - needs backend implementation)
     Route::get('/login', function () {
         return view('pages.auth.login');
     })->name('login');
 
-    Route::post('/login', function () {
-        // TODO: Implement LoginController
-        return back()->withErrors(['email' => 'Login functionality not yet implemented.']);
-    })->name('login.store');
+    Route::post('/login', LoginController::class)->name('login.store');
 
     // Password Reset (placeholder - needs backend implementation)
     Route::get('/password/forgot', function () {
@@ -218,6 +215,7 @@ Route::middleware('auth')->group(function () {
         auth()->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
 });
