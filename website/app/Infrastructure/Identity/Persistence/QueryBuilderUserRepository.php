@@ -93,16 +93,6 @@ final class QueryBuilderUserRepository implements UserRepository
         }
     }
 
-    public function passwordHashFor(int $userId): ?string
-    {
-        $hash = DB::table(self::TABLE)
-            ->where('id', $userId)
-            ->whereNull('deleted_at')
-            ->value('password');
-
-        return $hash === null ? null : (string) $hash;
-    }
-
     private function toDomain(object $record): User
     {
         return new User(

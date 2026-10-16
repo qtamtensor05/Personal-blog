@@ -114,11 +114,6 @@ final class FakeUserRepository implements UserRepository
     }
 
     public function update(User $user): void {}
-
-    public function passwordHashFor(int $userId): ?string
-    {
-        return $this->passwordHash;
-    }
 }
 
 final class FakePasswordHasher implements PasswordHasher
@@ -130,11 +125,6 @@ final class FakePasswordHasher implements PasswordHasher
         $this->receivedPassword = $plainText;
 
         return 'hashed:'.$plainText;
-    }
-
-    public function verify(string $plainText, string $hash): bool
-    {
-        return $hash === 'hashed:'.$plainText;
     }
 }
 
