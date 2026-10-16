@@ -16,4 +16,9 @@ interface UserRepository
     public function create(string $name, EmailAddress $email, string $passwordHash): User;
 
     public function update(User $user): void;
+
+    /**
+     * The stored password hash is kept out of the User entity on purpose.
+     */
+    public function passwordHashFor(int $userId): ?string;
 }
