@@ -23,7 +23,7 @@ final class PlatformWorkspace
             $stats = ['Tổng số mẫu' => DB::table('templates')->whereNull('deleted_at')->count(), 'Đã xuất bản' => DB::table('templates')->whereNull('deleted_at')->where('status', 'PUBLISHED')->count(), 'Bản nháp' => DB::table('templates')->whereNull('deleted_at')->where(fn ($b) => $b->where('status', 'DRAFT')->orWhereNotNull('draft_data'))->count(), 'Blog đang sử dụng' => DB::table('blog_designs')->whereNotNull('template_id')->whereNotNull('published_data')->count()];
         }
         if ($section === 'settings') {
-            return ['rows' => collect(), 'stats' => [], 'settings' => json_decode(DB::table('platform_settings')->where('id', 1)->value('config_json'), true)];
+            return ['rows' => collect(), 'stats' => [], 'settings' => json_decode(DB::table('platform_settings')->where('id', 1)->value('config_json') ?: '{}', true)];
         }
         $query = DB::table($table);
         if ($section === 'templates') {

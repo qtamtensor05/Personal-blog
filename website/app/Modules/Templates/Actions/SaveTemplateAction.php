@@ -13,6 +13,11 @@ use Illuminate\Validation\ValidationException;
 
 final class SaveTemplateAction
 {
+    public function __construct(
+        private readonly AuditRecorder $audit,
+        private readonly SafeSectionRegistry $sections,
+    ) {}
+
     public function execute(User $actor, ?int $id, array $input, string $fingerprint, string $intent): int
     {
         abort_unless($actor->canAccessApplication() && $actor->hasPlatformPermission('platform.templates.manage'), 403);
@@ -35,7 +40,7 @@ final class SaveTemplateAction
             $designInput = $input;
             $designInput['description'] = $input['hero_description'] ?? $input['description'] ?? '';
             $draft = DesignDocument::apply($base, $designInput);
-            app(SafeSectionRegistry::class)->validate($draft);
+            $this->sections->validate($draft);
             if (! empty($data['preview_media_id']) && ! DB::table('media_assets')->where(['id' => $data['preview_media_id'], 'scope' => 'PLATFORM', 'status' => 'READY', 'delivery_type' => 'upload'])->whereNull('deleted_at')->lockForUpdate()->first()) {
                 throw ValidationException::withMessages(['preview_media_id' => 'Ảnh xem trước phải là tài nguyên nền tảng công khai, sẵn sàng.']);
             }
@@ -59,7 +64,7 @@ final class SaveTemplateAction
             if (! empty($data['category_id'])) {
                 DB::table('template_category_assignments')->insert(['template_id' => $id, 'category_id' => $data['category_id'], 'created_at' => now(), 'updated_at' => now()]);
             }
-            app(AuditRecorder::class)->record($actor->id, 'template.'.$intent, 'template', $id);
+            $this->audit->record($actor->id, 'template.'.$intent, 'template', $id);
 
             return $id;
         });

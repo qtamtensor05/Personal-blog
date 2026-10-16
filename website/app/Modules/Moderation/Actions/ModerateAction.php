@@ -10,6 +10,10 @@ use Illuminate\Support\Str;
 
 final class ModerateAction
 {
+    public function __construct(
+        private readonly AuditRecorder $audit,
+    ) {}
+
     public function execute(User $actor, string $kind, int $id, array $input): void
     {
         abort_unless($actor->canAccessApplication(), 403);
@@ -41,7 +45,7 @@ final class ModerateAction
                 DB::table('sessions')->where('user_id', $id)->delete();
             }
             DB::table($table)->where('id', $id)->update($values);
-            app(AuditRecorder::class)->record($actor->id, $kind.'.moderated', $kind, $id, $kind === 'blogs' ? $id : ($row->blog_id ?? null), [], ['status' => $values['status'], 'reason' => $data['reason']]);
+            $this->audit->record($actor->id, $kind.'.moderated', $kind, $id, $kind === 'blogs' ? $id : ($row->blog_id ?? null), [], ['status' => $values['status'], 'reason' => $data['reason']]);
         });
     }
 }

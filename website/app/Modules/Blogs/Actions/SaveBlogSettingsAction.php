@@ -13,9 +13,14 @@ use Illuminate\Validation\ValidationException;
 
 final class SaveBlogSettingsAction
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+        private readonly AuditRecorder $audit,
+    ) {}
+
     public function execute(User $actor, int $blog, array $input, ?array $original = null): void
     {
-        app(OwnerContext::class)->resolve($actor, $blog, true);
+        $this->owners->resolve($actor, $blog, true);
 
         $data = Validator::make($input, [
             'name' => 'required|string|max:160',
@@ -60,7 +65,7 @@ final class SaveBlogSettingsAction
 
         DB::transaction(function () use ($actor, $blog, $data, $socialLinks, $original): void {
             DB::table('blogs')->where('id', $blog)->lockForUpdate()->first();
-            app(OwnerContext::class)->resolve($actor, $blog, true);
+            $this->owners->resolve($actor, $blog, true);
 
             if ($original !== null) {
                 // Only write edits relative to this form's snapshot. Unchanged fields
@@ -130,7 +135,7 @@ final class SaveBlogSettingsAction
 
             DB::table('blog_settings')->where('blog_id', $blog)->update($settingsData);
 
-            app(AuditRecorder::class)->record($actor->id, 'blog.settings_saved', 'blog', $blog, $blog);
+            $this->audit->record($actor->id, 'blog.settings_saved', 'blog', $blog, $blog);
         });
     }
 }

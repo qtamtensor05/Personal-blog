@@ -13,6 +13,11 @@ use Illuminate\Validation\ValidationException;
 
 final class ManageAccessAction
 {
+    public function __construct(
+        private readonly AuditRecorder $audit,
+        private readonly LastSuperAdminGuard $superAdminGuard,
+    ) {}
+
     public function execute(User $actor, string $operation, array $input): void
     {
         abort_unless(in_array($operation, ['save', 'delete', 'grant', 'revoke'], true), 404);
@@ -51,7 +56,7 @@ final class ManageAccessAction
                     // Existing admin sessions must reauthenticate after a permission change.
                     $this->revokeSessions(DB::table('user_platform_roles')->where('role_id', $id)->pluck('user_id')->all());
                 }
-                app(AuditRecorder::class)->record($actor->id, 'access.role.'.$operation, 'platform_roles', $id);
+                $this->audit->record($actor->id, 'access.role.'.$operation, 'platform_roles', $id);
 
                 return;
             }
@@ -61,7 +66,7 @@ final class ManageAccessAction
             abort_unless($role, 404);
             $grant = DB::table('user_platform_roles')->where('user_id', $target->id)->where('role_id', $role->id);
             if ($operation === 'revoke' && $role->code === 'SUPER_ADMIN') {
-                app(LastSuperAdminGuard::class)->assertCanDeactivate($target->id);
+                $this->superAdminGuard->assertCanDeactivate($target->id);
             }
             if ($target->id === $actor->id) {
                 throw ValidationException::withMessages(['access' => 'Không tự thay đổi quyền của chính mình.']);
@@ -76,7 +81,7 @@ final class ManageAccessAction
                 $grant->delete();
             }
             $this->revokeSessions([$target->id]);
-            app(AuditRecorder::class)->record($actor->id, 'access.admin.'.$operation, 'users', $target->id, after: ['role_id' => $role->id]);
+            $this->audit->record($actor->id, 'access.admin.'.$operation, 'users', $target->id, after: ['role_id' => $role->id]);
         });
     }
 

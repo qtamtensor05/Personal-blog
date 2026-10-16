@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Validator;
 
 final class SavePlatformSettingsAction
 {
+    public function __construct(
+        private readonly AuditRecorder $audit,
+    ) {}
+
     public const RULES = [
         'branding' => ['name' => 'required|string|max:160'],
         'seo' => ['title' => 'required|string|max:255', 'description' => 'nullable|string|max:500'],
@@ -31,7 +35,7 @@ final class SavePlatformSettingsAction
             $json = json_decode($row->config_json, true);
             $json[$group] = array_replace($json[$group] ?? [], $data);
             DB::table('platform_settings')->where('id', 1)->update(['config_json' => json_encode($json, JSON_THROW_ON_ERROR), 'updated_by' => $actor->id, 'updated_at' => now()]);
-            app(AuditRecorder::class)->record($actor->id, 'settings.'.$group, 'platform_settings', 1);
+            $this->audit->record($actor->id, 'settings.'.$group, 'platform_settings', 1);
         });
     }
 }

@@ -13,11 +13,17 @@ use Illuminate\Validation\ValidationException;
 
 final class SaveDesignAction
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+        private readonly SafeSectionRegistry $sections,
+        private readonly TemplateLibrary $templates,
+    ) {}
+
     public function execute(User $actor, int $blog, array $form, string $fingerprint, ?int $template = null): void
     {
         DB::transaction(function () use ($actor, $blog, $form, $fingerprint, $template): void {
             DB::table('blogs')->where('id', $blog)->lockForUpdate()->first();
-            app(OwnerContext::class)->resolve($actor, $blog, true);
+            $this->owners->resolve($actor, $blog, true);
             $row = DB::table('blog_designs')->where('blog_id', $blog)->lockForUpdate()->first();
             $base = json_decode($row?->draft_data ?? $row?->published_data ?? '{}', true);
             if (! hash_equals(JsonFingerprint::make($base), $fingerprint)) {
@@ -25,7 +31,7 @@ final class SaveDesignAction
             }
             $templateId = $row?->draft_template_id ?? $row?->template_id;
             if ($template && $template !== (int) $templateId) {
-                $source = app(TemplateLibrary::class)->find($template);
+                $source = $this->templates->find($template);
                 $base = DesignDocument::snapshot($source);
                 $templateId = $template;
                 $form = DesignDocument::form($base);
@@ -44,7 +50,7 @@ final class SaveDesignAction
                 }
                 $draft['navigation']['pageKeys'] = $keys;
             }
-            app(SafeSectionRegistry::class)->validate($draft);
+            $this->sections->validate($draft);
             DB::table('blog_designs')->updateOrInsert(['blog_id' => $blog], ['draft_template_id' => $templateId,
                 'draft_data' => json_encode($draft, JSON_THROW_ON_ERROR), 'updated_by' => $actor->id, 'updated_at' => now(), ...($row ? [] : ['created_at' => now()])]);
         });

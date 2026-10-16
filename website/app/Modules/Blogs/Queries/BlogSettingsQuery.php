@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\DB;
 
 final class BlogSettingsQuery
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+    ) {}
+
     public function find(User $actor, int $blog): array
     {
-        $row = app(OwnerContext::class)->resolve($actor, $blog);
+        $row = $this->owners->resolve($actor, $blog);
         $settings = (array) DB::table('blog_settings')->where('blog_id', $blog)->first();
 
         $allowed = [

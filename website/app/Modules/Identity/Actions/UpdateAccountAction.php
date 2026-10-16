@@ -17,6 +17,11 @@ use Illuminate\Validation\ValidationException;
 
 final class UpdateAccountAction
 {
+    public function __construct(
+        private readonly AuditRecorder $audit,
+        private readonly LastSuperAdminGuard $superAdminGuard,
+    ) {}
+
     public function execute(User $actor, string $section, array $input): string
     {
         abort_unless(in_array($section, ['profile', 'email', 'password'], true), 404);
@@ -24,7 +29,7 @@ final class UpdateAccountAction
         return DB::transaction(function () use ($actor, $section, $input): string {
             if ($section === 'email') {
                 DB::table('platform_roles')->orderBy('id')->lockForUpdate()->get();
-                app(LastSuperAdminGuard::class)->assertCanDeactivate($actor->id);
+                $this->superAdminGuard->assertCanDeactivate($actor->id);
             }
             $user = User::query()->whereKey($actor->id)->lockForUpdate()->firstOrFail();
             abort_unless($user->canAccessApplication(), 403);
@@ -58,7 +63,7 @@ final class UpdateAccountAction
                 }
                 throw ValidationException::withMessages(['email' => 'Email không khả dụng. Hãy chọn địa chỉ khác.']);
             }
-            app(AuditRecorder::class)->record($user->id, 'identity.'.$section.'.updated', 'users', $user->id);
+            $this->audit->record($user->id, 'identity.'.$section.'.updated', 'users', $user->id);
 
             return SessionStamp::value($user->forceFill($values));
         });
