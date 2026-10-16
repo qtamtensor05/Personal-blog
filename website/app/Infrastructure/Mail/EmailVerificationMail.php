@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Mail\Identity;
+namespace App\Infrastructure\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -15,21 +15,15 @@ final class EmailVerificationMail extends Mailable
     use Queueable;
     use SerializesModels;
 
-    public function __construct(
-        public readonly string $verificationUrl,
-    ) {}
+    public function __construct(public readonly string $verificationUrl) {}
 
     public function envelope(): Envelope
     {
-        return new Envelope(
-            subject: 'Verify your email address',
-        );
+        return new Envelope(subject: 'Verify your email address');
     }
 
     public function content(): Content
     {
-        return new Content(
-            view: 'emails.identity.verify-email',
-        );
+        return new Content(view: 'emails.identity.verify-email');
     }
 }
