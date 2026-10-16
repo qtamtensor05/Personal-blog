@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Identity;
+namespace App\Presentation\Web\Controllers;
 
 use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
 use App\Application\Identity\UseCases\RegisterUser\RegisterUserUseCase;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Identity\RegisterUserRequest;
+use App\Presentation\Web\Requests\RegisterUserRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 
 final class RegisterUserController extends Controller
@@ -31,7 +31,8 @@ final class RegisterUserController extends Controller
             ]);
         }
 
-        return redirect()->route('login')
-            ->with('status', 'Account created. Please verify your email.');
+        return redirect()
+            ->route('verification.notice')
+            ->with('status', 'Account created successfully! Please check your email to verify your account.');
     }
 }

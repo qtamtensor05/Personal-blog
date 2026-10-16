@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Identity;
+namespace App\Presentation\Web\Controllers;
 
 use App\Application\Identity\UseCases\ResendVerificationEmail\ResendVerificationEmailUseCase;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Identity\ResendVerificationEmailRequest;
+use App\Presentation\Web\Requests\ResendVerificationEmailRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controller;
 
 final class ResendVerificationEmailController extends Controller
 {
@@ -15,13 +15,8 @@ final class ResendVerificationEmailController extends Controller
         ResendVerificationEmailRequest $request,
         ResendVerificationEmailUseCase $resendVerificationEmail,
     ): RedirectResponse {
-        $resendVerificationEmail->execute(
-            $request->validated('email'),
-        );
+        $resendVerificationEmail->execute($request->validated('email'));
 
-        return back()->with(
-            'status',
-            'If verification is required, an email will be sent.',
-        );
+        return back()->with('status', 'If verification is required, an email will be sent.');
     }
 }
