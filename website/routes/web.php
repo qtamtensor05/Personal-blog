@@ -2,6 +2,7 @@
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
+use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
@@ -234,6 +235,10 @@ Route::middleware('auth')->group(function () {
 
     // Template Gallery (users choose one for their blog)
     Route::get('/templates', TemplateGalleryController::class)->name('templates.gallery');
+
+    // User's blogs
+    Route::resource('blogs', BlogController::class)->except(['index']);
+    Route::get('/my-blogs', [BlogController::class, 'index'])->name('blogs.index');
 });
 
 Route::get('/email/verify/{user}', VerifyEmailController::class)
