@@ -16,4 +16,9 @@ interface UserRepository
     public function create(string $name, EmailAddress $email, string $passwordHash): User;
 
     public function update(User $user): void;
+
+    /**
+     * Store a new password hash and sign the user out of every session.
+     */
+    public function changePassword(int $userId, string $passwordHash): void;
 }

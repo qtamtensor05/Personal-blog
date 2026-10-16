@@ -40,13 +40,6 @@
                     autofocus
                 />
 
-                <div class="bg-surface-secondary rounded-lg p-4">
-                    <p class="text-xs text-secondary">
-                        <strong class="text-primary">Note:</strong> If this feature is not yet implemented,
-                        you'll see an error message. Please contact support for password reset assistance.
-                    </p>
-                </div>
-
                 <!-- Submit Button -->
                 <x-button type="submit" class="w-full justify-center">
                     Send Reset Link

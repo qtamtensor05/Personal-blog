@@ -93,6 +93,23 @@ final class QueryBuilderUserRepository implements UserRepository
         }
     }
 
+    public function changePassword(int $userId, string $passwordHash): void
+    {
+        DB::transaction(function () use ($userId, $passwordHash): void {
+            DB::table(self::TABLE)
+                ->where('id', $userId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'password' => $passwordHash,
+                    'remember_token' => null,
+                    'updated_at' => now(),
+                ]);
+
+            // Sign the user out everywhere (sessions use the database driver).
+            DB::table('sessions')->where('user_id', $userId)->delete();
+        });
+    }
+
     private function toDomain(object $record): User
     {
         return new User(

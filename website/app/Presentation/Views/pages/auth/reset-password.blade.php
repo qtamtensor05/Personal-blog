@@ -26,7 +26,7 @@
 
             <form method="POST" action="{{ url('/password/reset') }}" class="space-y-5">
                 @csrf
-                <input type="hidden" name="token" value="{{ request('token') }}">
+                <input type="hidden" name="token" value="{{ $token }}">
 
                 <!-- Email Field (readonly) -->
                 <x-input
@@ -34,7 +34,7 @@
                     name="email"
                     label="Email Address"
                     :error="$errors->first('email')"
-                    value="{{ request('email') ?? old('email') }}"
+                    value="{{ old('email', request('email')) }}"
                     readonly
                 />
 

@@ -1,8 +1,10 @@
 <?php
 
+use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
+use App\Presentation\Web\Controllers\ResetPasswordController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -180,24 +182,22 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/login', LoginController::class)->name('login.store');
 
-    // Password Reset (placeholder - needs backend implementation)
+    // Password Reset
     Route::get('/password/forgot', function () {
         return view('pages.auth.forgot-password');
     })->name('password.request');
 
-    Route::post('/password/email', function () {
-        // TODO: Implement ForgotPasswordController
-        return back()->withErrors(['email' => 'Password reset functionality not yet implemented.']);
-    })->name('password.email');
+    Route::post('/password/email', ForgotPasswordController::class)
+        ->middleware('throttle:5,1')
+        ->name('password.email');
 
-    Route::get('/password/reset/{token}', function ($token) {
+    Route::get('/password/reset/{token}', function (string $token) {
         return view('pages.auth.reset-password', ['token' => $token]);
     })->name('password.reset');
 
-    Route::post('/password/reset', function () {
-        // TODO: Implement ResetPasswordController
-        return back()->withErrors(['password' => 'Password reset functionality not yet implemented.']);
-    })->name('password.update');
+    Route::post('/password/reset', ResetPasswordController::class)
+        ->middleware('throttle:5,1')
+        ->name('password.update');
 });
 
 // Email Verification

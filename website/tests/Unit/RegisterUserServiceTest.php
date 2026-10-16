@@ -114,6 +114,8 @@ final class FakeUserRepository implements UserRepository
     }
 
     public function update(User $user): void {}
+
+    public function changePassword(int $userId, string $passwordHash): void {}
 }
 
 final class FakePasswordHasher implements PasswordHasher
