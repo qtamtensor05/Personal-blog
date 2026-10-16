@@ -189,12 +189,20 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
         // in both the live content and the unpublished draft.
         $contains = "JSON_CONTAINS(JSON_EXTRACT(%s, '$**.mediaId'), CAST(? AS JSON))";
 
-        return DB::table('posts')
-            ->whereNull('deleted_at')
-            ->where(fn ($q) => $q
-                ->whereRaw(sprintf($contains, 'content_json'), [(string) $id])
-                ->orWhereRaw(sprintf($contains, 'draft_data'), [(string) $id]))
-            ->exists();
+        foreach (['posts', 'pages'] as $table) {
+            $used = DB::table($table)
+                ->whereNull('deleted_at')
+                ->where(fn ($q) => $q
+                    ->whereRaw(sprintf($contains, 'content_json'), [(string) $id])
+                    ->orWhereRaw(sprintf($contains, 'draft_data'), [(string) $id]))
+                ->exists();
+
+            if ($used) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function setStatus(int $id, MediaStatus $status): void

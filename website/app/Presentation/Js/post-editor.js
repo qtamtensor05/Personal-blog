@@ -71,7 +71,8 @@ function initPostEditor(root) {
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
                 body: JSON.stringify({
                     title: titleInput.value,
-                    excerpt: excerptInput.value || null,
+                    // Pages have no excerpt field.
+                    excerpt: excerptInput?.value || null,
                     content: editor.getJSON(),
                 }),
             });
@@ -101,7 +102,7 @@ function initPostEditor(root) {
 
     editor.on('update', scheduleSave);
     titleInput.addEventListener('input', scheduleSave);
-    excerptInput.addEventListener('input', scheduleSave);
+    excerptInput?.addEventListener('input', scheduleSave);
 
     // Toolbar
     const commands = {

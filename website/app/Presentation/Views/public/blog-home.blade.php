@@ -27,6 +27,14 @@
         </div>
     @endif
 
+    @if($page->pages !== [])
+        <nav aria-label="Pages" class="container-custom max-w-4xl pt-6 flex flex-wrap gap-4 text-sm">
+            @foreach($page->pages as $staticPage)
+                <a href="{{ route('public.page', [$blog->slug, $staticPage->slug]) }}" style="color: var(--d-primary);">{{ $staticPage->title }}</a>
+            @endforeach
+        </nav>
+    @endif
+
     <main class="container-custom max-w-4xl py-10 space-y-10">
         @foreach($page->sections as $section)
             @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts])

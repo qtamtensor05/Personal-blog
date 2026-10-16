@@ -9,6 +9,7 @@ use App\Application\Blogs\Contracts\BlogRepository;
 use App\Application\Blogs\Contracts\BlogSettingsRepository;
 use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Content\Contracts\PageRepository;
 use App\Application\Content\Contracts\PostRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
@@ -27,6 +28,7 @@ final readonly class ViewPublicBlogService
         private BlogSettingsRepository $settings,
         private BlogDesignRepository $designs,
         private PostRepository $posts,
+        private PageRepository $pages,
     ) {}
 
     public function execute(string $slug, ?int $viewerId): PublicBlogView
@@ -63,6 +65,7 @@ final readonly class ViewPublicBlogService
             isOwnerPreview: ! $isPublic,
             // Only PUBLISHED posts; drafts and archived posts are never listed.
             posts: $this->posts->publishedForBlog($blog->id, $settings->postsPerPage),
+            pages: $this->pages->publishedForBlog($blog->id),
         );
     }
 }

@@ -6,6 +6,7 @@ namespace App\Application\Blogs\UseCases\ViewPublicBlog;
 
 use App\Application\Blogs\DTOs\BlogRecord;
 use App\Application\Blogs\DTOs\BlogSettingsRecord;
+use App\Application\Content\DTOs\PageRecord;
 use App\Application\Content\DTOs\PostRecord;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
@@ -15,6 +16,7 @@ final readonly class PublicBlogView
     /**
      * @param  list<TemplateSectionConfig>  $sections
      * @param  list<PostRecord>  $posts  Latest PUBLISHED posts.
+     * @param  list<PageRecord>  $pages  PUBLISHED static pages.
      */
     public function __construct(
         public BlogRecord $blog,
@@ -25,5 +27,6 @@ final readonly class PublicBlogView
         public bool $noIndex,
         public bool $isOwnerPreview,
         public array $posts = [],
+        public array $pages = [],
     ) {}
 }

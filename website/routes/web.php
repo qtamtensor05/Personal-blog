@@ -9,8 +9,10 @@ use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
+use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PublicBlogController;
+use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
@@ -183,6 +185,11 @@ Route::get('/b/{slug}', PublicBlogController::class)
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
     ->name('public.blog');
 
+// Static pages live under /p/ so their slugs never collide with post slugs.
+Route::get('/b/{slug}/p/{page}', PublicPageController::class)
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'page' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('public.page');
+
 Route::get('/b/{slug}/{post}', PublicPostController::class)
     ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
     ->name('public.post');
@@ -290,6 +297,21 @@ Route::middleware('auth')->group(function () {
             Route::post('/{post}/publish', [PostController::class, 'publish'])->name('publish');
             Route::patch('/{post}/status', [PostController::class, 'changeStatus'])->name('status');
             Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+        });
+
+    // Static pages (Tiptap editor)
+    Route::prefix('/blogs/{blog}/pages')
+        ->whereNumber(['blog', 'page'])
+        ->name('blogs.pages.')
+        ->group(function () {
+            Route::get('/', [PageController::class, 'index'])->name('index');
+            Route::post('/', [PageController::class, 'store'])->name('store');
+            Route::get('/{page}/edit', [PageController::class, 'edit'])->name('edit');
+            Route::put('/{page}/draft', [PageController::class, 'saveDraft'])->middleware('throttle:60,1')->name('draft');
+            Route::put('/{page}/meta', [PageController::class, 'updateMeta'])->name('meta');
+            Route::post('/{page}/publish', [PageController::class, 'publish'])->name('publish');
+            Route::patch('/{page}/status', [PageController::class, 'changeStatus'])->name('status');
+            Route::delete('/{page}', [PageController::class, 'destroy'])->name('destroy');
         });
 
     // Blog Design Editor
