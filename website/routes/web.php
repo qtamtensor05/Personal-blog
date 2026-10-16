@@ -2,6 +2,7 @@
 
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
+use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -218,6 +219,15 @@ Route::middleware('auth')->group(function () {
 
         return redirect('/');
     })->name('logout');
+
+    // Media (JSON, session + CSRF)
+    Route::post('/media', [MediaController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('media.store');
+
+    Route::delete('/media/{media}', [MediaController::class, 'destroy'])
+        ->whereNumber('media')
+        ->name('media.destroy');
 });
 
 Route::get('/email/verify/{user}', VerifyEmailController::class)
