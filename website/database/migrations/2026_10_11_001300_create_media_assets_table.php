@@ -5,10 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
-        if (!Schema::hasTable('media_assets')) {
+        if (! Schema::hasTable('media_assets')) {
             Schema::create('media_assets', function (Blueprint $table): void {
                 $table->engine = 'InnoDB';
                 $table->charset = 'utf8mb4';
@@ -60,7 +61,7 @@ return new class extends Migration {
             "(`scope` = 'BLOG' AND `blog_id` IS NOT NULL) OR (`scope` IN ('PLATFORM', 'USER') AND `blog_id` IS NULL)",
         );
 
-        if (!$this->foreignKeyExists('users', 'fk_37_users')) {
+        if (! $this->foreignKeyExists('users', 'fk_37_users')) {
             Schema::table('users', function (Blueprint $table): void {
                 $table
                     ->foreign('avatar_media_id', 'fk_37_users')
@@ -75,7 +76,7 @@ return new class extends Migration {
     public function down(): void
     {
         if (Schema::hasTable('users') && $this->foreignKeyExists('users', 'fk_37_users')) {
-            Schema::table('users', fn(Blueprint $table) => $table->dropForeign('fk_37_users'));
+            Schema::table('users', fn (Blueprint $table) => $table->dropForeign('fk_37_users'));
         }
 
         Schema::dropIfExists('media_assets');
@@ -90,7 +91,7 @@ return new class extends Migration {
             ->where('CONSTRAINT_TYPE', 'CHECK')
             ->exists();
 
-        if (!$exists) {
+        if (! $exists) {
             DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` CHECK ({$expression})");
         }
     }
