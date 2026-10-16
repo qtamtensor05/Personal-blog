@@ -12,6 +12,7 @@ use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
+use App\Presentation\Web\Controllers\TaxonomyController;
 use App\Presentation\Web\Controllers\TemplateGalleryController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
@@ -255,6 +256,19 @@ Route::middleware('auth')->group(function () {
     Route::put('/blogs/{blog}/settings', [BlogSettingsController::class, 'update'])
         ->whereNumber('blog')
         ->name('blogs.settings.update');
+
+    // Categories & Tags
+    Route::prefix('/blogs/{blog}')
+        ->whereNumber(['blog', 'category', 'tag'])
+        ->group(function () {
+            Route::get('/taxonomy', [TaxonomyController::class, 'index'])->name('blogs.taxonomy');
+            Route::post('/categories', [TaxonomyController::class, 'storeCategory'])->name('blogs.categories.store');
+            Route::put('/categories/{category}', [TaxonomyController::class, 'updateCategory'])->name('blogs.categories.update');
+            Route::delete('/categories/{category}', [TaxonomyController::class, 'destroyCategory'])->name('blogs.categories.destroy');
+            Route::post('/tags', [TaxonomyController::class, 'storeTag'])->name('blogs.tags.store');
+            Route::put('/tags/{tag}', [TaxonomyController::class, 'updateTag'])->name('blogs.tags.update');
+            Route::delete('/tags/{tag}', [TaxonomyController::class, 'destroyTag'])->name('blogs.tags.destroy');
+        });
 
     // Blog Design Editor
     Route::prefix('/blogs/{blog}/design')

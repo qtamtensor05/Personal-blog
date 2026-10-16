@@ -59,6 +59,7 @@
 
     <div class="flex items-center gap-3 pt-6 border-t border-default">
         <a href="{{ route('blogs.edit', $blog->id) }}" class="btn-secondary">Edit Blog Info</a>
+        <a href="{{ route('blogs.taxonomy', $blog->id) }}" class="btn-secondary">Categories &amp; Tags</a>
         <form method="POST" action="{{ route('blogs.destroy', $blog->id) }}" class="inline" onsubmit="return confirm('Delete this blog? This cannot be undone.')">
             @csrf
             @method('DELETE')
