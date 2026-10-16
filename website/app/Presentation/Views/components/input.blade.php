@@ -1,4 +1,4 @@
-@props(['type' => 'text', 'name', 'label' => null, 'error' => null, 'required' => false])
+@props(['name', 'label' => null, 'error' => null, 'hint' => null, 'required' => false, 'type' => 'text', 'value' => null])
 
 <div class="space-y-1">
     @if($label)
@@ -14,9 +14,14 @@
         type="{{ $type }}"
         name="{{ $name }}"
         id="{{ $name }}"
+        value="{{ old($name, $value) }}"
         {{ $attributes->merge(['class' => 'input ' . ($error ? 'border-red-500' : '')]) }}
         @if($required) required @endif
-    >
+    />
+
+    @if($hint)
+        <p class="text-xs text-secondary">{{ $hint }}</p>
+    @endif
 
     @if($error)
         <p class="text-sm text-red-500">{{ $error }}</p>

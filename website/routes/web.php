@@ -1,11 +1,14 @@
 <?php
 
+use App\Domain\AccessControl\Enums\PlatformPermission;
+use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
+use App\Presentation\Web\Controllers\TemplateGalleryController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -228,11 +231,42 @@ Route::middleware('auth')->group(function () {
     Route::delete('/media/{media}', [MediaController::class, 'destroy'])
         ->whereNumber('media')
         ->name('media.destroy');
+
+    // Template Gallery (users choose one for their blog)
+    Route::get('/templates', TemplateGalleryController::class)->name('templates.gallery');
 });
 
 Route::get('/email/verify/{user}', VerifyEmailController::class)
     ->middleware('signed')
     ->name('identity.email.verify');
+
+// Admin Console
+Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole->value])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // Templates
+        Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(function () {
+            Route::get('/templates', [AdminTemplateController::class, 'index'])->name('templates.index');
+            Route::get('/templates/create', [AdminTemplateController::class, 'create'])->name('templates.create');
+            Route::post('/templates', [AdminTemplateController::class, 'store'])->name('templates.store');
+            Route::get('/templates/{template}/edit', [AdminTemplateController::class, 'edit'])
+                ->whereNumber('template')
+                ->name('templates.edit');
+            Route::put('/templates/{template}', [AdminTemplateController::class, 'update'])
+                ->whereNumber('template')
+                ->name('templates.update');
+            Route::post('/templates/{template}/publish', [AdminTemplateController::class, 'publish'])
+                ->whereNumber('template')
+                ->name('templates.publish');
+            Route::patch('/templates/{template}/status', [AdminTemplateController::class, 'changeStatus'])
+                ->whereNumber('template')
+                ->name('templates.status');
+            Route::delete('/templates/{template}', [AdminTemplateController::class, 'destroy'])
+                ->whereNumber('template')
+                ->name('templates.destroy');
+        });
+    });
 
 Route::post('/email/verification-notification', ResendVerificationEmailController::class)
     ->middleware('throttle:3,1')
