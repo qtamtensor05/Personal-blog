@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\DB;
 
 final class MediaLibrary
 {
+    public function __construct(
+        private readonly OwnerContext $owners,
+    ) {}
+
     public function list(User $actor, int $blog, string $q = '')
     {
-        app(OwnerContext::class)->resolve($actor, $blog);
+        $this->owners->resolve($actor, $blog);
 
         return DB::table('media_assets')->where(['blog_id' => $blog, 'scope' => 'BLOG'])->whereNull('deleted_at')->when($q !== '', fn ($query) => $query->where('original_name', 'like', '%'.$q.'%'))->latest()->get();
     }
