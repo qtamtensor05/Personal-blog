@@ -24,7 +24,13 @@ final class LoginController extends Controller
 
         $user = Auth::user();
 
-        if ($user === null || $user->status !== 'ACTIVE' || $user->email_verified_at === null) {
+        // The database user provider does not filter soft-deleted rows.
+        if (
+            $user === null ||
+            $user->deleted_at !== null ||
+            $user->status !== 'ACTIVE' ||
+            $user->email_verified_at === null
+        ) {
             Auth::logout();
 
             throw ValidationException::withMessages([
