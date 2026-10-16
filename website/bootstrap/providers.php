@@ -1,6 +1,7 @@
 <?php
 
 use App\Providers\AccessControlServiceProvider;
+use App\Providers\AdministrationServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\BlogDesignServiceProvider;
 use App\Providers\BlogServiceProvider;
@@ -13,6 +14,7 @@ return [
     AppServiceProvider::class,
     IdentityServiceProvider::class,
     AccessControlServiceProvider::class,
+    AdministrationServiceProvider::class,
     BlogServiceProvider::class,
     BlogDesignServiceProvider::class,
     ContentServiceProvider::class,

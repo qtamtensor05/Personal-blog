@@ -2,6 +2,7 @@
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
+use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
 use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\BlogDesignController;
 use App\Presentation\Web\Controllers\BlogSettingsController;
@@ -312,6 +313,26 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        // Users and account restrictions
+        Route::middleware(['permission:'.PlatformPermission::ManageUsers->value])
+            ->whereNumber(['user', 'role'])
+            ->group(function () {
+                Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+                Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+                Route::post('/users/{user}/restrictions', [AdminUserController::class, 'restrict'])->name('users.restrict');
+                Route::delete('/users/{user}/restrictions', [AdminUserController::class, 'lift'])->name('users.lift');
+
+                // Role changes need roles.manage on top of users.manage.
+                Route::middleware(['permission:'.PlatformPermission::ManageRoles->value])->group(function () {
+                    Route::post('/users/{user}/roles', [AdminUserController::class, 'grantRole'])->name('users.roles.grant');
+                    Route::delete('/users/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('users.roles.revoke');
+                });
+            });
+
+        Route::get('/audit-logs', [AdminUserController::class, 'auditLogs'])
+            ->middleware(['permission:'.PlatformPermission::ViewAuditLogs->value])
+            ->name('audit-logs');
+
         // Templates
         Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(function () {
             Route::get('/templates', [AdminTemplateController::class, 'index'])->name('templates.index');
