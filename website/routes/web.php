@@ -8,6 +8,7 @@ use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
+use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -172,6 +173,11 @@ final class User
     return view('pages.posts.show', compact('mockPost', 'relatedPosts'))
         ->with('post', $mockPost);
 })->name('posts.show');
+
+// Public blog home (custom domains come later with blog_domains)
+Route::get('/b/{slug}', PublicBlogController::class)
+    ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->name('public.blog');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {

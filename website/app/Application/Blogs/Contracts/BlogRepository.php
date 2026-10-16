@@ -12,6 +12,8 @@ interface BlogRepository
 {
     public function find(int $id): ?BlogRecord;
 
+    public function findBySlug(string $slug): ?BlogRecord;
+
     public function slugExists(string $slug, ?int $exceptId = null): bool;
 
     /**

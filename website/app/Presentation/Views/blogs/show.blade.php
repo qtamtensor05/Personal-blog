@@ -51,7 +51,7 @@
         <div class="card">
             <h2 class="text-lg font-semibold text-primary mb-4">View Public Site</h2>
             <p class="text-sm text-secondary mb-4">See how your blog looks to visitors.</p>
-            <a href="#" class="btn-secondary text-sm" onclick="alert('Public rendering is upcoming'); return false;">
+            <a href="{{ route('public.blog', $blog->slug) }}" target="_blank" rel="noopener" class="btn-secondary text-sm">
                 Preview Blog
             </a>
         </div>

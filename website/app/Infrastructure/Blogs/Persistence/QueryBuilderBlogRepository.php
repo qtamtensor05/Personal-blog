@@ -25,6 +25,13 @@ final class QueryBuilderBlogRepository implements BlogRepository
         return $this->toDomain($row);
     }
 
+    public function findBySlug(string $slug): ?BlogRecord
+    {
+        $row = DB::table(self::TABLE)->where('slug', $slug)->whereNull('deleted_at')->first();
+
+        return $row === null ? null : $this->toDomain($row);
+    }
+
     public function slugExists(string $slug, ?int $exceptId = null): bool
     {
         // Unique index u_0 also covers soft-deleted rows.
