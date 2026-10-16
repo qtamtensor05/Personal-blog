@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterUserRequest;
+use App\Modules\Identity\Actions\AuthenticateWebUserAction;
+use App\Modules\Identity\Actions\DetermineLoginAccessAction;
+use App\Modules\Identity\Actions\EnsureRegistrationEnabledAction;
+use App\Modules\Identity\Actions\RecordSuccessfulLoginAction;
+use App\Modules\Identity\Actions\RegisterUserAction;
+use App\Modules\Identity\Enums\LoginAccessDecision;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 final class AuthController extends Controller
@@ -22,55 +27,78 @@ final class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function login(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+    public function login(
+        LoginRequest $request,
+        AuthenticateWebUserAction $authenticateWebUser,
+        RecordSuccessfulLoginAction $recordSuccessfulLogin,
+        DetermineLoginAccessAction $determineLoginAccess,
+    ): RedirectResponse {
+        $credentials = $request->validated();
+
+        $authenticated = $authenticateWebUser->execute(
+            $credentials['email'],
+            $credentials['password'],
+            $request->boolean('remember'),
+        );
+
+        if (! $authenticated) {
             return back()
-                ->withErrors(['email' => 'Thông tin đăng nhập không đúng.'])
+                ->withErrors([
+                    'email' => 'Thông tin đăng nhập không đúng.',
+                ])
                 ->onlyInput('email');
         }
+
         $request->session()->regenerate();
-        if ($request->user()->deleted_at === null && ($request->user()->locked_until === null || $request->user()->locked_until->isPast()) && $request->user()->status === 'PENDING_VERIFICATION' && ! $request->user()->hasVerifiedEmail()) {
+
+        $user = $request->user();
+
+        $decision = $determineLoginAccess->execute($user);
+
+        if ($decision === LoginAccessDecision::VerificationRequired) {
             return redirect('/email/verify');
         }
-        if (! $request->user()->canAccessApplication()) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => 'Tài khoản chưa xác minh hoặc đang bị hạn chế.']);
+        if ($decision === LoginAccessDecision::Denied) {
+            $authenticateWebUser->logout($request);
+
+            return back()->withErrors([
+                'email' => 'Tài khoản chưa xác minh hoặc đang bị hạn chế.',
+            ]);
         }
-        User::whereKey($request->user()->id)->update(['last_login_at' => now()]);
+
+        $recordSuccessfulLogin->execute(
+            (int) $user->getKey(),
+        );
 
         return redirect()->intended('/workspace');
     }
 
-    public function register(Request $request): RedirectResponse
-    {
-        $settings = json_decode(\DB::table('platform_settings')->where('id', 1)->value('config_json') ?? '{}', true);
-        abort_unless(data_get($settings, 'features.registrationEnabled', true), 403, 'Đăng ký tạm thời đóng.');
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:160'],
-            'email' => ['required', 'email', 'max:254', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
-        $user = User::create([...$data, 'status' => 'PENDING_VERIFICATION']);
-        event(new Registered($user));
-        Auth::login($user);
+    public function register(
+        RegisterUserRequest $request,
+        RegisterUserAction $registerUser,
+        EnsureRegistrationEnabledAction $registration,
+    ): RedirectResponse {
+        abort_unless(
+            $registration->execute(),
+            403,
+            'Đăng ký tạm thời đóng.',
+        );
+
+        $user = $registerUser->execute($request->validated());
+
+        Auth::guard('web')->login($user);
+
         $request->session()->regenerate();
 
         return redirect('/email/verify');
     }
 
-    public function logout(Request $request): RedirectResponse
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    public function logout(
+        Request $request,
+        AuthenticateWebUserAction $authenticateWebUser,
+    ): RedirectResponse {
+        $authenticateWebUser->logout($request);
 
         return redirect('/');
     }
