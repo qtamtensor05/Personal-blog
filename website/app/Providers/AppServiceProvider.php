@@ -6,6 +6,12 @@ use App\Modules\Audit\DatabaseAuditRecorder;
 use App\Modules\Content\Rendering\SafeTiptapRenderer;
 use App\Modules\Identity\Auth\ActiveUserProvider;
 use App\Modules\Identity\Auth\SessionStamp;
+use App\Modules\Identity\Contracts\RegistrationSettingsRepository;
+use App\Modules\Identity\Contracts\TokenService;
+use App\Modules\Identity\Contracts\UserRepository;
+use App\Modules\Identity\Repositories\DatabaseRegistrationSettingsRepository;
+use App\Modules\Identity\Repositories\DatabaseUserRepository;
+use App\Modules\Identity\Services\JwtTokenService;
 use App\Modules\Media\Infrastructure\CloudinarySdkGateway;
 use App\Modules\Platform\Queries\PublicSettings;
 use App\Shared\Contracts\AuditRecorder;
@@ -27,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditRecorder::class, DatabaseAuditRecorder::class);
         $this->app->bind(RichTextRenderer::class, SafeTiptapRenderer::class);
         $this->app->bind(CloudinaryGateway::class, CloudinarySdkGateway::class);
+        $this->app->bind(UserRepository::class, DatabaseUserRepository::class);
+        $this->app->bind(TokenService::class, JwtTokenService::class);
+        $this->app->bind(
+            RegistrationSettingsRepository::class,
+            DatabaseRegistrationSettingsRepository::class,
+        );
     }
 
     /**
