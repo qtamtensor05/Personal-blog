@@ -36,6 +36,14 @@ interface MediaAssetRepository
     public function isUsableForBlog(int $id, int $blogId): bool;
 
     /**
+     * Delivery data of the READY media of a blog among the given IDs.
+     *
+     * @param  list<int>  $ids
+     * @return array<int, array{url: string, width: ?int, height: ?int}> mediaId => asset
+     */
+    public function readyAssetsForBlog(int $blogId, array $ids): array;
+
+    /**
      * Move READY/FAILED to DELETING. Returns false if another request got there first.
      */
     public function markDeleting(int $id): bool;

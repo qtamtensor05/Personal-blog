@@ -261,6 +261,64 @@ a:hover {
     }
 }
 
+/* Post content (Tiptap editor and rendered posts) */
+.post-content > * + * {
+    margin-top: 1em;
+}
+
+.post-content h2 {
+    font-size: 1.5rem;
+}
+
+.post-content h3 {
+    font-size: 1.25rem;
+}
+
+.post-content h4 {
+    font-size: 1.125rem;
+}
+
+.post-content ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+}
+
+.post-content ol {
+    list-style: decimal;
+    padding-left: 1.5rem;
+}
+
+.post-content blockquote {
+    border-left: 3px solid var(--color-accent-primary);
+    padding-left: 1rem;
+    font-style: italic;
+}
+
+.post-content pre {
+    background-color: var(--color-surface-secondary);
+    border-radius: 0.375rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.post-content code {
+    font-size: 0.875em;
+}
+
+.post-content a {
+    color: var(--color-accent-primary);
+    text-decoration: underline;
+}
+
+.post-content img {
+    border-radius: 0.375rem;
+    height: auto;
+}
+
+.post-content hr {
+    border-color: var(--color-border);
+}
+
 /* Focus Visible */
 :focus-visible {
     outline: 2px solid var(--color-accent-primary);

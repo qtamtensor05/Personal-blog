@@ -9,6 +9,7 @@ use App\Application\Blogs\Contracts\BlogRepository;
 use App\Application\Blogs\Contracts\BlogSettingsRepository;
 use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Content\Contracts\PostRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
@@ -25,6 +26,7 @@ final readonly class ViewPublicBlogService
         private BlogRepository $blogs,
         private BlogSettingsRepository $settings,
         private BlogDesignRepository $designs,
+        private PostRepository $posts,
     ) {}
 
     public function execute(string $slug, ?int $viewerId): PublicBlogView
@@ -50,13 +52,17 @@ final readonly class ViewPublicBlogService
             new TemplateSectionConfig('footer', 'footer'),
         ];
 
+        $settings = $this->settings->find($blog->id) ?? BlogSettingsRecord::defaults($blog->id);
+
         return new PublicBlogView(
             blog: $blog,
-            settings: $this->settings->find($blog->id) ?? BlogSettingsRecord::defaults($blog->id),
+            settings: $settings,
             sections: $sections,
             designTokens: $design?->designTokens ?? TemplateDesignTokens::default(),
             noIndex: ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
             isOwnerPreview: ! $isPublic,
+            // Only PUBLISHED posts; drafts and archived posts are never listed.
+            posts: $this->posts->publishedForBlog($blog->id, $settings->postsPerPage),
         );
     }
 }

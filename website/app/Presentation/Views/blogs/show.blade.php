@@ -35,7 +35,7 @@
         <div class="card">
             <h2 class="text-lg font-semibold text-primary mb-4">Posts</h2>
             <p class="text-sm text-secondary mb-4">Write and publish blog posts.</p>
-            <a href="#" class="btn-primary text-sm" onclick="alert('Post management is upcoming'); return false;">
+            <a href="{{ route('blogs.posts.index', $blog->id) }}" class="btn-primary text-sm">
                 Manage Posts
             </a>
         </div>

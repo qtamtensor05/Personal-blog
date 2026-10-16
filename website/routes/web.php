@@ -8,7 +8,9 @@ use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
+use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PublicBlogController;
+use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -180,6 +182,10 @@ Route::get('/b/{slug}', PublicBlogController::class)
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
     ->name('public.blog');
 
+Route::get('/b/{slug}/{post}', PublicPostController::class)
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('public.post');
+
 // Authentication Routes
 Route::middleware('guest')->group(function () {
     // Register
@@ -268,6 +274,21 @@ Route::middleware('auth')->group(function () {
             Route::post('/tags', [TaxonomyController::class, 'storeTag'])->name('blogs.tags.store');
             Route::put('/tags/{tag}', [TaxonomyController::class, 'updateTag'])->name('blogs.tags.update');
             Route::delete('/tags/{tag}', [TaxonomyController::class, 'destroyTag'])->name('blogs.tags.destroy');
+        });
+
+    // Posts (Tiptap editor)
+    Route::prefix('/blogs/{blog}/posts')
+        ->whereNumber(['blog', 'post'])
+        ->name('blogs.posts.')
+        ->group(function () {
+            Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::post('/', [PostController::class, 'store'])->name('store');
+            Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{post}/draft', [PostController::class, 'saveDraft'])->middleware('throttle:60,1')->name('draft');
+            Route::put('/{post}/meta', [PostController::class, 'updateMeta'])->name('meta');
+            Route::post('/{post}/publish', [PostController::class, 'publish'])->name('publish');
+            Route::patch('/{post}/status', [PostController::class, 'changeStatus'])->name('status');
+            Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
         });
 
     // Blog Design Editor

@@ -29,7 +29,7 @@
 
     <main class="container-custom max-w-4xl py-10 space-y-10">
         @foreach($page->sections as $section)
-            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog])
+            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts])
         @endforeach
 
         @if($settings->socialLinks !== [])

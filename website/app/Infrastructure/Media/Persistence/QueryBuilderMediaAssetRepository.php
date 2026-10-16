@@ -115,6 +115,28 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             ->exists();
     }
 
+    public function readyAssetsForBlog(int $blogId, array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return DB::table(self::TABLE)
+            ->whereIn('id', $ids)
+            ->where('scope', MediaScope::Blog->value)
+            ->where('blog_id', $blogId)
+            ->where('status', MediaStatus::Ready->value)
+            ->whereNull('deleted_at')
+            ->whereNotNull('secure_url')
+            ->get(['id', 'secure_url', 'width', 'height'])
+            ->mapWithKeys(fn ($row) => [(int) $row->id => [
+                'url' => (string) $row->secure_url,
+                'width' => $row->width !== null ? (int) $row->width : null,
+                'height' => $row->height !== null ? (int) $row->height : null,
+            ]])
+            ->all();
+    }
+
     public function markDeleting(int $id): bool
     {
         return DB::table(self::TABLE)
@@ -163,7 +185,16 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             }
         }
 
-        return false;
+        // Images inside Tiptap content have no FK: look for any "mediaId" equal to the ID,
+        // in both the live content and the unpublished draft.
+        $contains = "JSON_CONTAINS(JSON_EXTRACT(%s, '$**.mediaId'), CAST(? AS JSON))";
+
+        return DB::table('posts')
+            ->whereNull('deleted_at')
+            ->where(fn ($q) => $q
+                ->whereRaw(sprintf($contains, 'content_json'), [(string) $id])
+                ->orWhereRaw(sprintf($contains, 'draft_data'), [(string) $id]))
+            ->exists();
     }
 
     private function setStatus(int $id, MediaStatus $status): void
