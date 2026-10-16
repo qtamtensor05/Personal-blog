@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('posts')) {
@@ -30,7 +29,9 @@ return new class extends Migration
             $table->string('canonical_url', 2048)->nullable();
             $table->string('robots', 80)->default('index,follow');
             $table->json('draft_data')->nullable();
-            $table->enum('status', ['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED'])->default('DRAFT');
+            $table
+                ->enum('status', ['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED'])
+                ->default('DRAFT');
             $table->dateTime('scheduled_at')->nullable();
             $table->dateTime('published_at')->nullable();
             $table->boolean('is_featured')->default(false);
@@ -42,11 +43,36 @@ return new class extends Migration
             $table->unique(['blog_id', 'id'], 'u_1');
             $table->index(['blog_id', 'status', 'published_at'], 'i_0');
             $table->index(['status', 'scheduled_at'], 'i_1');
-            $table->foreign('blog_id', 'fk_25_posts')->references('id')->on('blogs')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('author_user_id', 'fk_26_posts')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('updated_by', 'fk_27_posts')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('cover_media_id', 'fk_51_posts')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('og_media_id', 'fk_52_posts')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('blog_id', 'fk_25_posts')
+                ->references('id')
+                ->on('blogs')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('author_user_id', 'fk_26_posts')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('updated_by', 'fk_27_posts')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('cover_media_id', 'fk_51_posts')
+                ->references('id')
+                ->on('media_assets')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('og_media_id', 'fk_52_posts')
+                ->references('id')
+                ->on('media_assets')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

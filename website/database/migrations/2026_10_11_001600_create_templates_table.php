@@ -5,11 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        if (! Schema::hasTable('templates')) {
+        if (!Schema::hasTable('templates')) {
             Schema::create('templates', function (Blueprint $table): void {
                 $table->engine = 'InnoDB';
                 $table->charset = 'utf8mb4';
@@ -18,7 +17,9 @@ return new class extends Migration
                 $table->string('name', 160);
                 $table->string('slug', 160)->unique('u_0');
                 $table->text('description')->nullable();
-                $table->enum('status', ['DRAFT', 'PUBLISHED', 'HIDDEN', 'RETIRED'])->default('DRAFT');
+                $table
+                    ->enum('status', ['DRAFT', 'PUBLISHED', 'HIDDEN', 'RETIRED'])
+                    ->default('DRAFT');
                 $table->unsignedBigInteger('preview_media_id')->nullable();
                 $table->string('demo_url', 2048)->nullable();
                 $table->unsignedBigInteger('created_by');
@@ -32,16 +33,48 @@ return new class extends Migration
                 $table->dateTime('created_at')->useCurrent();
                 $table->dateTime('updated_at')->useCurrent();
                 $table->index(['status', 'created_at'], 'i_0');
-                $table->foreign('created_by', 'fk_18_templates')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('updated_by', 'fk_19_templates')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('preview_media_id', 'fk_41_templates')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('published_by', 'fk_53_templates')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+                $table
+                    ->foreign('created_by', 'fk_18_templates')
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('updated_by', 'fk_19_templates')
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('preview_media_id', 'fk_41_templates')
+                    ->references('id')
+                    ->on('media_assets')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('published_by', 'fk_53_templates')
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
             });
         }
 
-        $this->ensureCheckConstraint('templates', 'ck_templates_0', '`template_data` IS NOT NULL OR `draft_data` IS NOT NULL');
-        $this->ensureCheckConstraint('templates', 'ck_templates_1', "`status` <> 'PUBLISHED' OR `template_data` IS NOT NULL");
-        $this->ensureCheckConstraint('templates', 'ck_templates_2', '(`template_data` IS NULL AND `version_number` = 0) OR (`template_data` IS NOT NULL AND `version_number` > 0)');
+        $this->ensureCheckConstraint(
+            'templates',
+            'ck_templates_0',
+            '`template_data` IS NOT NULL OR `draft_data` IS NOT NULL',
+        );
+        $this->ensureCheckConstraint(
+            'templates',
+            'ck_templates_1',
+            "`status` <> 'PUBLISHED' OR `template_data` IS NOT NULL",
+        );
+        $this->ensureCheckConstraint(
+            'templates',
+            'ck_templates_2',
+            '(`template_data` IS NULL AND `version_number` = 0) OR (`template_data` IS NOT NULL AND `version_number` > 0)',
+        );
     }
 
     public function down(): void
@@ -58,7 +91,7 @@ return new class extends Migration
             ->where('CONSTRAINT_TYPE', 'CHECK')
             ->exists();
 
-        if (! $exists) {
+        if (!$exists) {
             DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` CHECK ({$expression})");
         }
     }

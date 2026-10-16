@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('blogs')) {
@@ -21,7 +20,9 @@ return new class extends Migration
             $table->string('name', 160);
             $table->string('slug', 160)->unique('u_0');
             $table->text('description')->nullable();
-            $table->enum('status', ['DRAFT', 'PUBLISHED', 'HIDDEN', 'SUSPENDED', 'ARCHIVED'])->default('DRAFT');
+            $table
+                ->enum('status', ['DRAFT', 'PUBLISHED', 'HIDDEN', 'SUSPENDED', 'ARCHIVED'])
+                ->default('DRAFT');
             $table->enum('visibility', ['PUBLIC', 'UNLISTED', 'PRIVATE'])->default('PUBLIC');
             $table->boolean('discoverable')->default(true);
             $table->dateTime('published_at')->nullable();
@@ -30,7 +31,12 @@ return new class extends Migration
             $table->dateTime('updated_at')->useCurrent();
             $table->index(['owner_user_id', 'status'], 'i_0');
             $table->index(['status', 'visibility', 'discoverable'], 'i_1');
-            $table->foreign('owner_user_id', 'fk_12_blogs')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('owner_user_id', 'fk_12_blogs')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

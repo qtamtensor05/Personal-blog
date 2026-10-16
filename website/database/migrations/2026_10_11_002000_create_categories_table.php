@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('categories')) {
@@ -27,8 +26,18 @@ return new class extends Migration
             $table->dateTime('updated_at')->useCurrent();
             $table->unique(['blog_id', 'slug'], 'u_0');
             $table->unique(['blog_id', 'id'], 'u_1');
-            $table->foreign('blog_id', 'fk_28_categories')->references('id')->on('blogs')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign(['blog_id', 'parent_id'], 'fk_29_categories')->references(['blog_id', 'id'])->on('categories')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('blog_id', 'fk_28_categories')
+                ->references('id')
+                ->on('blogs')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign(['blog_id', 'parent_id'], 'fk_29_categories')
+                ->references(['blog_id', 'id'])
+                ->on('categories')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

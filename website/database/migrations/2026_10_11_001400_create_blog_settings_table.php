@@ -5,11 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        if (! Schema::hasTable('blog_settings')) {
+        if (!Schema::hasTable('blog_settings')) {
             Schema::create('blog_settings', function (Blueprint $table): void {
                 $table->engine = 'InnoDB';
                 $table->charset = 'utf8mb4';
@@ -28,18 +27,45 @@ return new class extends Migration
                 $table->unsignedInteger('post_limit')->nullable();
                 $table->dateTime('created_at')->useCurrent();
                 $table->dateTime('updated_at')->useCurrent();
-                $table->foreign('blog_id', 'fk_15_blog_settings')->references('id')->on('blogs')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('logo_media_id', 'fk_38_blog_settings')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('favicon_media_id', 'fk_39_blog_settings')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
-                $table->foreign('og_media_id', 'fk_40_blog_settings')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
+                $table
+                    ->foreign('blog_id', 'fk_15_blog_settings')
+                    ->references('id')
+                    ->on('blogs')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('logo_media_id', 'fk_38_blog_settings')
+                    ->references('id')
+                    ->on('media_assets')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('favicon_media_id', 'fk_39_blog_settings')
+                    ->references('id')
+                    ->on('media_assets')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
+                $table
+                    ->foreign('og_media_id', 'fk_40_blog_settings')
+                    ->references('id')
+                    ->on('media_assets')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
             });
         }
 
-        if (! Schema::hasColumn('blog_settings', 'social_links')) {
-            Schema::table('blog_settings', fn (Blueprint $table) => $table->json('social_links')->nullable());
+        if (!Schema::hasColumn('blog_settings', 'social_links')) {
+            Schema::table(
+                'blog_settings',
+                fn(Blueprint $table) => $table->json('social_links')->nullable(),
+            );
         }
 
-        $this->ensureCheckConstraint('blog_settings', 'ck_blog_settings_0', '`posts_per_page` BETWEEN 1 AND 100');
+        $this->ensureCheckConstraint(
+            'blog_settings',
+            'ck_blog_settings_0',
+            '`posts_per_page` BETWEEN 1 AND 100',
+        );
     }
 
     public function down(): void
@@ -56,7 +82,7 @@ return new class extends Migration
             ->where('CONSTRAINT_TYPE', 'CHECK')
             ->exists();
 
-        if (! $exists) {
+        if (!$exists) {
             DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` CHECK ({$expression})");
         }
     }

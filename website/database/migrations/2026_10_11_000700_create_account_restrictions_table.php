@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('account_restrictions')) {
@@ -30,9 +29,24 @@ return new class extends Migration
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent();
             $table->index(['user_id', 'status', 'ends_at'], 'i_0');
-            $table->foreign('user_id', 'fk_6_account_restrictions')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('issued_by', 'fk_7_account_restrictions')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('revoked_by', 'fk_8_account_restrictions')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('user_id', 'fk_6_account_restrictions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('issued_by', 'fk_7_account_restrictions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('revoked_by', 'fk_8_account_restrictions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

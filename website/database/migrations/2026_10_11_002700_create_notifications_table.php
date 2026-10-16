@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('notifications')) {
@@ -24,7 +23,12 @@ return new class extends Migration
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent();
             $table->index(['recipient_user_id', 'read_at', 'created_at'], 'i_0');
-            $table->foreign('recipient_user_id', 'fk_50_notifications')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('recipient_user_id', 'fk_50_notifications')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

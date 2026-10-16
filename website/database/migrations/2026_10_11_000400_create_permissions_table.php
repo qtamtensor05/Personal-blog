@@ -5,11 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        if (! Schema::hasTable('permissions')) {
+        if (!Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table): void {
                 $table->engine = 'InnoDB';
                 $table->charset = 'utf8mb4';
@@ -40,7 +39,7 @@ return new class extends Migration
             ->where('CONSTRAINT_TYPE', 'CHECK')
             ->exists();
 
-        if (! $exists) {
+        if (!$exists) {
             DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` CHECK ({$expression})");
         }
     }

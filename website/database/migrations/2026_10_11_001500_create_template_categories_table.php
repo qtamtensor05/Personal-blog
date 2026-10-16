@@ -5,11 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
-        if (! Schema::hasTable('template_categories')) {
+        if (!Schema::hasTable('template_categories')) {
             Schema::create('template_categories', function (Blueprint $table): void {
                 $table->engine = 'InnoDB';
                 $table->charset = 'utf8mb4';
@@ -23,11 +22,20 @@ return new class extends Migration
                 $table->dateTime('created_at')->useCurrent();
                 $table->dateTime('updated_at')->useCurrent();
                 $table->unique(['kind', 'slug'], 'u_0');
-                $table->foreign('parent_id', 'fk_17_template_categories')->references('id')->on('template_categories')->onDelete('restrict')->onUpdate('restrict');
+                $table
+                    ->foreign('parent_id', 'fk_17_template_categories')
+                    ->references('id')
+                    ->on('template_categories')
+                    ->onDelete('restrict')
+                    ->onUpdate('restrict');
             });
         }
 
-        $this->ensureCheckConstraint('template_categories', 'ck_template_categories_0', "`kind` IN ('TYPE', 'INDUSTRY', 'TOPIC')");
+        $this->ensureCheckConstraint(
+            'template_categories',
+            'ck_template_categories_0',
+            "`kind` IN ('TYPE', 'INDUSTRY', 'TOPIC')",
+        );
     }
 
     public function down(): void
@@ -44,7 +52,7 @@ return new class extends Migration
             ->where('CONSTRAINT_TYPE', 'CHECK')
             ->exists();
 
-        if (! $exists) {
+        if (!$exists) {
             DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` CHECK ({$expression})");
         }
     }

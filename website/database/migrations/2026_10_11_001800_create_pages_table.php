@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('pages')) {
@@ -28,7 +27,9 @@ return new class extends Migration
             $table->string('canonical_url', 2048)->nullable();
             $table->string('robots', 80)->default('index,follow');
             $table->json('draft_data')->nullable();
-            $table->enum('status', ['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED'])->default('DRAFT');
+            $table
+                ->enum('status', ['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED'])
+                ->default('DRAFT');
             $table->dateTime('scheduled_at')->nullable();
             $table->dateTime('published_at')->nullable();
             $table->unsignedBigInteger('created_by');
@@ -39,10 +40,30 @@ return new class extends Migration
             $table->unique(['blog_id', 'slug'], 'u_0');
             $table->unique(['blog_id', 'page_key'], 'u_1');
             $table->unique(['blog_id', 'id'], 'u_2');
-            $table->foreign('blog_id', 'fk_22_pages')->references('id')->on('blogs')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('created_by', 'fk_23_pages')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('updated_by', 'fk_24_pages')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('og_media_id', 'fk_54_pages')->references('id')->on('media_assets')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('blog_id', 'fk_22_pages')
+                ->references('id')
+                ->on('blogs')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('created_by', 'fk_23_pages')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('updated_by', 'fk_24_pages')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('og_media_id', 'fk_54_pages')
+                ->references('id')
+                ->on('media_assets')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

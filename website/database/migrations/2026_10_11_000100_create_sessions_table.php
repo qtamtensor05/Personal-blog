@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('sessions')) {
@@ -22,7 +21,12 @@ return new class extends Migration
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->unsignedInteger('last_activity')->index('i_1');
-            $table->foreign('user_id', 'fk_5_sessions')->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
+            $table
+                ->foreign('user_id', 'fk_5_sessions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
         });
     }
 

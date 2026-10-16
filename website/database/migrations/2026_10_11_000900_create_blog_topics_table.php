@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('blog_topics')) {
@@ -23,7 +22,12 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by');
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent();
-            $table->foreign('created_by', 'fk_11_blog_topics')->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('created_by', 'fk_11_blog_topics')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 

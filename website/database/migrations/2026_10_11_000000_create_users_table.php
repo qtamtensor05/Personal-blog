@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (DB::getDriverName() !== 'mysql') {
@@ -15,13 +14,17 @@ return new class extends Migration
 
         $serverVersion = (string) DB::scalar('SELECT VERSION()');
 
-        if (str_contains(strtolower($serverVersion), 'mariadb')
-            || preg_match('/^\d+(?:\.\d+){0,2}/', $serverVersion, $matches) !== 1
-            || version_compare($matches[0], '8.0.16', '<')) {
-            throw new RuntimeException(sprintf(
-                'The business schema requires MySQL 8.0.16 or newer; connected server reports %s.',
-                $serverVersion,
-            ));
+        if (
+            str_contains(strtolower($serverVersion), 'mariadb') ||
+            preg_match('/^\d+(?:\.\d+){0,2}/', $serverVersion, $matches) !== 1 ||
+            version_compare($matches[0], '8.0.16', '<')
+        ) {
+            throw new RuntimeException(
+                sprintf(
+                    'The business schema requires MySQL 8.0.16 or newer; connected server reports %s.',
+                    $serverVersion,
+                ),
+            );
         }
 
         if (Schema::hasTable('users')) {
@@ -37,7 +40,15 @@ return new class extends Migration
             $table->string('email', 254)->collation('utf8mb4_unicode_ci')->unique('u_0');
             $table->dateTime('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('status', ['PENDING_VERIFICATION', 'ACTIVE', 'LOCKED', 'SUSPENDED', 'DISABLED'])->default('PENDING_VERIFICATION');
+            $table
+                ->enum('status', [
+                    'PENDING_VERIFICATION',
+                    'ACTIVE',
+                    'LOCKED',
+                    'SUSPENDED',
+                    'DISABLED',
+                ])
+                ->default('PENDING_VERIFICATION');
             $table->dateTime('locked_until')->nullable();
             $table->dateTime('last_login_at')->nullable();
             $table->rememberToken();
