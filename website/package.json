@@ -5,12 +5,12 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "lint": "eslint resources/js vite.config.js",
-        "lint:fix": "eslint resources/js vite.config.js --fix",
-        "format": "prettier --write resources/js resources/css vite.config.js package.json ../README.md && npm run format:php",
-        "format:check": "prettier --check resources/js resources/css vite.config.js package.json ../README.md && npm run format:php:check",
-        "format:php": "prettier --write app config database routes tests resources/views",
-        "format:php:check": "prettier --check app config database routes tests resources/views",
+        "lint": "eslint app/Presentation/Js vite.config.js",
+        "lint:fix": "eslint app/Presentation/Js vite.config.js --fix",
+        "format": "prettier --write app/Presentation/Js app/Presentation/Css vite.config.js package.json ../README.md && npm run format:php",
+        "format:check": "prettier --check app/Presentation/Js app/Presentation/Css vite.config.js package.json ../README.md && npm run format:php:check",
+        "format:php": "prettier --write app config database routes tests",
+        "format:php:check": "prettier --check app config database routes tests",
         "prepare": "husky"
     },
     "devDependencies": {

@@ -7,7 +7,7 @@ export default [
         ignores: ['node_modules/**', 'public/build/**', 'public/hot/**', 'storage/**', 'vendor/**'],
     },
     {
-        files: ['resources/js/**/*.js', 'vite.config.js'],
+        files: ['app/Presentation/Js/**/*.js', 'vite.config.js'],
         ...js.configs.recommended,
         languageOptions: {
             ecmaVersion: 'latest',
