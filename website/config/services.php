@@ -1,8 +1,13 @@
 <?php
 
 return [
-    'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME') ?: parse_url((string) env('CLOUDINARY_URL'), PHP_URL_HOST)],
-    // 'cloudinary' => ['url' => env('CLOUDINARY_URL'), 'cloud_name' => env('CLOUDINARY_CLOUD_NAME')],
+    'cloudinary' => [
+        'url' => env('CLOUDINARY_URL'),
+        // Falls back to the host part of cloudinary://KEY:SECRET@CLOUD_NAME, then to a placeholder.
+        'cloud_name' => env('CLOUDINARY_CLOUD_NAME')
+            ?: parse_url((string) env('CLOUDINARY_URL'), PHP_URL_HOST)
+            ?: 'pending',
+    ],
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
