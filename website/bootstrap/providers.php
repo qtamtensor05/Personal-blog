@@ -8,6 +8,7 @@ use App\Providers\BlogServiceProvider;
 use App\Providers\ContentServiceProvider;
 use App\Providers\IdentityServiceProvider;
 use App\Providers\MediaServiceProvider;
+use App\Providers\ModerationServiceProvider;
 use App\Providers\TemplateServiceProvider;
 
 return [
@@ -19,5 +20,6 @@ return [
     BlogDesignServiceProvider::class,
     ContentServiceProvider::class,
     MediaServiceProvider::class,
+    ModerationServiceProvider::class,
     TemplateServiceProvider::class,
 ];

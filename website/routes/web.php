@@ -1,11 +1,13 @@
 <?php
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
+use App\Presentation\Web\Controllers\Admin\ContentReportController as AdminContentReportController;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
 use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\BlogDesignController;
 use App\Presentation\Web\Controllers\BlogSettingsController;
+use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
@@ -256,6 +258,12 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('media')
         ->name('media.destroy');
 
+    // Report a blog or post (signed-in users; login already requires an active, verified account)
+    Route::post('/b/{slug}/report', ContentReportController::class)
+        ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+        ->middleware('throttle:10,60')
+        ->name('public.report');
+
     // Template Gallery (users choose one for their blog)
     Route::get('/templates', TemplateGalleryController::class)->name('templates.gallery');
 
@@ -349,6 +357,17 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
                     Route::post('/users/{user}/roles', [AdminUserController::class, 'grantRole'])->name('users.roles.grant');
                     Route::delete('/users/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('users.roles.revoke');
                 });
+            });
+
+        // Content reports
+        Route::middleware(['permission:'.PlatformPermission::ModerateContent->value])
+            ->whereNumber('report')
+            ->group(function () {
+                Route::get('/reports', [AdminContentReportController::class, 'index'])->name('reports.index');
+                Route::get('/reports/{report}', [AdminContentReportController::class, 'show'])->name('reports.show');
+                Route::post('/reports/{report}/review', [AdminContentReportController::class, 'review'])->name('reports.review');
+                Route::post('/reports/{report}/close', [AdminContentReportController::class, 'close'])->name('reports.close');
+                Route::post('/reports/{report}/lift-suspension', [AdminContentReportController::class, 'liftSuspension'])->name('reports.lift');
             });
 
         Route::get('/audit-logs', [AdminUserController::class, 'auditLogs'])

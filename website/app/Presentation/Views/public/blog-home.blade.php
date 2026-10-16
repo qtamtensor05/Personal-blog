@@ -40,6 +40,8 @@
             @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts])
         @endforeach
 
+        @include('public.partials.report-form', ['blog' => $blog])
+
         @if($settings->socialLinks !== [])
             <nav aria-label="Social links" class="flex flex-wrap gap-4 text-sm">
                 @foreach($settings->socialLinks as $platform => $url)

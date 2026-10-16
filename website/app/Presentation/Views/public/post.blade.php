@@ -51,6 +51,10 @@
             {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
             <div class="post-content">{!! $html !!}</div>
         </article>
+
+        <div class="mt-12 pt-6 border-t" style="border-color: var(--d-secondary);">
+            @include('public.partials.report-form', ['blog' => $blog, 'postSlug' => $post->slug])
+        </div>
     </main>
 </body>
 </html>
