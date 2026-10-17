@@ -7,6 +7,7 @@ namespace App\Application\Administration\UseCases\ManageUsers;
 use App\Application\Administration\Contracts\AdminUserRepository;
 use App\Application\Administration\Contracts\AuditLogger;
 use App\Application\Administration\DTOs\AdminUserRecord;
+use App\Application\Notifications\Contracts\NotificationPublisher;
 use App\Domain\Identity\Enums\UserStatus;
 use DateTimeImmutable;
 use DomainException;
@@ -28,6 +29,7 @@ final readonly class ManageUsersService
     public function __construct(
         private AdminUserRepository $users,
         private AuditLogger $audit,
+        private NotificationPublisher $notifications,
     ) {}
 
     public function restrict(int $actorId, int $userId, string $kind, string $reason, ?DateTimeImmutable $endsAt): void
@@ -48,6 +50,13 @@ final readonly class ManageUsersService
             ['status' => $user->status->value],
             ['status' => $status->value, 'kind' => $kind, 'reason' => $reason, 'ends_at' => $endsAt?->format(DATE_ATOM)],
         );
+
+        $this->notifications->publish($userId, 'account.restricted', [
+            'title' => 'Account restriction applied',
+            'message' => "A {$kind} restriction was applied to your account. Reason: {$reason}",
+            'kind' => $kind,
+            'ends_at' => $endsAt?->format(DATE_ATOM),
+        ]);
     }
 
     public function lift(int $actorId, int $userId, string $reason): void
@@ -67,6 +76,11 @@ final readonly class ManageUsersService
             ['status' => $user->status->value],
             ['status' => $status->value, 'reason' => $reason],
         );
+
+        $this->notifications->publish($userId, 'account.restriction_lifted', [
+            'title' => 'Account restriction lifted',
+            'message' => "Your account restriction was lifted. Reason: {$reason}",
+        ]);
     }
 
     public function grantRole(int $actorId, int $userId, int $roleId, ?DateTimeImmutable $expiresAt): void
@@ -90,6 +104,13 @@ final readonly class ManageUsersService
         $this->audit->log($actorId, 'user.role_granted', 'user', (string) $userId, null,
             ['role_id' => $roleId, 'expires_at' => $expiresAt?->format(DATE_ATOM)],
         );
+
+        $this->notifications->publish($userId, 'role.granted', [
+            'title' => 'Platform role granted',
+            'message' => "Role #{$roleId} was granted to your account.",
+            'role_id' => $roleId,
+            'expires_at' => $expiresAt?->format(DATE_ATOM),
+        ]);
     }
 
     public function revokeRole(int $actorId, int $userId, int $roleId): void
@@ -103,6 +124,12 @@ final readonly class ManageUsersService
         $this->users->revokeRole($userId, $roleId);
 
         $this->audit->log($actorId, 'user.role_revoked', 'user', (string) $userId, ['role_id' => $roleId], null);
+
+        $this->notifications->publish($userId, 'role.revoked', [
+            'title' => 'Platform role revoked',
+            'message' => "Role #{$roleId} was removed from your account.",
+            'role_id' => $roleId,
+        ]);
     }
 
     private function target(int $actorId, int $userId): AdminUserRecord

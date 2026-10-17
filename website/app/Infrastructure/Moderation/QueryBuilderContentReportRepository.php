@@ -114,7 +114,7 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
             ->leftJoin('users as u', 'u.id', '=', 'r.reporter_user_id')
             ->select([
                 'r.*',
-                'b.name as blog_name', 'b.slug as blog_slug', 'b.status as blog_status',
+                'b.name as blog_name', 'b.slug as blog_slug', 'b.status as blog_status', 'b.owner_user_id',
                 'p.title as post_title', 'p.slug as post_slug', 'p.status as post_status',
                 'u.email as reporter_email',
             ]);

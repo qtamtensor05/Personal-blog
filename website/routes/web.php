@@ -13,6 +13,7 @@ use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
+use App\Presentation\Web\Controllers\NotificationController;
 use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PublicBlogController;
@@ -241,6 +242,12 @@ Route::get('/email/verified', function () {
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->whereUuid('notification')
+        ->name('notifications.read');
+
     Route::post('/logout', function () {
         auth()->logout();
         request()->session()->invalidate();
