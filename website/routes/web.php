@@ -2,6 +2,7 @@
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\ContentReportController as AdminContentReportController;
+use App\Presentation\Web\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
 use App\Presentation\Web\Controllers\BlogController;
@@ -385,6 +386,11 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
         Route::get('/audit-logs', [AdminUserController::class, 'auditLogs'])
             ->middleware(['permission:'.PlatformPermission::ViewAuditLogs->value])
             ->name('audit-logs');
+
+        Route::middleware(['permission:'.PlatformPermission::ManagePlatformSettings->value])->group(function () {
+            Route::get('/settings', [AdminPlatformSettingsController::class, 'edit'])->name('settings.edit');
+            Route::put('/settings', [AdminPlatformSettingsController::class, 'update'])->name('settings.update');
+        });
 
         // Templates
         Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(function () {
