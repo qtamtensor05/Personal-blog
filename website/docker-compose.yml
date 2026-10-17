@@ -1,60 +1,4 @@
-x-app: &app
-  image: personal-blog-app:latest
-  build:
-    context: .
-    target: application
-  env_file:
-    - .env
-  depends_on:
-    mysql:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
-  restart: unless-stopped
-  volumes:
-    - blog_storage:/var/www/html/storage
-    - blog_cache:/var/www/html/bootstrap/cache
-  networks:
-    - blog-network
-
 services:
-  app:
-    <<: *app
-    healthcheck:
-      test: ["CMD", "php", "artisan", "about", "--only=environment"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-
-  nginx:
-    image: personal-blog-web:latest
-    build:
-      context: .
-      target: web
-    depends_on:
-      app:
-        condition: service_healthy
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-8000}:80"
-    networks:
-      - blog-network
-
-  worker:
-    <<: *app
-    command: php artisan queue:work redis --sleep=2 --tries=3 --backoff=10 --timeout=90
-    healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep '[q]ueue:work'"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-  scheduler:
-    <<: *app
-    command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
-
   mysql:
     container_name: blog-mysql
     image: mysql:8.4
@@ -117,8 +61,6 @@ services:
 volumes:
   blog_mysql_data:
   blog_redis_data:
-  blog_storage:
-  blog_cache:
 
 networks:
   blog-network:
