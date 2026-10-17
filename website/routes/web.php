@@ -16,6 +16,7 @@ use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
+use App\Presentation\Web\Controllers\PublicPostIndexController;
 use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
@@ -96,10 +97,7 @@ Route::get('/', function () {
     return view('pages.welcome', compact('featuredPosts', 'recentPosts'));
 });
 
-// Blog Posts Routes (placeholder - needs backend)
-Route::get('/posts', function () {
-    return view('pages.posts.index');
-})->name('posts.index');
+Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
 
 Route::get('/posts/{slug}', function ($slug) {
     // Mock post data - Replace with PostRepository->findBySlug($slug)
