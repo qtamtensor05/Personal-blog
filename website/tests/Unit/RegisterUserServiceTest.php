@@ -84,6 +84,26 @@ final class RegisterUserServiceTest extends TestCase
 
         $service->execute('Nguyen Van A', 'user@example.com', 'short');
     }
+
+    public function test_it_activates_the_user_without_sending_email_when_verification_is_disabled(): void
+    {
+        $repository = new FakeUserRepository;
+        $emailSender = new FakeSendVerificationEmail;
+        $service = new RegisterUserService(
+            $repository,
+            new FakePasswordHasher,
+            new FakeVerificationUrlGenerator,
+            $emailSender,
+            false,
+        );
+
+        $user = $service->execute('Nguyen Van A', 'user@example.com', 'password123');
+
+        self::assertSame(UserStatus::Active, $user->status());
+        self::assertNotNull($user->emailVerifiedAt());
+        self::assertSame($user, $repository->updatedUser);
+        self::assertSame(0, $emailSender->sendCount);
+    }
 }
 
 final class FakeUserRepository implements UserRepository
@@ -91,6 +111,8 @@ final class FakeUserRepository implements UserRepository
     public ?User $existingUser = null;
 
     public ?string $passwordHash = null;
+
+    public ?User $updatedUser = null;
 
     public function findById(int $id): ?User
     {
@@ -113,7 +135,10 @@ final class FakeUserRepository implements UserRepository
         return new User(1, $name, $email, UserStatus::PendingVerification);
     }
 
-    public function update(User $user): void {}
+    public function update(User $user): void
+    {
+        $this->updatedUser = $user;
+    }
 
     public function changePassword(int $userId, string $passwordHash): void {}
 }
@@ -140,8 +165,10 @@ final class FakeVerificationUrlGenerator implements VerificationUrlGenerator
 
 final class FakeSendVerificationEmail implements SendVerificationEmailUseCase
 {
+    public int $sendCount = 0;
+
     public function execute(int $userId, string $verificationUrl): void
     {
-        // No-op for testing
+        $this->sendCount++;
     }
 }

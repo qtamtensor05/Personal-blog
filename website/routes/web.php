@@ -2,6 +2,7 @@
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\ContentReportController as AdminContentReportController;
+use App\Presentation\Web\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
 use App\Presentation\Web\Controllers\BlogController;
@@ -12,11 +13,13 @@ use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
+use App\Presentation\Web\Controllers\NotificationController;
 use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
+use App\Presentation\Web\Controllers\PublicPostIndexController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -96,10 +99,7 @@ Route::get('/', function () {
     return view('pages.welcome', compact('featuredPosts', 'recentPosts'));
 });
 
-// Blog Posts Routes (placeholder - needs backend)
-Route::get('/posts', function () {
-    return view('pages.posts.index');
-})->name('posts.index');
+Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
 
 Route::get('/posts/{slug}', function ($slug) {
     // Mock post data - Replace with PostRepository->findBySlug($slug)
@@ -242,6 +242,12 @@ Route::get('/email/verified', function () {
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->whereUuid('notification')
+        ->name('notifications.read');
+
     Route::post('/logout', function () {
         auth()->logout();
         request()->session()->invalidate();
@@ -387,6 +393,11 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
         Route::get('/audit-logs', [AdminUserController::class, 'auditLogs'])
             ->middleware(['permission:'.PlatformPermission::ViewAuditLogs->value])
             ->name('audit-logs');
+
+        Route::middleware(['permission:'.PlatformPermission::ManagePlatformSettings->value])->group(function () {
+            Route::get('/settings', [AdminPlatformSettingsController::class, 'edit'])->name('settings.edit');
+            Route::put('/settings', [AdminPlatformSettingsController::class, 'update'])->name('settings.update');
+        });
 
         // Templates
         Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(function () {
