@@ -8,6 +8,8 @@ use App\Application\Content\Contracts\PageRepository;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\Contracts\PublicPostCatalog;
 use App\Application\Content\Contracts\TaxonomyRepository;
+use App\Application\Content\UseCases\GetHomeContent\GetHomeContentService;
+use App\Application\Content\UseCases\GetHomeContent\GetHomeContentUseCase;
 use App\Infrastructure\Content\Persistence\QueryBuilderPageRepository;
 use App\Infrastructure\Content\Persistence\QueryBuilderPostRepository;
 use App\Infrastructure\Content\Persistence\QueryBuilderPublicPostCatalog;
@@ -22,5 +24,6 @@ final class ContentServiceProvider extends ServiceProvider
         $this->app->bind(PostRepository::class, QueryBuilderPostRepository::class);
         $this->app->bind(PublicPostCatalog::class, QueryBuilderPublicPostCatalog::class);
         $this->app->bind(PageRepository::class, QueryBuilderPageRepository::class);
+        $this->app->bind(GetHomeContentUseCase::class, GetHomeContentService::class);
     }
 }

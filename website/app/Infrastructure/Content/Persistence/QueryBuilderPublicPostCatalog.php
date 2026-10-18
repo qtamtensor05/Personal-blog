@@ -78,4 +78,33 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->whereNull('b.deleted_at')
             ->whereNull('u.deleted_at');
     }
+
+    public function featured(int $limit): array
+    {
+        return $this->query()
+            ->where('p.is_featured', true)
+            ->orderByDesc('p.published_at')
+            ->orderByDesc('p.id')
+            ->limit(max(0, $limit))
+            ->get()
+            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
+            ->all();
+    }
+
+    public function recent(int $limit, array $excludeIds = []): array
+    {
+        $query = $this->query();
+
+        if ($excludeIds !== []) {
+            $query->whereNotIn('p.id', $excludeIds);
+        }
+
+        return $query
+            ->orderByDesc('p.published_at')
+            ->orderByDesc('p.id')
+            ->limit(max(0, $limit))
+            ->get()
+            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
+            ->all();
+    }
 }

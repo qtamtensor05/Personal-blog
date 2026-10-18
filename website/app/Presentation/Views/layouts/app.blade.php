@@ -64,10 +64,10 @@
                 <div class="flex items-center gap-3">
                     @guest
                         @include('layouts.partials.theme-toggle')
-                        <a href="{{ route('login') }}" class="btn-ghost text-sm hidden sm:inline-flex">
+                        <a href="{{ route('login') }}" class="btn-ghost text-sm hidden sm:inline-flex border px-4 py-2 rounded-md">
                             Sign In
                         </a>
-                        <a href="{{ url('/register') }}" class="btn-primary text-sm">
+                        <a href="{{ url('/register') }}" class="btn-primary text-sm px-4 py-2 rounded-md">
                             Get Started
                         </a>
                     @else

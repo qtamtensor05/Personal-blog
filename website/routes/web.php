@@ -12,6 +12,7 @@ use App\Presentation\Web\Controllers\BlogDomainController;
 use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
+use App\Presentation\Web\Controllers\HomeController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\NotificationController;
@@ -30,76 +31,7 @@ use App\Presentation\Web\Controllers\TemplateGalleryController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    // Mock featured posts - Replace with PostRepository
-    $featuredPosts = [
-        [
-            'title' => 'Getting Started with Clean Architecture in Laravel',
-            'slug' => 'getting-started-clean-architecture-laravel',
-            'excerpt' => 'Learn how to structure your Laravel application using Clean Architecture principles for better maintainability and testability.',
-            'cover_image' => 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop',
-            'published_at' => '2026-10-10',
-            'author' => 'John Doe',
-            'category' => 'Technology',
-            'is_featured' => true,
-        ],
-        [
-            'title' => 'Modern UI Design Principles for Web Applications',
-            'slug' => 'modern-ui-design-principles',
-            'excerpt' => 'Explore the fundamental principles of modern UI design that create intuitive and beautiful web applications.',
-            'cover_image' => 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop',
-            'published_at' => '2026-10-08',
-            'author' => 'Jane Smith',
-            'category' => 'Design',
-            'is_featured' => true,
-        ],
-        [
-            'title' => 'Building Scalable REST APIs with Laravel',
-            'slug' => 'building-scalable-rest-apis-laravel',
-            'excerpt' => 'Best practices for designing and implementing RESTful APIs that scale with your application needs.',
-            'cover_image' => 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop',
-            'published_at' => '2026-10-05',
-            'author' => 'Mike Johnson',
-            'category' => 'Technology',
-            'is_featured' => true,
-        ],
-    ];
-
-    $recentPosts = [
-        [
-            'title' => 'The Future of Web Development in 2027',
-            'slug' => 'future-web-development-2027',
-            'excerpt' => 'Predictions and trends shaping the future of web development, from AI integration to new frameworks.',
-            'cover_image' => 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&h=400&fit=crop',
-            'published_at' => '2026-10-03',
-            'author' => 'Sarah Williams',
-            'category' => 'Technology',
-            'is_featured' => false,
-        ],
-        [
-            'title' => 'Effective Team Collaboration in Remote Work',
-            'slug' => 'effective-team-collaboration-remote',
-            'excerpt' => 'Strategies and tools for maintaining productive collaboration in distributed teams.',
-            'cover_image' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop',
-            'published_at' => '2026-10-01',
-            'author' => 'David Brown',
-            'category' => 'Business',
-            'is_featured' => false,
-        ],
-        [
-            'title' => 'Database Optimization Techniques',
-            'slug' => 'database-optimization-high-traffic',
-            'excerpt' => 'Proven techniques to optimize database performance.',
-            'cover_image' => 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=600&h=400&fit=crop',
-            'published_at' => '2026-09-28',
-            'author' => 'Emma Davis',
-            'category' => 'Technology',
-            'is_featured' => false,
-        ],
-    ];
-
-    return view('pages.welcome', compact('featuredPosts', 'recentPosts'));
-});
+Route::get('/', HomeController::class)->name('home');
 
 Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
 

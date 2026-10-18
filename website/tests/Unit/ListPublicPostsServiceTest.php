@@ -13,6 +13,16 @@ it('normalizes pagination input before querying the public catalog', function ()
 
         public int $perPage = 0;
 
+        public function featured(int $limit): array
+        {
+            return [];
+        }
+
+        public function recent(int $limit, array $excludeIds = []): array
+        {
+            return [];
+        }
+
         public function paginate(?string $search, int $page, int $perPage): PublicPostPage
         {
             $this->search = $search;
