@@ -2,6 +2,7 @@
 
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Presentation\Web\Controllers\Admin\ContentReportController as AdminContentReportController;
+use App\Presentation\Web\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Presentation\Web\Controllers\Admin\PlatformSettingsController as AdminPlatformSettingsController;
 use App\Presentation\Web\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Presentation\Web\Controllers\Admin\UserController as AdminUserController;
@@ -367,6 +368,8 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
+
         // Users and account restrictions
         Route::middleware(['permission:'.PlatformPermission::ManageUsers->value])
             ->whereNumber(['user', 'role'])

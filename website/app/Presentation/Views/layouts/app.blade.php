@@ -116,6 +116,11 @@
                                 <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
                                     Profile
                                 </a>
+                                @if($canAccessAdminConsole)
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm font-medium text-accent-primary hover:bg-surface-secondary">
+                                        Admin Console
+                                    </a>
+                                @endif
                                 <a href="{{ url('/my-posts') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
                                     My Posts
                                 </a>
