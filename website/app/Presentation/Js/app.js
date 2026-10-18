@@ -44,3 +44,43 @@ window.addEventListener('storage', (event) => {
         renderThemeToggle();
     }
 });
+
+function initPasswordToggles() {
+    document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+        if (button.dataset.initialized === 'true') {
+            return;
+        }
+
+        const container = button.parentElement;
+        const input = container?.querySelector('[data-password-input]');
+        const showIcon = button.querySelector('[data-password-show-icon]');
+        const hideIcon = button.querySelector('[data-password-hide-icon]');
+
+        if (!input || !showIcon || !hideIcon) {
+            return;
+        }
+
+        button.dataset.initialized = 'true';
+
+        button.addEventListener('click', () => {
+            const showPassword = input.type === 'password';
+
+            input.type = showPassword ? 'text' : 'password';
+
+            button.setAttribute('aria-pressed', String(showPassword));
+            button.setAttribute(
+                'aria-label',
+                `${showPassword ? 'Hide' : 'Show'} password`,
+            );
+
+            showIcon.hidden = showPassword;
+            hideIcon.hidden = !showPassword;
+        });
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPasswordToggles);
+} else {
+    initPasswordToggles();
+}
