@@ -79,8 +79,99 @@ function initPasswordToggles() {
     });
 }
 
+function initErrorModal() {
+    const modal = document.querySelector('[data-modal]');
+    if (!modal || modal.dataset.initialized === 'true') return;
+
+    const panel = modal.querySelector('[role="alertdialog"]');
+    const title = modal.querySelector('[id$="-title"]');
+    const message = modal.querySelector('[data-modal-message]');
+    const input = modal.querySelector('[data-modal-input]');
+    const cancel = modal.querySelector('[data-modal-cancel]');
+    const confirm = modal.querySelector('[data-modal-confirm]');
+    let pending = null;
+    const close = (value = null) => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.setAttribute('aria-hidden', 'true');
+        input.classList.add('hidden');
+        cancel.classList.add('hidden');
+        confirm.textContent = 'Close';
+        if (pending) {
+            pending(value);
+            pending = null;
+        }
+    };
+
+    modal.dataset.initialized = 'true';
+    modal.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', () => close()));
+    cancel.addEventListener('click', () => close());
+    confirm.addEventListener('click', () => close(input.classList.contains('hidden') ? null : input.value));
+    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+        if (event.key === 'Enter' && !input.classList.contains('hidden')) close(input.value);
+    });
+
+    window.showErrorModal = (text) => {
+        title.textContent = 'Something went wrong';
+        message.textContent = text;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+        panel.focus();
+    };
+
+    window.requestModalInput = (modalTitle, prompt, initialValue = '') => new Promise((resolve) => {
+        pending = resolve;
+        title.textContent = modalTitle;
+        message.textContent = prompt;
+        input.value = initialValue;
+        input.classList.remove('hidden');
+        cancel.classList.remove('hidden');
+        confirm.textContent = 'Confirm';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+        input.focus();
+        input.select();
+    });
+
+    window.requestModalConfirmation = (modalTitle, prompt) => new Promise((resolve) => {
+        pending = (value) => resolve(value !== null);
+        title.textContent = modalTitle;
+        message.textContent = prompt;
+        input.classList.add('hidden');
+        cancel.classList.remove('hidden');
+        confirm.textContent = 'Confirm';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+        confirm.focus();
+    });
+
+    document.querySelectorAll('[data-modal-confirm-form]').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+            if (form.dataset.confirmed === 'true') return;
+            event.preventDefault();
+            const confirmed = await window.requestModalConfirmation(
+                form.dataset.confirmTitle || 'Confirm action',
+                form.dataset.confirmMessage || 'Are you sure you want to continue?',
+            );
+            if (confirmed) {
+                form.dataset.confirmed = 'true';
+                form.submit();
+            }
+        });
+    });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPasswordToggles);
+    document.addEventListener('DOMContentLoaded', () => {
+        initPasswordToggles();
+        initErrorModal();
+    });
 } else {
     initPasswordToggles();
+    initErrorModal();
 }

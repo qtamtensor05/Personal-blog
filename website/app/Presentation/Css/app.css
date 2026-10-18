@@ -144,6 +144,21 @@ a:hover {
     color: var(--color-accent-primary);
 }
 
+.template-layout {
+    display: grid;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.template-layout-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.template-layout-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.template-layout-cell { min-width: 0; }
+
+@media (max-width: 640px) {
+    .template-layout-2,
+    .template-layout-3 { grid-template-columns: 1fr; }
+}
+
 .card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);

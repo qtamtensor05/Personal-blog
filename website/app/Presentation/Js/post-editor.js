@@ -114,8 +114,8 @@ function initPostEditor(root) {
         orderedList: () => editor.chain().focus().toggleOrderedList().run(),
         blockquote: () => editor.chain().focus().toggleBlockquote().run(),
         codeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
-        link: () => {
-            const href = window.prompt('Link URL (https://…)', editor.getAttributes('link').href ?? '');
+        link: async () => {
+            const href = await window.requestModalInput('Add link', 'Link URL (https://…)', editor.getAttributes('link').href ?? '');
             if (href === null) return;
             if (href === '') {
                 editor.chain().focus().unsetLink().run();
@@ -155,7 +155,7 @@ function initPostEditor(root) {
                 return;
             }
 
-            const alt = window.prompt('Describe the image (alt text)', '') ?? '';
+            const alt = await window.requestModalInput('Image description', 'Describe the image (alt text)', '');
             // setImage passes all attributes through to the inserted node.
             editor.chain().focus().setImage({ src: body.data.url, alt, mediaId: body.data.id }).run();
         } catch {
