@@ -6,6 +6,23 @@
     <meta name="claude:viewport-fit-sides" content="cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <script>
+        (() => {
+            let savedTheme = null;
+
+            try {
+                savedTheme = localStorage.getItem('theme');
+            } catch {
+                // Storage may be disabled; the system preference still works.
+            }
+            const theme = savedTheme === 'light' || savedTheme === 'dark'
+                ? savedTheme
+                : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
+
     <title>{{ $title ?? config('app.name', 'Personal Blog') }}</title>
 
     @fonts
@@ -46,6 +63,7 @@
                 <!-- Auth Actions -->
                 <div class="flex items-center gap-3">
                     @guest
+                        @include('layouts.partials.theme-toggle')
                         <a href="{{ route('login') }}" class="btn-ghost text-sm hidden sm:inline-flex">
                             Sign In
                         </a>
@@ -63,6 +81,7 @@
                                 </span>
                             @endif
                         </a>
+                        @include('layouts.partials.theme-toggle')
                         <div class="relative" x-data="{ open: false }">
                             <button
                                 @click="open = !open"

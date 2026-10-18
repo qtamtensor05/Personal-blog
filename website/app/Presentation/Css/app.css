@@ -23,12 +23,43 @@
     --color-background: #F7F6F1;          /* Page background */
 }
 
+html {
+    color-scheme: light;
+}
+
+html[data-theme='dark'] {
+    color-scheme: dark;
+    --color-text-primary: #ececeb;
+    --color-text-secondary: #b8c4c8;
+    --color-border: #465044;
+    --color-surface: #252d23;
+    --color-surface-secondary: #323b30;
+    --color-background: #1c221b;
+}
+
 /* Base Styles */
 body {
     font-family: var(--font-sans);
     background-color: var(--color-background);
     color: var(--color-text-secondary);
     line-height: 1.6;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html[data-theme='dark'] .card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme='dark'] .input::placeholder,
+html[data-theme='dark'] .textarea::placeholder {
+    color: #89958c;
+}
+
+.theme-toggle {
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
 }
 
 h1, h2, h3, h4, h5, h6 {
