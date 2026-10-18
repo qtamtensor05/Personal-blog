@@ -23,7 +23,7 @@
 
         @if($canModerateContent)
             <a href="{{ route('admin.reports.index') }}" class="card group block">
-                <svg class="mb-4 h-8 w-8 text-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="mb-4 h-8 w-8 green-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z"/>
                 </svg>
                 <h2 class="text-lg font-semibold text-primary group-hover:text-accent-primary">Content reports</h2>
@@ -33,7 +33,7 @@
 
         @if($canManageTemplates)
             <a href="{{ route('admin.templates.index') }}" class="card group block">
-                <svg class="mb-4 h-8 w-8 text-accent-highlight" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="mb-4 h-8 w-8 green-accent-highlight" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm4 2h8M8 11h8M8 15h5"/>
                 </svg>
                 <h2 class="text-lg font-semibold text-primary group-hover:text-accent-primary">Templates</h2>
@@ -53,7 +53,7 @@
 
         @if($canViewAuditLogs)
             <a href="{{ route('admin.audit-logs') }}" class="card group block">
-                <svg class="mb-4 h-8 w-8 text-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="mb-4 h-8 w-8 green-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 3a11.955 11.955 0 01-8.618 2.984A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
                 <h2 class="text-lg font-semibold text-primary group-hover:text-accent-primary">Audit logs</h2>
