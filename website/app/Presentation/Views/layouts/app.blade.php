@@ -207,9 +207,11 @@
     </header>
 
     <!-- Main Content -->
-    <main>
-        @yield('content')
-    </main>
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading page">
+        <main>
+            @yield('content')
+        </main>
+    </phantom-ui>
 
     <!-- Footer -->
     <footer class="bg-surface border-t border-default mt-16">

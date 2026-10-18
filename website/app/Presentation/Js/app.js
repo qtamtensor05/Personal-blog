@@ -1,4 +1,19 @@
+import '@aejkatappaja/phantom-ui';
+import '@aejkatappaja/phantom-ui/ssr.css';
+
 const themeStorageKey = 'theme';
+
+function revealSkeletons() {
+    document.querySelectorAll('phantom-ui[loading]').forEach((skeleton) => {
+        skeleton.removeAttribute('loading');
+    });
+}
+
+if (document.readyState === 'complete') {
+    queueMicrotask(revealSkeletons);
+} else {
+    window.addEventListener('load', revealSkeletons, { once: true });
+}
 
 function activeTheme() {
     return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';

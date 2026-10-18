@@ -14,6 +14,7 @@ use App\Application\Content\Contracts\PostRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
+use App\Domain\Templates\ValueObjects\TemplatePostLayout;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
 
 /**
@@ -61,6 +62,7 @@ final readonly class ViewPublicBlogService
             settings: $settings,
             sections: $sections,
             designTokens: $design?->designTokens ?? TemplateDesignTokens::default(),
+            postLayout: $design?->postLayout ?? TemplatePostLayout::default(),
             noIndex: ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
             isOwnerPreview: ! $isPublic,
             // Only PUBLISHED posts; drafts and archived posts are never listed.

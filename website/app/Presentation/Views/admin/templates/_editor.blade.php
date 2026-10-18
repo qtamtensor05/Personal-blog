@@ -1,6 +1,7 @@
 @php
     $isEdit = isset($template);
     $tokens = $isEdit ? ($template->draftData?->designTokens ?? $template->publishedData?->designTokens) : \App\Domain\Templates\ValueObjects\TemplateDesignTokens::default();
+    $postLayout = $isEdit ? ($template->draftData?->postLayout ?? $template->publishedData?->postLayout) : \App\Domain\Templates\ValueObjects\TemplatePostLayout::default();
     $document = ['type' => 'doc', 'content' => [['type' => 'paragraph']]];
     if ($isEdit) {
         $documentSection = collect($template->draftData?->sections ?? $template->publishedData?->sections ?? [])->firstWhere('section', 'document');
@@ -77,6 +78,39 @@
                             <option value="{{ $font }}" @selected($tokens->bodyFont === $font)>{{ $font }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="border-t border-default pt-4 space-y-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-primary">Post frame</h2>
+                        <p class="text-sm text-secondary">Every public post created under this template uses this frame.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-primary" for="postLayoutVariant">Header layout</label>
+                        <select name="postLayoutVariant" id="postLayoutVariant" class="input" required>
+                            @foreach(['editorial' => 'Editorial', 'card' => 'Card', 'minimal' => 'Minimal'] as $value => $label)
+                                <option value="{{ $value }}" @selected($postLayout->variant === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-primary" for="postContentWidth">Content width</label>
+                        <select name="postContentWidth" id="postContentWidth" class="input" required>
+                            @foreach(['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide'] as $value => $label)
+                                <option value="{{ $value }}" @selected($postLayout->contentWidth === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @foreach([
+                        'postShowBlogName' => ['Show blog name', $postLayout->showBlogName],
+                        'postShowPublishedDate' => ['Show published date', $postLayout->showPublishedDate],
+                        'postShowCover' => ['Show cover image', $postLayout->showCover],
+                    ] as $field => [$label, $checked])
+                        <label class="flex items-center gap-2 text-sm text-primary">
+                            <input type="checkbox" name="{{ $field }}" value="1" @checked($checked)>
+                            {{ $label }}
+                        </label>
+                    @endforeach
                 </div>
             </aside>
         </div>

@@ -16,7 +16,7 @@
         <meta name="robots" content="noindex,nofollow">
     @endif
     <meta property="og:title" content="{{ $settings->seoTitle ?? $blog->name }}">
-    @vite(['app/Presentation/Css/app.css'])
+    @vite(['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 {{-- Tokens are validated hex colors / plain font names, so they are safe inside the style attribute. --}}
 <body class="antialiased"
@@ -35,6 +35,7 @@
         </nav>
     @endif
 
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading content">
     <main class="container-custom max-w-4xl py-10 space-y-10">
         @foreach($page->sections as $section)
             @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'section' => $section, 'mediaUrls' => $mediaUrls])
@@ -50,5 +51,6 @@
             </nav>
         @endif
     </main>
+    </phantom-ui>
 </body>
 </html>

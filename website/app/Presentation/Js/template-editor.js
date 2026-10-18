@@ -118,6 +118,13 @@ function initTemplateEditor(root) {
                     primaryColor: data.get('primaryColor'), secondaryColor: data.get('secondaryColor'), accentColor: data.get('accentColor'),
                     textColor: data.get('textColor'), backgroundColor: data.get('backgroundColor'), headingFont: data.get('headingFont'), bodyFont: data.get('bodyFont'),
                 },
+                postLayout: {
+                    variant: data.get('postLayoutVariant'),
+                    contentWidth: data.get('postContentWidth'),
+                    showBlogName: data.has('postShowBlogName'),
+                    showPublishedDate: data.has('postShowPublishedDate'),
+                    showCover: data.has('postShowCover'),
+                },
             },
         };
         try {

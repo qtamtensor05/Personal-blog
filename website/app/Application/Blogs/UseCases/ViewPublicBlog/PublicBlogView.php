@@ -9,6 +9,7 @@ use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Content\DTOs\PageRecord;
 use App\Application\Content\DTOs\PostRecord;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
+use App\Domain\Templates\ValueObjects\TemplatePostLayout;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
 
 final readonly class PublicBlogView
@@ -23,6 +24,7 @@ final readonly class PublicBlogView
         public BlogSettingsRecord $settings,
         public array $sections,
         public TemplateDesignTokens $designTokens,
+        public TemplatePostLayout $postLayout,
         // UNLISTED, not discoverable, or owner preview of a non-public blog.
         public bool $noIndex,
         public bool $isOwnerPreview,

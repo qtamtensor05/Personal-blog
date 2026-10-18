@@ -2,7 +2,14 @@
     $blog = $page->blog;
     $settings = $page->settings;
     $tokens = $page->designTokens;
+    $layout = $page->postLayout;
     $description = $post->seoDescription ?? $post->excerpt ?? $post->content->plainText(160);
+    $contentWidthClass = match ($layout->contentWidth) {
+        'narrow' => 'max-w-2xl',
+        'wide' => 'max-w-5xl',
+        default => 'max-w-3xl',
+    };
+    $articleClass = $layout->variant === 'card' ? 'rounded-2xl border p-6 shadow-sm md:p-10' : '';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $settings->locale }}">
@@ -20,7 +27,7 @@
     @if($cover)
         <meta property="og:image" content="{{ $cover['url'] }}">
     @endif
-    @vite(['app/Presentation/Css/app.css'])
+    @vite(['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body class="antialiased"
       style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}'; background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
@@ -30,20 +37,23 @@
         </div>
     @endif
 
-    <main class="container-custom max-w-3xl py-10">
-        <a href="{{ route('public.blog', $blog->slug) }}" class="text-sm" style="color: var(--d-primary);">← {{ $blog->name }}</a>
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading post">
+    <main class="container-custom {{ $contentWidthClass }} py-10">
+        @if($layout->showBlogName)
+            <a href="{{ route('public.blog', $blog->slug) }}" class="text-sm" style="color: var(--d-primary);">&larr; {{ $blog->name }}</a>
+        @endif
 
-        <article class="mt-6">
-            <header class="mb-8">
+        <article class="{{ $layout->showBlogName ? 'mt-6' : '' }} {{ $articleClass }}" @if($layout->variant === 'card') style="border-color: var(--d-secondary);" @endif>
+            <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
                 <h1 class="text-hero mb-3" style="font-family: var(--d-heading-font), sans-serif; color: var(--d-text);">{{ $post->title }}</h1>
-                @if($post->publishedAt)
+                @if($layout->showPublishedDate && $post->publishedAt)
                     <time datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}" class="text-sm opacity-70">
                         {{ \Carbon\Carbon::parse($post->publishedAt)->timezone($settings->timezone)->format('d/m/Y') }}
                     </time>
                 @endif
             </header>
 
-            @if($cover)
+            @if($layout->showCover && $cover)
                 <img src="{{ $cover['url'] }}" alt="" class="w-full rounded-md mb-8"
                      @if($cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif>
             @endif
@@ -56,5 +66,6 @@
             @include('public.partials.report-form', ['blog' => $blog, 'postSlug' => $post->slug])
         </div>
     </main>
+    </phantom-ui>
 </body>
 </html>

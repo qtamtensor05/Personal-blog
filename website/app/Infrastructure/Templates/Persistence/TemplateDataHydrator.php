@@ -94,7 +94,11 @@ final class TemplateDataHydrator
             }
         }
 
-        return ['sections' => $sections, 'designTokens' => $tokens];
+        return [
+            'sections' => $sections,
+            'designTokens' => $tokens,
+            'postLayout' => [],
+        ];
     }
 
     /** @param array<string, mixed> $data

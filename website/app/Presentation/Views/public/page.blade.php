@@ -17,7 +17,7 @@
         <meta name="robots" content="noindex,nofollow">
     @endif
     <meta property="og:title" content="{{ $staticPage->seoTitle ?? $staticPage->title }}">
-    @vite(['app/Presentation/Css/app.css'])
+    @vite(['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body class="antialiased"
       style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}'; background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
@@ -27,6 +27,7 @@
         </div>
     @endif
 
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading content">
     <main class="container-custom max-w-3xl py-10">
         <a href="{{ route('public.blog', $blog->slug) }}" class="text-sm" style="color: var(--d-primary);">← {{ $blog->name }}</a>
 
@@ -36,5 +37,6 @@
             <div class="post-content">{!! $html !!}</div>
         </article>
     </main>
+    </phantom-ui>
 </body>
 </html>

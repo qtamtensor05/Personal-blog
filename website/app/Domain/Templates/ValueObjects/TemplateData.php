@@ -12,6 +12,7 @@ use JsonSerializable;
  *
  * @property-read list<TemplateSectionConfig> $sections
  * @property-read TemplateDesignTokens $designTokens
+ * @property-read TemplatePostLayout $postLayout
  */
 final readonly class TemplateData implements JsonSerializable
 {
@@ -21,6 +22,7 @@ final readonly class TemplateData implements JsonSerializable
     public function __construct(
         public array $sections,
         public TemplateDesignTokens $designTokens,
+        public TemplatePostLayout $postLayout,
     ) {
         if (count($sections) === 0) {
             throw new InvalidArgumentException('A template must have at least one section.');
@@ -42,6 +44,7 @@ final readonly class TemplateData implements JsonSerializable
         return [
             'sections' => array_map(fn (TemplateSectionConfig $s) => $s->jsonSerialize(), $this->sections),
             'designTokens' => $this->designTokens->jsonSerialize(),
+            'postLayout' => $this->postLayout->jsonSerialize(),
         ];
     }
 
@@ -56,6 +59,9 @@ final readonly class TemplateData implements JsonSerializable
                 $data['sections'],
             ),
             designTokens: TemplateDesignTokens::fromArray($data['designTokens']),
+            postLayout: TemplatePostLayout::fromArray(
+                is_array($data['postLayout'] ?? null) ? $data['postLayout'] : [],
+            ),
         );
     }
 }
