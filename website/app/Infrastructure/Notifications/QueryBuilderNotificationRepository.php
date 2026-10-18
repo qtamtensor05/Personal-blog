@@ -71,6 +71,14 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
             ->update(['read_at' => $now, 'updated_at' => $now]);
     }
 
+    public function deleteForRecipient(string $id, int $recipientUserId): bool
+    {
+        return DB::table('notifications')
+            ->where('id', $id)
+            ->where('recipient_user_id', $recipientUserId)
+            ->delete() > 0;
+    }
+
     private function map(object $row): NotificationRecord
     {
         $data = json_decode((string) $row->data, true, flags: JSON_THROW_ON_ERROR);

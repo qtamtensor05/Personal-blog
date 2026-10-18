@@ -18,4 +18,6 @@ interface NotificationRepository
     public function markReadForRecipient(string $id, int $recipientUserId): bool;
 
     public function markAllReadForRecipient(int $recipientUserId): int;
+
+    public function deleteForRecipient(string $id, int $recipientUserId): bool;
 }
