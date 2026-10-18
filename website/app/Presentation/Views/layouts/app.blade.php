@@ -54,8 +54,8 @@
                         Articles
                     </a>
                     @auth
-                        <a href="{{ url('/my-posts') }}" class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->is('my-posts*') ? 'text-accent-primary' : '' }}">
-                            My Posts
+                        <a href="{{ route('blogs.index') }}" class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->routeIs('blogs.*') ? 'text-accent-primary' : '' }}">
+                            My Blogs
                         </a>
                     @endauth
                 </div>
@@ -121,8 +121,11 @@
                                         Admin Console
                                     </a>
                                 @endif
-                                <a href="{{ url('/my-posts') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
-                                    My Posts
+                                <a href="{{ route('blogs.index') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
+                                    My Blogs
+                                </a>
+                                <a href="{{ route('blogs.create') }}" class="block px-4 py-2 text-sm font-medium text-accent-primary hover:bg-surface-secondary">
+                                    Create Blog
                                 </a>
                                 <hr class="my-1 border-default">
                                 <form method="POST" action="{{ route('logout') }}">
@@ -168,8 +171,11 @@
                         Articles
                     </a>
                     @auth
-                        <a href="{{ url('/my-posts') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
-                            My Posts
+                        <a href="{{ route('blogs.index') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
+                            My Blogs
+                        </a>
+                        <a href="{{ route('blogs.create') }}" class="text-sm font-medium text-accent-primary hover:text-accent-primary transition-colors">
+                            Create Blog
                         </a>
                     @endauth
                 </div>
@@ -201,7 +207,8 @@
                         <li><a href="{{ url('/') }}" class="hover:text-accent-primary transition-colors">Home</a></li>
                         <li><a href="{{ url('/posts') }}" class="hover:text-accent-primary transition-colors">Articles</a></li>
                         @auth
-                            <li><a href="{{ url('/my-posts') }}" class="hover:text-accent-primary transition-colors">My Posts</a></li>
+                            <li><a href="{{ route('blogs.index') }}" class="hover:text-accent-primary transition-colors">My Blogs</a></li>
+                            <li><a href="{{ route('blogs.create') }}" class="hover:text-accent-primary transition-colors">Create Blog</a></li>
                         @endauth
                     </ul>
                 </div>

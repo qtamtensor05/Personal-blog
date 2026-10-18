@@ -5,8 +5,9 @@
 @section('content')
 <div class="container-custom section-spacing max-w-2xl">
     <div class="mb-8">
+        <p class="mb-2 text-sm font-semibold uppercase tracking-wider text-accent-primary">Step 1 of 2</p>
         <h1 class="text-hero mb-2">Create a New Blog</h1>
-        <p class="text-secondary">Give your blog a name and slug. You can choose a template after.</p>
+        <p class="text-secondary">Set up the basic information. Next, you will choose a design published by an admin.</p>
     </div>
 
     <div class="card">
@@ -40,7 +41,7 @@
                 :error="$errors->first('description')">{{ old('description') }}</x-textarea>
 
             <div class="flex items-center gap-3 pt-4 border-t border-default">
-                <button type="submit" class="btn-primary">Create Blog</button>
+                <button type="submit" class="btn-primary">Create Blog &amp; Choose Design</button>
                 <a href="{{ route('blogs.index') }}" class="btn-ghost">Cancel</a>
             </div>
         </form>

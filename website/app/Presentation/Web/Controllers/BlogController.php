@@ -48,8 +48,8 @@ final class BlogController extends Controller
         }
 
         return redirect()
-            ->route('blogs.show', $id)
-            ->with('status', 'Blog created successfully.');
+            ->route('blogs.design.edit', $id)
+            ->with('status', 'Blog created. Choose a template published by an admin to start your design.');
     }
 
     public function show(int $blog, BlogRepository $blogs, Request $request): View

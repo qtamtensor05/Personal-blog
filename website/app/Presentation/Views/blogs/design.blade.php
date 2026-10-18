@@ -15,6 +15,7 @@
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
             <a href="{{ route('blogs.show', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← {{ $blog->name }}</a>
+            <p class="mt-3 text-sm font-semibold uppercase tracking-wider text-accent-primary">Step 2 of 2</p>
             <h1 class="text-hero mt-2">Blog Design</h1>
             <p class="text-secondary">
                 @if($live)
@@ -48,9 +49,9 @@
         <div class="space-y-8">
             {{-- Template picker --}}
             <section class="card">
-                <h2 class="text-lg font-semibold text-primary mb-1">Template</h2>
+                <h2 class="text-lg font-semibold text-primary mb-1">Choose an admin template</h2>
                 <p class="text-sm text-secondary mb-4">
-                    Applying a template replaces your draft. Your live design stays until you publish.
+                    These designs were published by an administrator. Applying one replaces your draft; your live design stays unchanged until you publish.
                 </p>
 
                 @if(count($templates) === 0)
@@ -78,7 +79,7 @@
                                 </span>
                             </label>
                         @endforeach
-                        <button type="submit" class="btn-secondary">Apply template</button>
+                        <button type="submit" class="btn-primary">Use selected template</button>
                     </form>
                 @endif
             </section>

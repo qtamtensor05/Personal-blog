@@ -26,7 +26,10 @@ it('shows the signed-in users profile', function (): void {
         ->get(route('profile.edit'))
         ->assertOk()
         ->assertSee($user->name)
-        ->assertSee($user->email);
+        ->assertSee($user->email)
+        ->assertSee(route('blogs.index'), false)
+        ->assertSee(route('blogs.create'), false)
+        ->assertDontSee('/my-posts', false);
 });
 
 it('updates only the signed-in users display name', function (): void {
