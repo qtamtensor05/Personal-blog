@@ -14,6 +14,8 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
 {
     private const TABLE = 'templates';
 
+    public function __construct(private readonly TemplateDataHydrator $hydrator) {}
+
     public function find(int $id): ?TemplateRecord
     {
         $row = DB::table(self::TABLE)->where('id', $id)->whereNull('deleted_at')->first();
@@ -155,10 +157,10 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
             publishedAt: $row->published_at,
             versionNumber: (int) $row->version_number,
             publishedData: $row->template_data !== null
-                ? TemplateData::fromArray(json_decode($row->template_data, true))
+                ? $this->hydrator->fromJson($row->template_data)
                 : null,
             draftData: $row->draft_data !== null
-                ? TemplateData::fromArray(json_decode($row->draft_data, true))
+                ? $this->hydrator->fromJson($row->draft_data)
                 : null,
         );
     }

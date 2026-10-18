@@ -36,6 +36,11 @@ it('shows the admin console link and dashboard to an authorized admin', function
         ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertSee('Admin Console');
+
+    $this->actingAs(adminDashboardTestUser($adminId))
+        ->get(route('admin.templates.index'))
+        ->assertOk()
+        ->assertSee('Tạp chí tối giản');
 });
 
 it('hides and forbids the admin console for a normal user', function (): void {
