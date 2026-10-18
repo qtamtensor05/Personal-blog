@@ -40,6 +40,8 @@ final class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/');
+        $request->session()->forget('url.intended');
+
+        return redirect()->route('home');
     }
 }

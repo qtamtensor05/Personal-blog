@@ -46,7 +46,10 @@ final class RegisterUserController extends Controller
         }
 
         return redirect()
-            ->route('verification.notice')
-            ->with('status', 'Account created successfully! Please check your email to verify your account.');
+            ->route('login')
+            ->with(
+                'status',
+                'Your account has been created. We have sent a verification email to your email address. Please check your inbox and spam folder before signing in.'
+            );
     }
 }
