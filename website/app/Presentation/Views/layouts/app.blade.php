@@ -69,9 +69,13 @@
                                 @click.away="open = false"
                                 class="flex items-center gap-2 text-sm font-medium hover:text-accent-primary transition-colors"
                             >
-                                <div class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-surface font-semibold">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
-                                </div>
+                                @if($profileAvatarUrl)
+                                    <img src="{{ $profileAvatarUrl }}" alt="{{ auth()->user()->name }}" class="h-8 w-8 rounded-full object-cover">
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-surface font-semibold">
+                                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                @endif
                                 <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -90,7 +94,7 @@
                                 class="absolute right-0 mt-2 w-48 bg-surface border border-default rounded-lg shadow-lg py-1"
                                 style="display: none;"
                             >
-                                <a href="{{ url('/profile') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
                                     Profile
                                 </a>
                                 <a href="{{ url('/my-posts') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
@@ -186,7 +190,7 @@
                             <li><a href="{{ route('login') }}" class="hover:text-accent-primary transition-colors">Sign In</a></li>
                             <li><a href="{{ url('/register') }}" class="hover:text-accent-primary transition-colors">Register</a></li>
                         @else
-                            <li><a href="{{ url('/profile') }}" class="hover:text-accent-primary transition-colors">Profile</a></li>
+                            <li><a href="{{ route('profile.edit') }}" class="hover:text-accent-primary transition-colors">Profile</a></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}" class="inline">
                                     @csrf

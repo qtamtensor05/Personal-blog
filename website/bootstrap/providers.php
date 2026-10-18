@@ -12,6 +12,7 @@ use App\Providers\MediaServiceProvider;
 use App\Providers\ModerationServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PlatformSettingsServiceProvider;
+use App\Providers\ProfileServiceProvider;
 use App\Providers\TemplateServiceProvider;
 
 return [
@@ -27,5 +28,6 @@ return [
     ModerationServiceProvider::class,
     NotificationServiceProvider::class,
     PlatformSettingsServiceProvider::class,
+    ProfileServiceProvider::class,
     TemplateServiceProvider::class,
 ];

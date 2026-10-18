@@ -16,6 +16,7 @@ use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\NotificationController;
 use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
+use App\Presentation\Web\Controllers\ProfileController;
 use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
@@ -242,6 +243,9 @@ Route::get('/email/verified', function () {
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])

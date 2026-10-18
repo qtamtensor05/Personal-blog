@@ -153,6 +153,11 @@ final class FakePasswordHasher implements PasswordHasher
 
         return 'hashed:'.$plainText;
     }
+
+    public function verify(string $plainText, string $hash): bool
+    {
+        return $hash === 'hashed:'.$plainText;
+    }
 }
 
 final class FakeVerificationUrlGenerator implements VerificationUrlGenerator
