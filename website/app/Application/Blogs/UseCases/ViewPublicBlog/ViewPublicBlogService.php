@@ -11,6 +11,7 @@ use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\PageRepository;
 use App\Application\Content\Contracts\PostRepository;
+use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
@@ -30,6 +31,7 @@ final readonly class ViewPublicBlogService
         private BlogDesignRepository $designs,
         private PostRepository $posts,
         private PageRepository $pages,
+        private TaxonomyRepository $taxonomy,
     ) {}
 
     public function execute(string $slug, ?int $viewerId): PublicBlogView
@@ -56,6 +58,12 @@ final readonly class ViewPublicBlogService
         ];
 
         $settings = $this->settings->find($blog->id) ?? BlogSettingsRecord::defaults($blog->id);
+        $dynamicPostLimit = $settings->postsPerPage;
+        foreach ($sections as $section) {
+            if (in_array($section->section, ['recent_posts', 'sidebar_posts'], true)) {
+                $dynamicPostLimit = max($dynamicPostLimit, min(12, (int) ($design?->slotContent[$section->key]['limit'] ?? 6)));
+            }
+        }
 
         return new PublicBlogView(
             blog: $blog,
@@ -66,8 +74,10 @@ final readonly class ViewPublicBlogService
             noIndex: ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
             isOwnerPreview: ! $isPublic,
             // Only PUBLISHED posts; drafts and archived posts are never listed.
-            posts: $this->posts->publishedForBlog($blog->id, $settings->postsPerPage),
+            posts: $this->posts->publishedForBlog($blog->id, $dynamicPostLimit),
             pages: $this->pages->publishedForBlog($blog->id),
+            slotContent: $design?->slotContent ?? [],
+            categories: $this->taxonomy->categories($blog->id),
         );
     }
 }

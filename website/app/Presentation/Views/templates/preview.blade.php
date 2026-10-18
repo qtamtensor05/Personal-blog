@@ -20,9 +20,10 @@
         Template preview: {{ $template->name }}
     </div>
     <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading template preview">
-    <main class="container-custom max-w-4xl py-10 space-y-10">
+    @php($regions = collect($data->sections)->filter(fn ($section) => $section->visible)->groupBy('region'))
+    <main class="container-custom max-w-6xl py-10 space-y-10">
         @foreach($data->sections as $section)
-            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'section' => $section, 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
+            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => [], 'categories' => [], 'section' => $section, 'content' => $section->props, 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
         @endforeach
 
         <section class="border-t pt-10" style="border-color: var(--d-secondary);">

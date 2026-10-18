@@ -115,6 +115,31 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             ->exists();
     }
 
+    public function readyForBlog(int $blogId): array
+    {
+        return DB::table(self::TABLE)
+            ->where('scope', MediaScope::Blog->value)
+            ->where('blog_id', $blogId)
+            ->where('status', MediaStatus::Ready->value)
+            ->whereNull('deleted_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn ($row) => new MediaAssetRecord(
+                id: (int) $row->id,
+                scope: MediaScope::from($row->scope),
+                blogId: (int) $row->blog_id,
+                uploadedBy: (int) $row->uploaded_by,
+                publicId: $row->cloudinary_public_id,
+                secureUrl: $row->secure_url,
+                width: $row->width !== null ? (int) $row->width : null,
+                height: $row->height !== null ? (int) $row->height : null,
+                bytes: $row->bytes !== null ? (int) $row->bytes : null,
+                altText: $row->alt_text,
+                status: MediaStatus::from($row->status),
+            ))
+            ->all();
+    }
+
     public function readyAssetsForBlog(int $blogId, array $ids): array
     {
         if ($ids === []) {

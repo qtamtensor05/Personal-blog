@@ -124,6 +124,63 @@
                     </form>
                 </section>
             @endif
+
+            @if($current)
+                @php
+                    $studioRegions = collect($current->sections)->filter(fn ($section) => $section->visible)->groupBy('region');
+                    $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'mediaId' => 'Media ID', 'mediaIds' => 'Media IDs (phân cách dấu phẩy)', 'alt' => 'Mô tả ảnh', 'ctaLabel' => 'Nhãn CTA', 'ctaUrl' => 'Liên kết CTA', 'categoryId' => 'Category ID lọc bài mới', 'categoryIds' => 'Category IDs ghim', 'limit' => 'Số lượng hiển thị', 'copyright' => 'Copyright'];
+                @endphp
+                <section class="card">
+                    <h2 class="text-lg font-semibold text-primary mb-1">Studio nội dung</h2>
+                    <p class="text-sm text-secondary mb-4">Chỉ chỉnh dữ liệu trong slot của template. Bố cục và vị trí được khóa.</p>
+                    <form method="POST" action="{{ route('blogs.design.content', $blog->id) }}" class="space-y-5">
+                        @csrf
+                        @method('PUT')
+                        @foreach(['body' => 'Trang chủ', 'header' => 'Header dùng chung', 'sidebar' => 'Sidebar', 'footer' => 'Footer dùng chung'] as $region => $regionLabel)
+                            @if($studioRegions->get($region, collect())->isNotEmpty())
+                                <details class="rounded-md border border-default p-4" @if($region === 'body') open @endif>
+                                    <summary class="cursor-pointer font-semibold text-primary">{{ $regionLabel }}</summary>
+                                    <div class="mt-4 space-y-5">
+                                        @foreach($studioRegions->get($region) as $section)
+                                            @php
+                                                $values = $current->slotContent[$section->key] ?? [];
+                                                $fields = \App\Domain\Templates\TemplateSlotCatalog::fields($section->section);
+                                            @endphp
+                                            @if($fields !== [])
+                                                <fieldset class="border-l-2 pl-4" style="border-color: var(--d-accent);">
+                                                    <legend class="font-medium text-primary">{{ $section->label ?? $section->key }}</legend>
+                                                    <div class="grid gap-3 mt-3">
+                                                        @foreach($fields as $field)
+                                                            @php
+                                                                $value = $values[$field] ?? '';
+                                                                $inputName = 'slot_content['.$section->key.']['.$field.']';
+                                                            @endphp
+                                                            @if($field === 'description')
+                                                                <x-textarea :name="$inputName" :label="$fieldLabels[$field]" rows="3">{{ $value }}</x-textarea>
+                                                            @elseif($field === 'mediaId')
+                                                                <div class="space-y-1"><label class="block text-sm font-medium text-primary">{{ $fieldLabels[$field] }}</label><select class="input" name="slot_content[{{ $section->key }}][{{ $field }}]"><option value="">Chọn từ Media của blog</option>@foreach($mediaAssets as $asset)<option value="{{ $asset->id }}" @selected((string) $value === (string) $asset->id)>#{{ $asset->id }} — {{ $asset->altText ?: 'Hình ảnh' }}</option>@endforeach</select></div>
+                                                            @elseif(in_array($field, ['categoryId', 'limit'], true))
+                                                                <x-input type="number" min="1" :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
+                                                            @elseif(in_array($field, ['mediaIds', 'categoryIds'], true))
+                                                                <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="is_array($value) ? implode(',', $value) : $value" hint="Nhập các ID cách nhau bằng dấu phẩy." />
+                                                            @elseif($field === 'ctaUrl')
+                                                                <x-input type="url" :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
+                                                            @else
+                                                                <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </fieldset>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </details>
+                            @endif
+                        @endforeach
+                        <button type="submit" class="btn-primary py-2 px-4">Lưu nội dung Trang chủ</button>
+                    </form>
+                </section>
+            @endif
         </div>
 
         {{-- Preview: renders the draft with only controlled sections --}}
@@ -134,7 +191,7 @@
                      style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}';">
                     <div class="p-6 space-y-6" style="background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
                         @foreach($current->sections as $section)
-                            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'section' => $section, 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
+                            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => [], 'categories' => [], 'section' => $section, 'content' => array_replace($section->props, $current->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
                         @endforeach
                     </div>
                 </div>

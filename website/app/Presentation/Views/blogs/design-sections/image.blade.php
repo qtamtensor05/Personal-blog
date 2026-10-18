@@ -1,7 +1,8 @@
 @php
-    $src = $mediaUrls[$section->props['mediaId'] ?? 0] ?? null;
-    $alt = $section->props['alt'] ?? 'Template image';
-    $position = $section->props['position'] ?? 'full';
+    $content = $content ?? $section->props;
+    $src = $mediaUrls[$content['mediaId'] ?? 0] ?? null;
+    $alt = $content['alt'] ?? 'Template image';
+    $position = $content['position'] ?? 'full';
     $alignment = match ($position) {
         'left' => 'mr-auto',
         'right' => 'ml-auto',

@@ -1,12 +1,13 @@
 {{-- $posts is passed on the public page; the design editor preview shows placeholders. --}}
 <section>
-    <h2 class="text-xl font-semibold mb-3" style="font-family: var(--d-heading-font), sans-serif;">Recent posts</h2>
+    <h2 class="text-xl font-semibold mb-3" style="font-family: var(--d-heading-font), sans-serif;">{{ $content['title'] ?? 'Recent posts' }}</h2>
+    @php($shownPosts = array_slice(array_filter($posts ?? [], fn ($post) => empty($content['categoryId']) || in_array((int) $content['categoryId'], $post->categoryIds, true)), 0, $content['limit'] ?? 6))
     @if(isset($posts))
-        @if(count($posts) === 0)
+        @if(count($shownPosts) === 0)
             <p class="opacity-70">No posts published yet.</p>
         @else
             <div class="grid sm:grid-cols-2 gap-3">
-                @foreach($posts as $post)
+            @foreach($shownPosts as $post)
                     <article class="p-4 rounded-md bg-white/70 border" style="border-color: var(--d-secondary);">
                         <h3 class="font-semibold" style="font-family: var(--d-heading-font), sans-serif;">
                             <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" style="color: var(--d-text);">{{ $post->title }}</a>

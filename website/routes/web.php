@@ -295,6 +295,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [BlogDesignController::class, 'edit'])->name('edit');
             Route::post('/template', [BlogDesignController::class, 'applyTemplate'])->name('template');
             Route::put('/', [BlogDesignController::class, 'saveDraft'])->name('draft');
+            Route::put('/content', [BlogDesignController::class, 'saveSlotContent'])->name('content');
             Route::post('/publish', [BlogDesignController::class, 'publish'])->name('publish');
         });
 });

@@ -25,16 +25,29 @@ final readonly class BlogDesignData implements JsonSerializable
         public array $sections,
         public TemplateDesignTokens $designTokens,
         public TemplatePostLayout $postLayout,
+        /** @var array<string, array<string, mixed>> */
+        public array $slotContent = [],
     ) {}
 
     public static function fromTemplate(int $templateId, int $templateVersion, TemplateData $data): self
     {
-        return new self($templateId, $templateVersion, $data->sections, $data->designTokens, $data->postLayout);
+        return new self($templateId, $templateVersion, $data->sections, $data->designTokens, $data->postLayout, []);
     }
 
     public function withDesignTokens(TemplateDesignTokens $tokens): self
     {
-        return new self($this->templateId, $this->templateVersion, $this->sections, $tokens, $this->postLayout);
+        return new self($this->templateId, $this->templateVersion, $this->sections, $tokens, $this->postLayout, $this->slotContent);
+    }
+
+    /** @param array<string, array<string, mixed>> $content */
+    public function withSlotContent(array $content): self
+    {
+        return new self($this->templateId, $this->templateVersion, $this->sections, $this->designTokens, $this->postLayout, $content);
+    }
+
+    public function hasSlotContent(): bool
+    {
+        return $this->slotContent !== [];
     }
 
     /**
@@ -48,6 +61,7 @@ final readonly class BlogDesignData implements JsonSerializable
             'sections' => array_map(fn (TemplateSectionConfig $s) => $s->jsonSerialize(), $this->sections),
             'designTokens' => $this->designTokens->jsonSerialize(),
             'postLayout' => $this->postLayout->jsonSerialize(),
+            'slotContent' => $this->slotContent,
         ];
     }
 
@@ -64,6 +78,7 @@ final readonly class BlogDesignData implements JsonSerializable
             postLayout: TemplatePostLayout::fromArray(
                 is_array($data['postLayout'] ?? null) ? $data['postLayout'] : [],
             ),
+            slotContent: is_array($data['slotContent'] ?? null) ? $data['slotContent'] : [],
         );
     }
 }

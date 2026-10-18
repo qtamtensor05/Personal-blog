@@ -36,10 +36,25 @@
     @endif
 
     <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading content">
-    <main class="container-custom max-w-4xl py-10 space-y-10">
-        @foreach($page->sections as $section)
-            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'section' => $section, 'mediaUrls' => $mediaUrls])
+    @php($regions = collect($page->sections)->filter(fn ($section) => $section->visible)->groupBy('region'))
+    <header class="container-custom max-w-6xl pt-6 space-y-4">
+        @foreach($regions->get('header', []) as $section)
+            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'categories' => $page->categories, 'section' => $section, 'content' => array_replace($section->props, $page->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls])
         @endforeach
+    </header>
+    <main class="container-custom max-w-6xl py-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div class="space-y-10">
+            @foreach($regions->get('body', []) as $section)
+                @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'categories' => $page->categories, 'section' => $section, 'content' => array_replace($section->props, $page->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls])
+            @endforeach
+        </div>
+        @if($regions->get('sidebar', collect())->isNotEmpty())
+            <aside class="space-y-6">
+                @foreach($regions->get('sidebar', []) as $section)
+                    @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'categories' => $page->categories, 'section' => $section, 'content' => array_replace($section->props, $page->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls])
+                @endforeach
+            </aside>
+        @endif
 
         @include('public.partials.report-form', ['blog' => $blog])
 
@@ -51,6 +66,11 @@
             </nav>
         @endif
     </main>
+    <footer class="container-custom max-w-6xl pb-10 space-y-4">
+        @foreach($regions->get('footer', []) as $section)
+            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => $page->posts, 'categories' => $page->categories, 'section' => $section, 'content' => array_replace($section->props, $page->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls])
+        @endforeach
+    </footer>
     </phantom-ui>
 </body>
 </html>

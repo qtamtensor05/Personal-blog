@@ -26,12 +26,18 @@ final class PublicBlogController extends Controller
         $mediaUrls = [];
         $documentHtml = [];
         foreach ($page->sections as $section) {
-            $mediaId = isset($section->props['mediaId']) ? (int) $section->props['mediaId'] : 0;
+            $content = array_replace($section->props, $page->slotContent[$section->key] ?? []);
+            $mediaId = isset($content['mediaId']) ? (int) $content['mediaId'] : 0;
             if ($mediaId > 0 && ($asset = $media->find($mediaId)) !== null) {
                 $mediaUrls[$mediaId] = $asset->secureUrl;
             }
-            if ($section->section === 'document' && isset($section->props['content']) && is_array($section->props['content'])) {
-                $document = TiptapDocument::fromArray($section->props['content']);
+            foreach ($content['mediaIds'] ?? [] as $id) {
+                if (($asset = $media->find((int) $id)) !== null) {
+                    $mediaUrls[(int) $id] = $asset->secureUrl;
+                }
+            }
+            if ($section->section === 'document' && isset($content['content']) && is_array($content['content'])) {
+                $document = TiptapDocument::fromArray($content['content']);
                 $assets = [];
                 foreach ($document->mediaIds() as $id) {
                     if (($asset = $media->find($id)) !== null) {

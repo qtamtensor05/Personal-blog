@@ -10,6 +10,7 @@ use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Domain\BlogDesign\ValueObjects\BlogDesignData;
 use App\Domain\Templates\Enums\TemplateStatus;
+use DomainException;
 
 /**
  * Puts a snapshot of a published template into the blog's design draft.
@@ -26,6 +27,11 @@ final readonly class ApplyTemplateService
     public function execute(int $actorId, int $blogId, int $templateId): void
     {
         $this->guard->ensure($actorId, $blogId);
+
+        $existing = $this->designs->find($blogId);
+        if ($existing?->draftData?->hasSlotContent() || $existing?->publishedData?->hasSlotContent()) {
+            throw new DomainException('This blog already has homepage content and cannot change template.');
+        }
 
         $template = $this->templates->find($templateId);
 

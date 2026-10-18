@@ -9,14 +9,16 @@ use App\Application\BlogDesign\Services\OwnedBlogGuard;
 use App\Application\BlogDesign\UseCases\ApplyTemplate\ApplyTemplateService;
 use App\Application\BlogDesign\UseCases\PublishDesign\PublishDesignService;
 use App\Application\BlogDesign\UseCases\SaveDesignDraft\SaveDesignDraftService;
+use App\Application\BlogDesign\UseCases\SaveSlotContent\SaveSlotContentService;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Media\Contracts\MediaAssetRepository;
-use App\Domain\Content\ValueObjects\TiptapDocument;
-use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
+use App\Domain\Content\ValueObjects\TiptapDocument;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
+use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use App\Presentation\Web\Requests\SaveDesignDraftRequest;
+use App\Presentation\Web\Requests\SaveSlotContentRequest;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,6 +68,7 @@ final class BlogDesignController extends Controller
             'design' => $design,
             'templates' => $templates->published(),
             'mediaUrls' => $mediaUrls,
+            'mediaAssets' => $media->readyForBlog($blog),
             'documentHtml' => $documentHtml,
         ]);
     }
@@ -80,11 +83,26 @@ final class BlogDesignController extends Controller
             abort(404);
         } catch (TemplateNotFound) {
             return back()->withErrors(['template_id' => 'This template is not available.']);
+        } catch (DomainException $exception) {
+            return back()->withErrors(['template_id' => $exception->getMessage()]);
         }
 
         return redirect()
             ->route('blogs.design.edit', $blog)
             ->with('status', 'Template applied to your draft. Customize it, then publish.');
+    }
+
+    public function saveSlotContent(int $blog, SaveSlotContentRequest $request, SaveSlotContentService $save): RedirectResponse
+    {
+        try {
+            $save->execute((int) $request->user()->id, $blog, $request->validated('slot_content'));
+        } catch (BlogNotFound) {
+            abort(404);
+        } catch (DomainException $exception) {
+            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+        }
+
+        return redirect()->route('blogs.design.edit', $blog)->with('status', 'Homepage content saved as draft.');
     }
 
     public function saveDraft(int $blog, SaveDesignDraftRequest $request, SaveDesignDraftService $save): RedirectResponse
