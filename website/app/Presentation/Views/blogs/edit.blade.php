@@ -80,7 +80,7 @@
             </div>
 
             <div class="flex items-center gap-3 pt-4 border-t border-default">
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="submit" class="btn-primary px-4 py-2">Save Changes</button>
                 <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost">Cancel</a>
             </div>
         </form>

@@ -9,7 +9,7 @@
             <h1 class="text-hero mb-2">Your profile</h1>
             <p class="text-secondary">Manage your display name, profile image and password.</p>
         </div>
-        <button type="submit" form="profile-form" class="btn-primary shrink-0">Save changes</button>
+        <button type="submit" form="profile-form" class="btn-primary shrink-0 px-4 py-2 rounded-md">Save changes</button>
     </div>
 
     @if(session('status'))
