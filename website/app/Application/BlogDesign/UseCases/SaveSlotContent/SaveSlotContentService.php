@@ -35,7 +35,9 @@ final readonly class SaveSlotContentService
         foreach ($base->sections as $slot) {
             $slots[$slot->key] = $slot;
         }
-        $sanitized = [];
+        // The Studio saves one region at a time. Preserve content belonging to
+        // the other fixed regions in the same design draft.
+        $sanitized = $base->slotContent;
         foreach ($content as $key => $values) {
             if (! isset($slots[$key]) || ! is_array($values)) {
                 continue;

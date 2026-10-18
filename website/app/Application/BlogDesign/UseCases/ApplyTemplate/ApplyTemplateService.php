@@ -13,8 +13,8 @@ use App\Domain\Templates\Enums\TemplateStatus;
 use DomainException;
 
 /**
- * Puts a snapshot of a published template into the blog's design draft.
- * The live design is untouched until the owner publishes.
+ * Puts the first published template into the blog draft. The owner can preview
+ * this draft at the blog URL while visitors continue to see published data.
  */
 final readonly class ApplyTemplateService
 {
@@ -29,8 +29,8 @@ final readonly class ApplyTemplateService
         $this->guard->ensure($actorId, $blogId);
 
         $existing = $this->designs->find($blogId);
-        if ($existing?->draftData?->hasSlotContent() || $existing?->publishedData?->hasSlotContent()) {
-            throw new DomainException('This blog already has homepage content and cannot change template.');
+        if ($existing?->draftData !== null || $existing?->publishedData !== null) {
+            throw new DomainException('This blog already has a template. Its fixed layout cannot be changed.');
         }
 
         $template = $this->templates->find($templateId);

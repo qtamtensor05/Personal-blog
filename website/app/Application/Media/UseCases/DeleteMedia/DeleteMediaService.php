@@ -43,7 +43,7 @@ final readonly class DeleteMediaService implements DeleteMediaUseCase
 
         if ($asset->publicId !== null) {
             try {
-                $this->storage->destroy($asset->publicId);
+                $this->storage->destroy($asset->publicId, $asset->resourceType);
             } catch (MediaStorageFailed $exception) {
                 $this->media->markReadyAgain($mediaId);
 

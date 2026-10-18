@@ -8,6 +8,7 @@ use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\ValueObjects\TiptapDocument;
+use App\Domain\Templates\TemplateLayouts;
 use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -48,6 +49,19 @@ final class PublicBlogController extends Controller
             }
         }
 
-        return view('public.blog-home', ['page' => $page, 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml]);
+        $view = match ($page->layout) {
+            TemplateLayouts::LIFESTYLE_EDITORIAL => 'public.templates.lifestyle-editorial.home',
+            default => 'public.blog-home',
+        };
+
+        return view($view, [
+            'page' => $page,
+            'mediaUrls' => $mediaUrls,
+            'documentHtml' => $documentHtml,
+            'screen' => in_array($request->route('screen'), ['posts', 'about', 'contact'], true)
+                ? $request->route('screen')
+                : 'home',
+            'templatePreview' => false,
+        ]);
     }
 }

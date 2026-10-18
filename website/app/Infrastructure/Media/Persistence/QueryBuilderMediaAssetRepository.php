@@ -100,6 +100,9 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             height: $row->height !== null ? (int) $row->height : null,
             bytes: $row->bytes !== null ? (int) $row->bytes : null,
             altText: $row->alt_text,
+            originalName: $row->original_name,
+            mimeType: $row->mime_type,
+            resourceType: $row->resource_type,
             status: MediaStatus::from($row->status),
         );
     }
@@ -135,6 +138,9 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
                 height: $row->height !== null ? (int) $row->height : null,
                 bytes: $row->bytes !== null ? (int) $row->bytes : null,
                 altText: $row->alt_text,
+                originalName: $row->original_name,
+                mimeType: $row->mime_type,
+                resourceType: $row->resource_type,
                 status: MediaStatus::from($row->status),
             ))
             ->all();

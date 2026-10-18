@@ -3,19 +3,21 @@
 @section('title', 'Edit — '.$editable->title)
 
 @section('content')
-<div class="container-custom section-spacing max-w-6xl" data-post-editor>
-    {{-- @json escapes <, >, & and quotes, so the document is safe inside this script tag. --}}
-    <script type="application/json" data-editor-config>@json([
+@php
+    $editorConfig = [
         'blogId' => $blog->id,
         'content' => $editable->content->toArray(),
         'mediaUrls' => (object) $mediaUrls,
         'draftUrl' => route('blogs.posts.draft', [$blog->id, $post->id]),
         'mediaUrl' => route('media.store'),
-    ])</script>
+    ];
+@endphp
+<div class="container-custom section-spacing max-w-6xl" data-post-editor>
+    <script type="application/json" data-editor-config>{{ Illuminate\Support\Js::from($editorConfig) }}</script>
 
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <a href="{{ route('blogs.posts.index', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← Posts</a>
+            <a href="{{ route('blogs.posts.index', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← Bài viết</a>
             <div class="mt-2 flex items-center gap-2">
                 <x-badge :variant="$post->status->value === 'PUBLISHED' ? 'primary' : 'default'">{{ $post->status->value }}</x-badge>
                 <span class="text-sm text-secondary" data-save-status aria-live="polite">
@@ -54,23 +56,26 @@
     <div class="grid lg:grid-cols-[minmax(0,1fr)_20rem] gap-8">
         {{-- Writing area --}}
         <div class="card space-y-4">
-            <label for="title" class="sr-only">Title</label>
+            <label for="title" class="block text-sm font-medium text-secondary">Tên bài viết</label>
             <input id="title" name="title" value="{{ $editable->title }}" maxlength="160" required
-                   class="w-full text-3xl font-semibold text-primary bg-transparent focus:outline-none" placeholder="Post title">
+                   class="w-full text-3xl font-semibold text-primary bg-transparent focus:outline-none" placeholder="Nhập tên bài viết">
 
-            <label for="excerpt" class="sr-only">Excerpt</label>
-            <textarea id="excerpt" name="excerpt" rows="2" maxlength="1000" placeholder="Short excerpt (optional)"
+            <label for="excerpt" class="block text-sm font-medium text-secondary">Mô tả ngắn</label>
+            <textarea id="excerpt" name="excerpt" rows="2" maxlength="1000" placeholder="Mô tả ngắn hiển thị trong danh sách bài viết (không bắt buộc)"
                       class="textarea min-h-0">{{ $editable->excerpt }}</textarea>
 
-            <div class="flex flex-wrap gap-1 border-y border-default py-2" role="toolbar" aria-label="Formatting">
+            <div>
+                <p class="mb-2 text-sm font-medium text-secondary">Nội dung bài viết</p>
+                <div class="flex flex-wrap gap-1 border-y border-default py-2" role="toolbar" aria-label="Định dạng nội dung">
                 @foreach([
-                    'bold' => 'Bold', 'italic' => 'Italic', 'h2' => 'H2', 'h3' => 'H3',
-                    'bulletList' => '• List', 'orderedList' => '1. List', 'blockquote' => 'Quote',
-                    'codeBlock' => 'Code', 'link' => 'Link', 'image' => 'Image',
+                    'bold' => 'Đậm', 'italic' => 'Nghiêng', 'h2' => 'Tiêu đề H2', 'h3' => 'Tiêu đề H3',
+                    'bulletList' => '• Danh sách', 'orderedList' => '1. Danh sách', 'blockquote' => 'Trích dẫn',
+                    'codeBlock' => 'Mã', 'link' => 'Liên kết', 'image' => 'Thêm hình ảnh',
                 ] as $command => $label)
                     <button type="button" class="btn-ghost text-sm px-3 py-1" data-command="{{ $command }}">{{ $label }}</button>
                 @endforeach
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" data-image-input>
+                </div>
             </div>
 
             <div data-editor></div>
@@ -80,7 +85,7 @@
         <form method="POST" action="{{ route('blogs.posts.meta', [$blog->id, $post->id]) }}" class="card space-y-4 self-start">
             @csrf
             @method('PUT')
-            <h2 class="text-lg font-semibold text-primary">Details</h2>
+            <h2 class="text-lg font-semibold text-primary">Thông tin bài viết</h2>
 
             <x-input name="slug" label="Slug" :value="$post->slug" required maxlength="160" />
 
@@ -110,8 +115,25 @@
                 </fieldset>
             @endif
 
-            <x-input type="number" name="cover_media_id" label="Cover image (media ID)" min="1" :value="$post->coverMediaId" />
-            <x-input type="number" name="og_media_id" label="Social share image (media ID)" min="1" :value="$post->ogMediaId" />
+            <div class="space-y-1">
+                <label for="cover_media_id" class="block text-sm font-medium text-primary">Ảnh đại diện bài viết</label>
+                <select id="cover_media_id" name="cover_media_id" class="input">
+                    <option value="">Chưa chọn ảnh đại diện</option>
+                    @foreach($mediaAssets as $asset)
+                        <option value="{{ $asset->id }}" @selected($post->coverMediaId === $asset->id)>#{{ $asset->id }} - {{ $asset->altText ?: 'Hình ảnh' }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-secondary">Dùng nút “Thêm hình ảnh” trong nội dung để tải ảnh mới, sau đó lưu hoặc tải lại trang để chọn làm ảnh đại diện.</p>
+            </div>
+            <div class="space-y-1">
+                <label for="og_media_id" class="block text-sm font-medium text-primary">Ảnh chia sẻ mạng xã hội</label>
+                <select id="og_media_id" name="og_media_id" class="input">
+                    <option value="">Dùng ảnh đại diện</option>
+                    @foreach($mediaAssets as $asset)
+                        <option value="{{ $asset->id }}" @selected($post->ogMediaId === $asset->id)>#{{ $asset->id }} - {{ $asset->altText ?: 'Hình ảnh' }}</option>
+                    @endforeach
+                </select>
+            </div>
             <x-input name="seo_title" label="SEO title" :value="$post->seoTitle" maxlength="255" />
             <x-textarea name="seo_description" label="SEO description" rows="2" maxlength="500">{{ $post->seoDescription }}</x-textarea>
 

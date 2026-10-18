@@ -6,8 +6,8 @@
     $draft = $design?->draftData;
     $live = $design?->publishedData;
     $current = $draft ?? $live;
-    $tokens = $current?->designTokens;
     $hasUnpublished = $draft !== null && ($live === null || json_encode($draft) !== json_encode($live));
+    $regionLabels = ['body' => 'Trang chủ / Body', 'header' => 'Header', 'sidebar' => 'Sidebar', 'footer' => 'Footer'];
 @endphp
 
 @section('content')
@@ -29,12 +29,10 @@
             </p>
         </div>
 
-        @if($draft)
-            <form method="POST" action="{{ route('blogs.design.publish', $blog->id) }}">
-                @csrf
-                <button type="submit" class="btn-primary" @disabled(! $hasUnpublished)>Publish design</button>
-            </form>
-        @endif
+        <a href="{{ route('public.blog', $blog->slug) }}" target="_blank" rel="noopener" class="btn-secondary">
+            Mở trang blog ↗
+        </a>
+
     </div>
 
     @if(session('status'))
@@ -45,9 +43,9 @@
         <x-alert type="error" dismissible class="mb-6">{{ $errors->first() }}</x-alert>
     @endif
 
-    <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-8">
-        <div class="space-y-8">
-            {{-- Template picker --}}
+    <div class="space-y-8">
+            {{-- Template is selected once for a new blog, then the layout is locked. --}}
+            @if($current === null)
             <section class="card">
                 <h2 class="text-lg font-semibold text-primary mb-1">Choose an admin template</h2>
                 <p class="text-sm text-secondary mb-4">
@@ -63,7 +61,10 @@
                             <label class="flex items-start gap-3 p-3 rounded-md border border-default cursor-pointer hover:border-accent-primary">
                                 <input type="radio" name="template_id" value="{{ $template->id }}" class="mt-1"
                                        @checked($current?->templateId === $template->id) required>
-                                <span>
+                                @if($template->publishedData?->layout === 'lifestyle-editorial')
+                                    <img src="{{ asset('images/templates/lifestyle-editorial/hero.svg') }}" alt="" class="h-24 w-36 rounded object-cover">
+                                @endif
+                                <span class="flex-1">
                                     <span class="block font-medium text-primary">
                                         {{ $template->name }}
                                         <span class="text-xs text-secondary font-normal">v{{ $template->versionNumber }}</span>
@@ -83,71 +84,38 @@
                     </form>
                 @endif
             </section>
-
-            {{-- Token customization --}}
-            @if($tokens)
-                <section class="card">
-                    <h2 class="text-lg font-semibold text-primary mb-1">Customize</h2>
-                    <p class="text-sm text-secondary mb-4">Colors and fonts for your blog. Saved as a draft.</p>
-
-                    <form method="POST" action="{{ route('blogs.design.draft', $blog->id) }}" id="tokensForm" class="space-y-4">
-                        @csrf
-                        @method('PUT')
-                        <div class="grid sm:grid-cols-2 gap-4">
-                            @foreach([
-                                'primaryColor' => 'Primary',
-                                'secondaryColor' => 'Secondary',
-                                'accentColor' => 'Accent',
-                                'textColor' => 'Text',
-                                'backgroundColor' => 'Background',
-                            ] as $field => $label)
-                                <x-input type="color" :name="$field" :label="$label" :value="$tokens->{$field}" required />
-                            @endforeach
-                            <div class="space-y-1">
-                                <label for="headingFont" class="block text-sm font-medium text-primary">Heading font</label>
-                                <select name="headingFont" id="headingFont" class="input" required>
-                                    @foreach(['Instrument Sans', 'DM Sans', 'Manrope', 'Merriweather', 'Playfair Display', 'Space Grotesk'] as $font)
-                                        <option value="{{ $font }}" @selected($tokens->headingFont === $font)>{{ $font }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="space-y-1">
-                                <label for="bodyFont" class="block text-sm font-medium text-primary">Body font</label>
-                                <select name="bodyFont" id="bodyFont" class="input" required>
-                                    @foreach(['Instrument Sans', 'DM Sans', 'Manrope', 'Source Serif 4', 'Merriweather', 'Space Grotesk'] as $font)
-                                        <option value="{{ $font }}" @selected($tokens->bodyFont === $font)>{{ $font }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-primary py-2 px-4 rounded-md">Save draft</button>
-                    </form>
-                </section>
             @endif
 
             @if($current)
                 @php
                     $studioRegions = collect($current->sections)->filter(fn ($section) => $section->visible)->groupBy('region');
-                    $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'mediaId' => 'Media ID', 'mediaIds' => 'Media IDs (phân cách dấu phẩy)', 'alt' => 'Mô tả ảnh', 'ctaLabel' => 'Nhãn CTA', 'ctaUrl' => 'Liên kết CTA', 'categoryId' => 'Category ID lọc bài mới', 'categoryIds' => 'Category IDs ghim', 'limit' => 'Số lượng hiển thị', 'copyright' => 'Copyright'];
+                    $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'archiveTitle' => 'Tiêu đề trang bài viết', 'archiveDescription' => 'Mô tả trang bài viết', 'mediaId' => 'Media ID', 'mediaIds' => 'Media IDs (phân cách dấu phẩy)', 'alt' => 'Mô tả ảnh', 'ctaLabel' => 'Nhãn CTA', 'ctaUrl' => 'Liên kết CTA', 'categoryId' => 'Category ID lọc bài mới', 'categoryIds' => 'Category IDs ghim', 'limit' => 'Số lượng bài mới nhất', 'copyright' => 'Copyright'];
                 @endphp
                 <section class="card">
-                    <h2 class="text-lg font-semibold text-primary mb-1">Studio nội dung</h2>
-                    <p class="text-sm text-secondary mb-4">Chỉ chỉnh dữ liệu trong slot của template. Bố cục và vị trí được khóa.</p>
+                    <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-accent-primary">{{ $regionLabels[$activeRegion] }}</p>
+                            <h2 class="mt-1 text-lg font-semibold text-primary">Chỉnh nội dung {{ $regionLabels[$activeRegion] }}</h2>
+                            <p class="mt-1 text-sm text-secondary">Chỉ các slot thuộc vùng này được hiển thị. Bố cục và vị trí đã được template khóa.</p>
+                        </div>
+                        <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost px-3 py-2 text-sm">← Chọn vùng khác</a>
+                    </div>
                     <form method="POST" action="{{ route('blogs.design.content', $blog->id) }}" class="space-y-5">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="region" value="{{ $activeRegion }}">
                         @foreach(['body' => 'Trang chủ', 'header' => 'Header dùng chung', 'sidebar' => 'Sidebar', 'footer' => 'Footer dùng chung'] as $region => $regionLabel)
-                            @if($studioRegions->get($region, collect())->isNotEmpty())
-                                <details class="rounded-md border border-default p-4" @if($region === 'body') open @endif>
+                            @if($region === $activeRegion && $studioRegions->get($region, collect())->isNotEmpty())
+                                <details class="rounded-md border border-default p-4" open>
                                     <summary class="cursor-pointer font-semibold text-primary">{{ $regionLabel }}</summary>
                                     <div class="mt-4 space-y-5">
                                         @foreach($studioRegions->get($region) as $section)
                                             @php
-                                                $values = $current->slotContent[$section->key] ?? [];
+                                                $values = array_replace($section->props, $current->slotContent[$section->key] ?? []);
                                                 $fields = \App\Domain\Templates\TemplateSlotCatalog::fields($section->section);
                                             @endphp
                                             @if($fields !== [])
-                                                <fieldset class="border-l-2 pl-4" style="border-color: var(--d-accent);">
+                                                <fieldset id="slot-{{ $section->key }}" class="scroll-mt-6 border-l-2 pl-4" style="border-color: var(--d-accent);">
                                                     <legend class="font-medium text-primary">{{ $section->label ?? $section->key }}</legend>
                                                     <div class="grid gap-3 mt-3">
                                                         @foreach($fields as $field)
@@ -155,16 +123,25 @@
                                                                 $value = $values[$field] ?? '';
                                                                 $inputName = 'slot_content['.$section->key.']['.$field.']';
                                                             @endphp
-                                                            @if($field === 'description')
+                                                            @if(in_array($field, ['description', 'archiveDescription'], true))
                                                                 <x-textarea :name="$inputName" :label="$fieldLabels[$field]" rows="3">{{ $value }}</x-textarea>
                                                             @elseif($field === 'mediaId')
-                                                                <div class="space-y-1"><label class="block text-sm font-medium text-primary">{{ $fieldLabels[$field] }}</label><select class="input" name="slot_content[{{ $section->key }}][{{ $field }}]"><option value="">Chọn từ Media của blog</option>@foreach($mediaAssets as $asset)<option value="{{ $asset->id }}" @selected((string) $value === (string) $asset->id)>#{{ $asset->id }} — {{ $asset->altText ?: 'Hình ảnh' }}</option>@endforeach</select></div>
+                                                                <div class="space-y-1">
+                                                                    <label class="block text-sm font-medium text-primary">{{ $fieldLabels[$field] }}</label>
+                                                                    <select class="input" name="slot_content[{{ $section->key }}][{{ $field }}]">
+                                                                        <option value="">Chọn từ Media của blog</option>
+                                                                        @foreach($mediaAssets as $asset)
+                                                                            <option value="{{ $asset->id }}" @selected((string) $value === (string) $asset->id)>#{{ $asset->id }} · {{ $asset->resourceType === 'video' ? 'Video' : 'Ảnh' }} · {{ $asset->altText ?: $asset->originalName }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <a href="{{ route('blogs.media.index', $blog->id) }}" class="inline-block text-xs text-accent-primary hover:underline">Thêm hình ảnh hoặc video vào thư viện →</a>
+                                                                </div>
                                                             @elseif(in_array($field, ['categoryId', 'limit'], true))
                                                                 <x-input type="number" min="1" :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
                                                             @elseif(in_array($field, ['mediaIds', 'categoryIds'], true))
                                                                 <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="is_array($value) ? implode(',', $value) : $value" hint="Nhập các ID cách nhau bằng dấu phẩy." />
                                                             @elseif($field === 'ctaUrl')
-                                                                <x-input type="url" :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
+                                                                <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="$value" hint="Chấp nhận https://, đường dẫn /..., #section hoặc mailto:." />
                                                             @else
                                                                 <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
                                                             @endif
@@ -175,58 +152,20 @@
                                         @endforeach
                                     </div>
                                 </details>
+                            @elseif($region === $activeRegion)
+                                <x-empty-state message="Template chưa có {{ $regionLabel }}">
+                                    Admin cần thêm component vào vùng này trong template trước khi blogger có thể nhập nội dung.
+                                </x-empty-state>
                             @endif
                         @endforeach
-                        <button type="submit" class="btn-primary py-2 px-4">Lưu nội dung Trang chủ</button>
+                        <div class="flex flex-wrap gap-3">
+                            <button type="submit" class="btn-secondary py-2 px-4">Lưu nháp {{ $regionLabels[$activeRegion] }}</button>
+                            <button type="submit" name="publish" value="1" class="btn-primary py-2 px-4">Lưu và xuất bản {{ $regionLabels[$activeRegion] }}</button>
+                        </div>
                     </form>
                 </section>
             @endif
-        </div>
-
-        {{-- Preview: renders the draft with only controlled sections --}}
-        <section aria-label="Preview">
-            <h2 class="text-sm font-medium text-secondary mb-2">Preview (draft)</h2>
-            @if($current)
-                <div id="designPreview" class="rounded-lg border border-default overflow-hidden"
-                     style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}';">
-                    <div class="p-6 space-y-6" style="background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
-                        @foreach($current->sections as $section)
-                            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'posts' => [], 'categories' => [], 'section' => $section, 'content' => array_replace($section->props, $current->slotContent[$section->key] ?? []), 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
-                        @endforeach
-                    </div>
-                </div>
-            @else
-                <x-empty-state message="No design yet">
-                    Choose a template to start designing your blog.
-                </x-empty-state>
-            @endif
-        </section>
     </div>
 </div>
 
-@push('scripts')
-<script>
-// Live preview of token changes before saving.
-(function () {
-    const form = document.getElementById('tokensForm');
-    const preview = document.getElementById('designPreview');
-    if (!form || !preview) return;
-
-    const map = {
-        primaryColor: '--d-primary', secondaryColor: '--d-secondary', accentColor: '--d-accent',
-        textColor: '--d-text', backgroundColor: '--d-bg',
-        headingFont: '--d-heading-font', bodyFont: '--d-body-font',
-    };
-
-    form.addEventListener('input', (e) => {
-        const prop = map[e.target.name];
-        if (!prop) return;
-        const value = e.target.name.endsWith('Font')
-            ? `'${e.target.value.replace(/[^A-Za-z0-9 \-]/g, '')}'`
-            : e.target.value;
-        preview.style.setProperty(prop, value);
-    });
-})();
-</script>
-@endpush
 @endsection

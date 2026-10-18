@@ -14,6 +14,7 @@ use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
+use App\Domain\Templates\TemplateLayouts;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
 use App\Domain\Templates\ValueObjects\TemplatePostLayout;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
@@ -21,7 +22,8 @@ use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
 /**
  * Visitors see only PUBLISHED blogs that are PUBLIC or UNLISTED.
  * The owner may preview their own blog in any state except deleted.
- * Only published_data is rendered; drafts never reach the public page.
+ * Owners see their latest design draft at the same blog URL. Visitors can only
+ * receive published_data, and never receive a draft snapshot.
  */
 final readonly class ViewPublicBlogService
 {
@@ -49,12 +51,14 @@ final readonly class ViewPublicBlogService
             throw new BlogNotFound;
         }
 
-        $design = $this->designs->find($blog->id)?->publishedData;
+        $designRecord = $this->designs->find($blog->id);
+        $usingDraft = $isOwner && $designRecord?->draftData !== null;
+        $design = $usingDraft ? $designRecord->draftData : $designRecord?->publishedData;
 
         // No published design yet: a minimal page with the platform default tokens.
         $sections = $design?->sections ?? [
             new TemplateSectionConfig('hero', 'hero'),
-            new TemplateSectionConfig('footer', 'footer'),
+            new TemplateSectionConfig('footer', 'footer', [], 'footer'),
         ];
 
         $settings = $this->settings->find($blog->id) ?? BlogSettingsRecord::defaults($blog->id);
@@ -71,13 +75,14 @@ final readonly class ViewPublicBlogService
             sections: $sections,
             designTokens: $design?->designTokens ?? TemplateDesignTokens::default(),
             postLayout: $design?->postLayout ?? TemplatePostLayout::default(),
-            noIndex: ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
-            isOwnerPreview: ! $isPublic,
+            noIndex: $usingDraft || ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
+            isOwnerPreview: $usingDraft || ! $isPublic,
             // Only PUBLISHED posts; drafts and archived posts are never listed.
             posts: $this->posts->publishedForBlog($blog->id, $dynamicPostLimit),
             pages: $this->pages->publishedForBlog($blog->id),
             slotContent: $design?->slotContent ?? [],
             categories: $this->taxonomy->categories($blog->id),
+            layout: $design?->layout ?? TemplateLayouts::DEFAULT,
         );
     }
 }

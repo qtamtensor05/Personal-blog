@@ -39,13 +39,14 @@ final class TemplateSlotCatalog
     public static function fields(string $section): array
     {
         return match (TemplateSection::from($section)) {
+            TemplateSection::Header => ['title', 'description', 'mediaId', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Hero => ['eyebrow', 'title', 'description', 'mediaId', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Image, TemplateSection::ImageText => ['title', 'description', 'mediaId', 'alt', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Gallery => ['title', 'mediaIds'],
             TemplateSection::About, TemplateSection::Profile => ['title', 'description', 'mediaId'],
             TemplateSection::Cta => ['title', 'description', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Newsletter => ['title', 'description', 'ctaLabel'],
-            TemplateSection::RecentPosts => ['title', 'categoryId', 'limit'],
+            TemplateSection::RecentPosts => ['title', 'archiveTitle', 'archiveDescription', 'categoryId', 'limit'],
             TemplateSection::Categories => ['title', 'categoryIds', 'limit'],
             TemplateSection::FeaturedPost => ['title'],
             TemplateSection::Footer => ['copyright', 'description'],

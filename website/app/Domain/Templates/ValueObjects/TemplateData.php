@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Templates\ValueObjects;
 
+use App\Domain\Templates\TemplateLayouts;
 use InvalidArgumentException;
 use JsonSerializable;
 
@@ -23,7 +24,9 @@ final readonly class TemplateData implements JsonSerializable
         public array $sections,
         public TemplateDesignTokens $designTokens,
         public TemplatePostLayout $postLayout,
+        public string $layout = TemplateLayouts::DEFAULT,
     ) {
+        TemplateLayouts::ensureValid($layout);
         if (count($sections) === 0) {
             throw new InvalidArgumentException('A template must have at least one section.');
         }
@@ -45,6 +48,7 @@ final readonly class TemplateData implements JsonSerializable
             'sections' => array_map(fn (TemplateSectionConfig $s) => $s->jsonSerialize(), $this->sections),
             'designTokens' => $this->designTokens->jsonSerialize(),
             'postLayout' => $this->postLayout->jsonSerialize(),
+            'layout' => $this->layout,
         ];
     }
 
@@ -61,6 +65,9 @@ final readonly class TemplateData implements JsonSerializable
             designTokens: TemplateDesignTokens::fromArray($data['designTokens']),
             postLayout: TemplatePostLayout::fromArray(
                 is_array($data['postLayout'] ?? null) ? $data['postLayout'] : [],
+            ),
+            layout: TemplateLayouts::ensureValid(
+                is_string($data['layout'] ?? null) ? $data['layout'] : TemplateLayouts::DEFAULT,
             ),
         );
     }

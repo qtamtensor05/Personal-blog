@@ -23,7 +23,7 @@
       style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}'; background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
     @if($page->isOwnerPreview)
         <div class="text-center text-sm py-2 px-4" style="background: var(--d-accent); color: var(--d-text);">
-            Owner preview: this blog is not visible to visitors.
+            Bạn đang xem với tư cách chủ blog. Khách truy cập chỉ thấy nội dung đã xuất bản.
         </div>
     @endif
 

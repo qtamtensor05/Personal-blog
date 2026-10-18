@@ -87,6 +87,7 @@ final class PostController extends Controller
                 fn (array $asset) => $asset['url'],
                 $media->readyAssetsForBlog($blog, $editable->content->mediaIds()),
             ),
+            'mediaAssets' => $media->readyForBlog($blog),
             'categories' => $taxonomy->categories($blog),
             'tags' => $taxonomy->tags($blog),
         ]);

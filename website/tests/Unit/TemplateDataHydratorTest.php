@@ -65,5 +65,6 @@ final class TemplateDataHydratorTest extends TestCase
         self::assertSame('wide', $data->postLayout->contentWidth);
         self::assertFalse($data->postLayout->showBlogName);
         self::assertFalse($data->postLayout->showCover);
+        self::assertSame('default', $data->layout);
     }
 }

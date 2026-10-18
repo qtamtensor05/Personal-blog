@@ -252,7 +252,14 @@ final class TemplateController extends Controller
             throw new InvalidArgumentException('Select at least one supported component.');
         }
 
-        return new TemplateData($sections, $starter->designTokens, $starter->postLayout);
+        $layout = $request->validated('layout');
+
+        return new TemplateData(
+            $sections,
+            $starter->designTokens,
+            $starter->postLayout,
+            is_string($layout) ? $layout : $starter->layout,
+        );
     }
 
     private function error(string $message, int $status): JsonResponse

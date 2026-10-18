@@ -21,5 +21,8 @@ final readonly class MediaAssetRecord
         public ?int $bytes,
         public ?string $altText,
         public MediaStatus $status,
+        public ?string $originalName = null,
+        public ?string $mimeType = null,
+        public string $resourceType = 'image',
     ) {}
 }

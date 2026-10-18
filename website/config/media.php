@@ -15,7 +15,7 @@ return [
     'max_upload_kb' => (int) env('MEDIA_MAX_UPLOAD_KB', 5120),
 
     // SVG is excluded on purpose: it can carry scripts.
-    'allowed_mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    'allowed_mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4', 'webm', 'mov'],
 
     // Used when a blog has no blog_settings row yet (matches the column default).
     'default_blog_quota_bytes' => 104857600,

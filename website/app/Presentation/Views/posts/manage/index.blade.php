@@ -6,8 +6,8 @@
 <div class="container-custom section-spacing max-w-5xl">
     <div class="mb-8">
         <a href="{{ route('blogs.show', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← {{ $blog->name }}</a>
-        <h1 class="text-hero mt-2">Posts</h1>
-        <p class="text-secondary">Write in the editor; changes are saved as a draft until you publish.</p>
+        <h1 class="text-hero mt-2">Bài viết</h1>
+        <p class="text-secondary">Tạo bài nháp rồi nhập tiêu đề, nội dung và hình ảnh trong trình soạn thảo.</p>
     </div>
 
     @if(session('status'))
@@ -19,12 +19,12 @@
     @endif
 
     <section class="card mb-8">
-        <h2 class="text-lg font-semibold text-primary mb-4">New post</h2>
-        <form method="POST" action="{{ route('blogs.posts.store', $blog->id) }}" class="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <h2 class="text-lg font-semibold text-primary">Viết bài mới</h2>
+        <p class="mt-2 text-sm text-secondary">Bài viết mới được tạo ở trạng thái nháp. Đường dẫn sẽ tự sinh từ tiêu đề và bạn vẫn có thể sửa sau.</p>
+        <form method="POST" action="{{ route('blogs.posts.store', $blog->id) }}" class="mt-4">
             @csrf
-            <x-input name="title" label="Title" required maxlength="160" />
-            <x-input name="slug" label="Slug" required maxlength="160" hint="Generated from the title; edit if needed." />
-            <button type="submit" class="btn-primary">Create &amp; write</button>
+            <input type="hidden" name="title" value="Bài viết chưa có tiêu đề">
+            <button type="submit" class="btn-primary">Mở trình soạn thảo</button>
         </form>
     </section>
 
@@ -68,17 +68,4 @@
     @endif
 </div>
 
-@push('scripts')
-<script>
-(function () {
-    const title = document.querySelector('[name=title]');
-    const slug = document.querySelector('[name=slug]');
-    if (!title || !slug) return;
-    let edited = false;
-    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    title.addEventListener('input', () => { if (!edited) slug.value = slugify(title.value); });
-    slug.addEventListener('input', () => { edited = true; });
-})();
-</script>
-@endpush
 @endsection

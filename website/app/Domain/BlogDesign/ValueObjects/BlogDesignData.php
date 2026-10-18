@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\BlogDesign\ValueObjects;
 
+use App\Domain\Templates\TemplateLayouts;
 use App\Domain\Templates\ValueObjects\TemplateData;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
 use App\Domain\Templates\ValueObjects\TemplatePostLayout;
@@ -27,22 +28,23 @@ final readonly class BlogDesignData implements JsonSerializable
         public TemplatePostLayout $postLayout,
         /** @var array<string, array<string, mixed>> */
         public array $slotContent = [],
+        public string $layout = TemplateLayouts::DEFAULT,
     ) {}
 
     public static function fromTemplate(int $templateId, int $templateVersion, TemplateData $data): self
     {
-        return new self($templateId, $templateVersion, $data->sections, $data->designTokens, $data->postLayout, []);
+        return new self($templateId, $templateVersion, $data->sections, $data->designTokens, $data->postLayout, [], $data->layout);
     }
 
     public function withDesignTokens(TemplateDesignTokens $tokens): self
     {
-        return new self($this->templateId, $this->templateVersion, $this->sections, $tokens, $this->postLayout, $this->slotContent);
+        return new self($this->templateId, $this->templateVersion, $this->sections, $tokens, $this->postLayout, $this->slotContent, $this->layout);
     }
 
     /** @param array<string, array<string, mixed>> $content */
     public function withSlotContent(array $content): self
     {
-        return new self($this->templateId, $this->templateVersion, $this->sections, $this->designTokens, $this->postLayout, $content);
+        return new self($this->templateId, $this->templateVersion, $this->sections, $this->designTokens, $this->postLayout, $content, $this->layout);
     }
 
     public function hasSlotContent(): bool
@@ -62,6 +64,7 @@ final readonly class BlogDesignData implements JsonSerializable
             'designTokens' => $this->designTokens->jsonSerialize(),
             'postLayout' => $this->postLayout->jsonSerialize(),
             'slotContent' => $this->slotContent,
+            'layout' => $this->layout,
         ];
     }
 
@@ -79,6 +82,9 @@ final readonly class BlogDesignData implements JsonSerializable
                 is_array($data['postLayout'] ?? null) ? $data['postLayout'] : [],
             ),
             slotContent: is_array($data['slotContent'] ?? null) ? $data['slotContent'] : [],
+            layout: TemplateLayouts::ensureValid(
+                is_string($data['layout'] ?? null) ? $data['layout'] : TemplateLayouts::DEFAULT,
+            ),
         );
     }
 }

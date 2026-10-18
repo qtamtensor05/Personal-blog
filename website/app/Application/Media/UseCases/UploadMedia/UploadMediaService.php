@@ -63,6 +63,7 @@ final readonly class UploadMediaService implements UploadMediaUseCase
                 $localPath,
                 $this->folderFor($scope, $blogId, $actorId),
                 'm'.$id.'-'.bin2hex(random_bytes(4)),
+                $mimeType,
             );
         } catch (MediaStorageFailed $exception) {
             $this->media->markFailed($id);

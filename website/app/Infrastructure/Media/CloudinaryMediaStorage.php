@@ -51,7 +51,7 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         return $this->cloudName;
     }
 
-    public function upload(string $localPath, string $folder, string $publicId): StoredMedia
+    public function upload(string $localPath, string $folder, string $publicId, ?string $mimeType = null): StoredMedia
     {
         $params = $this->sign([
             'folder' => $folder,
@@ -69,7 +69,7 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         try {
             $response = Http::timeout(60)
                 ->attach('file', $handle, basename($localPath))
-                ->post($this->endpoint('upload'), $params);
+                ->post($this->endpoint('upload', str_starts_with((string) $mimeType, 'video/') ? 'video' : 'image'), $params);
         } catch (ConnectionException $exception) {
             throw new MediaStorageFailed('Cloudinary is unreachable.', previous: $exception);
         } finally {
@@ -95,7 +95,7 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         );
     }
 
-    public function destroy(string $publicId): void
+    public function destroy(string $publicId, string $resourceType = 'image'): void
     {
         $params = $this->sign([
             'public_id' => $publicId,
@@ -104,7 +104,7 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         ]);
 
         try {
-            $response = Http::asForm()->timeout(30)->post($this->endpoint('destroy'), $params);
+            $response = Http::asForm()->timeout(30)->post($this->endpoint('destroy', $resourceType), $params);
         } catch (ConnectionException $exception) {
             throw new MediaStorageFailed('Cloudinary is unreachable.', previous: $exception);
         }
@@ -136,9 +136,9 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         ];
     }
 
-    private function endpoint(string $action): string
+    private function endpoint(string $action, string $resourceType = 'image'): string
     {
-        return self::API."/{$this->cloudName}/image/{$action}";
+        return self::API."/{$this->cloudName}/{$resourceType}/{$action}";
     }
 
     private function ensureSuccessful(Response $response): void

@@ -30,6 +30,14 @@
                 <x-input name="slug" label="Slug" :value="$isEdit ? $template->slug : old('slug')" hint="Để trống để sinh từ tên." />
             </div>
             <x-textarea name="description" label="Mô tả" rows="2">{{ $isEdit ? $template->description : old('description') }}</x-textarea>
+            <div class="space-y-1">
+                <label for="layout" class="block text-sm font-medium text-primary">Bố cục trang</label>
+                <select name="layout" id="layout" class="input">
+                    <option value="default" @selected($data?->layout === 'default')>Blog tiêu chuẩn</option>
+                    <option value="lifestyle-editorial" @selected($data?->layout === 'lifestyle-editorial')>Lifestyle Editorial</option>
+                </select>
+                <p class="text-xs text-secondary">Bố cục khóa vị trí hiển thị; blogger chỉ thay nội dung từng slot.</p>
+            </div>
         </section>
 
         <section class="card space-y-5">

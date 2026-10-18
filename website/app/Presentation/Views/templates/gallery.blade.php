@@ -17,6 +17,11 @@
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($templates as $template)
                 <div class="card group hover:shadow-lg transition-shadow">
+                    @if($template->publishedData?->layout === 'lifestyle-editorial')
+                        <div class="aspect-video bg-surface-secondary rounded mb-4 overflow-hidden">
+                            <img src="{{ asset('images/templates/lifestyle-editorial/hero.svg') }}" alt="Lifestyle Editorial" class="h-full w-full object-cover">
+                        </div>
+                    @endif
                     @if($template->previewMediaId)
                         <div class="aspect-video bg-surface-secondary rounded mb-4 overflow-hidden">
                             {{-- Preview image would go here --}}

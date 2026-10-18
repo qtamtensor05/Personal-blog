@@ -9,6 +9,7 @@ use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Content\DTOs\CategoryRecord;
 use App\Application\Content\DTOs\PageRecord;
 use App\Application\Content\DTOs\PostRecord;
+use App\Domain\Templates\TemplateLayouts;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
 use App\Domain\Templates\ValueObjects\TemplatePostLayout;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
@@ -35,5 +36,6 @@ final readonly class PublicBlogView
         public array $pages = [],
         public array $slotContent = [],
         public array $categories = [],
+        public string $layout = TemplateLayouts::DEFAULT,
     ) {}
 }

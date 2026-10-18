@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ?: env('BOOTSTRAP_ADMIN_PASSWORD');
 
         if (! $email && ! $password) {
+            $this->call(LifestyleEditorialTemplateSeeder::class);
             $this->command?->warn(
                 'Skipping Owner account: bootstrap credentials are not configured.'
             );
@@ -80,5 +81,6 @@ class DatabaseSeeder extends Seeder
         });
 
         $this->command?->info('Owner account is ready.');
+        $this->call(LifestyleEditorialTemplateSeeder::class);
     }
 }

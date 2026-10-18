@@ -19,6 +19,7 @@ final class CreateTemplateRequest extends FormRequest
             'name' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'layout' => ['nullable', 'string', 'in:default,lifestyle-editorial'],
             'preview_media_id' => ['nullable', 'integer', 'exists:media_assets,id'],
             'demo_url' => ['nullable', 'url', 'max:2048'],
             'draft_data' => ['nullable', 'array'],

@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Controllers;
 
-use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Media\Contracts\MediaAssetRepository;
+use App\Application\Templates\Contracts\TemplateRepository;
 use App\Domain\Content\ValueObjects\TiptapDocument;
+use App\Domain\Templates\TemplateLayouts;
 use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
 
 final class TemplatePreviewController extends Controller
 {
-    public function __invoke(string $slug, TemplateRepository $templates, MediaAssetRepository $media, TiptapHtmlRenderer $renderer): View
+    public function __invoke(string $slug, Request $request, TemplateRepository $templates, MediaAssetRepository $media, TiptapHtmlRenderer $renderer): View
     {
         $template = collect($templates->all())->firstWhere('slug', $slug);
 
@@ -40,6 +42,36 @@ final class TemplatePreviewController extends Controller
                 }
                 $documentHtml[$section->key] = $renderer->render($document, $assets);
             }
+        }
+
+        if ($data->layout === TemplateLayouts::LIFESTYLE_EDITORIAL) {
+            return view('public.templates.lifestyle-editorial.home', [
+                'page' => (object) [
+                    'blog' => (object) [
+                        'name' => $template->name,
+                        'description' => $template->description,
+                        'slug' => $template->slug,
+                    ],
+                    'settings' => (object) [
+                        'locale' => 'vi',
+                        'seoTitle' => $template->name,
+                        'seoDescription' => $template->description,
+                        'socialLinks' => [],
+                    ],
+                    'sections' => $data->sections,
+                    'slotContent' => [],
+                    'posts' => [],
+                    'categories' => [],
+                    'noIndex' => true,
+                    'isOwnerPreview' => false,
+                ],
+                'mediaUrls' => $mediaUrls,
+                'documentHtml' => $documentHtml,
+                'screen' => in_array($request->query('screen'), ['posts', 'about', 'contact'], true)
+                    ? $request->query('screen')
+                    : 'home',
+                'templatePreview' => true,
+            ]);
         }
 
         return view('templates.preview', [

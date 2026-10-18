@@ -127,6 +127,13 @@ Route::get('/b/{slug}', PublicBlogController::class)
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
     ->name('public.blog');
 
+Route::get('/b/{slug}/section/{screen}', PublicBlogController::class)
+    ->where([
+        'slug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+        'screen' => 'posts|about|contact',
+    ])
+    ->name('public.blog.section');
+
 // Static pages live under /p/ so their slugs never collide with post slugs.
 Route::get('/b/{slug}/p/{page}', PublicPageController::class)
     ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'page' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
@@ -209,6 +216,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/media/{media}', [MediaController::class, 'destroy'])
         ->whereNumber('media')
         ->name('media.destroy');
+
+    Route::get('/blogs/{blog}/media', [MediaController::class, 'index'])
+        ->whereNumber('blog')
+        ->name('blogs.media.index');
 
     // Report a blog or post (signed-in users; login already requires an active, verified account)
     Route::post('/b/{slug}/report', ContentReportController::class)
@@ -294,9 +305,10 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', [BlogDesignController::class, 'edit'])->name('edit');
             Route::post('/template', [BlogDesignController::class, 'applyTemplate'])->name('template');
-            Route::put('/', [BlogDesignController::class, 'saveDraft'])->name('draft');
             Route::put('/content', [BlogDesignController::class, 'saveSlotContent'])->name('content');
-            Route::post('/publish', [BlogDesignController::class, 'publish'])->name('publish');
+            Route::post('/publish/{region}', [BlogDesignController::class, 'publishRegion'])
+                ->whereIn('region', ['header', 'body', 'sidebar', 'footer'])
+                ->name('publish-region');
         });
 });
 
