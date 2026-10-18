@@ -307,6 +307,7 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
             ->whereNumber(['user', 'role'])
             ->group(function () {
                 Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+                Route::post('/users', [AdminUserController::class, 'createAdmin'])->name('users.store');
                 Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
                 Route::post('/users/{user}/restrictions', [AdminUserController::class, 'restrict'])->name('users.restrict');
                 Route::delete('/users/{user}/restrictions', [AdminUserController::class, 'lift'])->name('users.lift');
@@ -315,6 +316,7 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
                 Route::middleware(['permission:'.PlatformPermission::ManageRoles->value])->group(function () {
                     Route::post('/users/{user}/roles', [AdminUserController::class, 'grantRole'])->name('users.roles.grant');
                     Route::delete('/users/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('users.roles.revoke');
+                    Route::post('/users/{user}/permissions', [AdminUserController::class, 'setPermission'])->name('users.permissions.set');
                 });
             });
 
