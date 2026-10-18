@@ -11,7 +11,7 @@ final class QueryBuilderPermissionRepository implements PermissionRepository
 {
     public function codesForUser(int $userId): array
     {
-        return DB::table('user_platform_roles as upr')
+        $codes = DB::table('user_platform_roles as upr')
             ->join('platform_role_permissions as prp', 'prp.role_id', '=', 'upr.role_id')
             ->join('permissions as p', 'p.id', '=', 'prp.permission_id')
             ->where('upr.user_id', $userId)
@@ -23,5 +23,20 @@ final class QueryBuilderPermissionRepository implements PermissionRepository
             ->map(fn ($code) => (string) $code)
             ->values()
             ->all();
+
+        $overrides = DB::table('user_platform_permissions as upp')
+            ->join('permissions as p', 'p.id', '=', 'upp.permission_id')
+            ->where('upp.user_id', $userId)
+            ->get(['p.code', 'upp.effect']);
+
+        foreach ($overrides as $override) {
+            if ($override->effect === 'DENY') {
+                $codes = array_values(array_diff($codes, [$override->code]));
+            } elseif (! in_array($override->code, $codes, true)) {
+                $codes[] = $override->code;
+            }
+        }
+
+        return $codes;
     }
 }

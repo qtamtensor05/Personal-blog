@@ -34,7 +34,12 @@ final class LoginController extends Controller
             Auth::logout();
 
             throw ValidationException::withMessages([
-                'email' => 'Your account must be active and email verified before signing in.',
+                'email' => match ($user?->status) {
+                    'LOCKED' => 'Your account is locked. Please contact an administrator for assistance.',
+                    'SUSPENDED' => 'Your account is suspended. Please contact an administrator for assistance.',
+                    'DISABLED' => 'Your account has been disabled. Please contact an administrator for assistance.',
+                    default => 'Your account must be active and email verified before signing in.',
+                },
             ]);
         }
 

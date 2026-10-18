@@ -85,9 +85,77 @@ final class QueryBuilderAdminUserRepository implements AdminUserRepository
             ->all();
     }
 
+    public function permissions(): array
+    {
+        return DB::table('permissions')
+            ->orderBy('code')
+            ->get(['id', 'code', 'description'])
+            ->map(fn ($permission) => [
+                'id' => (int) $permission->id,
+                'code' => (string) $permission->code,
+                'description' => $permission->description,
+            ])
+            ->all();
+    }
+
+    public function permissionOverrides(int $userId): array
+    {
+        return DB::table('user_platform_permissions as upp')
+            ->join('permissions as p', 'p.id', '=', 'upp.permission_id')
+            ->where('upp.user_id', $userId)
+            ->get(['upp.permission_id', 'p.code', 'upp.effect'])
+            ->map(fn ($permission) => [
+                'permission_id' => (int) $permission->permission_id,
+                'code' => (string) $permission->code,
+                'effect' => (string) $permission->effect,
+            ])
+            ->all();
+    }
+
     public function roleExists(int $roleId): bool
     {
         return DB::table('platform_roles')->where('id', $roleId)->exists();
+    }
+
+    public function roleCode(int $roleId): ?string
+    {
+        $code = DB::table('platform_roles')
+            ->where('id', $roleId)
+            ->value('code');
+
+        return $code === null ? null : (string) $code;
+    }
+
+    public function userHasRole(int $userId, string $roleCode): bool
+    {
+        return DB::table('user_platform_roles as upr')
+            ->join('platform_roles as r', 'r.id', '=', 'upr.role_id')
+            ->join('users as u', 'u.id', '=', 'upr.user_id')
+            ->where('upr.user_id', $userId)
+            ->where('r.code', $roleCode)
+            ->where('u.status', 'ACTIVE')
+            ->whereNull('u.deleted_at')
+            ->where(function ($query): void {
+                $query->whereNull('upr.expires_at')
+                    ->orWhere('upr.expires_at', '>', now());
+            })
+            ->exists();
+    }
+
+    public function countActiveSuperAdmins(): int
+    {
+        return (int) DB::table('user_platform_roles as upr')
+            ->join('platform_roles as r', 'r.id', '=', 'upr.role_id')
+            ->join('users as u', 'u.id', '=', 'upr.user_id')
+            ->where('r.code', 'SUPER_ADMIN')
+            ->where('u.status', 'ACTIVE')
+            ->whereNull('u.deleted_at')
+            ->where(function ($query): void {
+                $query->whereNull('upr.expires_at')
+                    ->orWhere('upr.expires_at', '>', now());
+            })
+            ->distinct('upr.user_id')
+            ->count('upr.user_id');
     }
 
     public function restrict(
@@ -170,6 +238,36 @@ final class QueryBuilderAdminUserRepository implements AdminUserRepository
     public function revokeRole(int $userId, int $roleId): void
     {
         DB::table('user_platform_roles')->where('user_id', $userId)->where('role_id', $roleId)->delete();
+    }
+
+    public function permissionExists(int $permissionId): bool
+    {
+        return DB::table('permissions')->where('id', $permissionId)->exists();
+    }
+
+    public function permissionCode(int $permissionId): ?string
+    {
+        $code = DB::table('permissions')->where('id', $permissionId)->value('code');
+
+        return $code === null ? null : (string) $code;
+    }
+
+    public function setPermissionOverride(int $userId, int $permissionId, string $effect, int $grantedBy): void
+    {
+        $now = now();
+
+        DB::table('user_platform_permissions')->upsert(
+            [[
+                'user_id' => $userId,
+                'permission_id' => $permissionId,
+                'effect' => $effect,
+                'granted_by' => $grantedBy,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]],
+            ['user_id', 'permission_id'],
+            ['effect', 'granted_by', 'updated_at'],
+        );
     }
 
     public function auditLogs(int $page, int $perPage): array

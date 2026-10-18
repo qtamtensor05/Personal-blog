@@ -6,10 +6,6 @@ namespace App\Application\AccessControl\Contracts;
 
 interface PermissionRepository
 {
-    /**
-     * Permission codes granted to the user through non-expired platform roles.
-     *
-     * @return list<string>
-     */
+    /** @return list<string> Effective permission codes for the user. */
     public function codesForUser(int $userId): array;
 }
