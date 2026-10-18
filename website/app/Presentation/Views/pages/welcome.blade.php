@@ -273,7 +273,7 @@
                 </p>
 
                 <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                    <x-button :href="route('register')">
+                    <x-button :href="auth()->check() ? route('blogs.create') : route('register')">
                         Write an article
                     </x-button>
                     <x-button :href="route('posts.index')" variant="outline">
@@ -319,11 +319,6 @@
         </div>
     </section>
 
-    {{-- ============================================================
-         CALL TO ACTION
-         SVG slot: cta  ->  public/images/illustrations/cta.svg
-         Suggested size: about 480x400
-         ============================================================ --}}
     <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div class="relative isolate overflow-hidden border-accent-primary/20">
             <div class="pointer-events-none absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full bg-accent-primary/10 blur-3xl" aria-hidden="true"></div>
@@ -339,12 +334,21 @@
                     </p>
 
                     <div class="mt-8">
-                        <x-button :href="route('register')" size="lg">
-                            Create an account
-                            <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0-5 5m5-5H6"/>
-                            </svg>
-                        </x-button>
+                        @if (auth()->check())
+                            <x-button :href="route('blogs.create')" size="lg">
+                                Create a blog
+                                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0-5 5m5-5H6"/>
+                                </svg>
+                            </x-button>
+                        @else
+                            <x-button :href="route('register')" size="lg">
+                                Create an account
+                                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0-5 5m5-5H6"/>
+                                </svg>
+                            </x-button>
+                        @endif
                     </div>
                 </div>
             </div>
