@@ -65,7 +65,7 @@
                                 </form>
                             @endif
                             <form method="POST" action="{{ route('blogs.domains.destroy', [$blog->id, $domain->id]) }}"
-                                  onsubmit="return confirm('Remove this domain?')">
+                                  data-modal-confirm-form data-confirm-title="Remove domain" data-confirm-message="Remove this domain?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-sm text-red-500 hover:underline">Remove</button>

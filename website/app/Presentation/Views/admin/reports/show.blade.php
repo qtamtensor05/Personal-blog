@@ -63,7 +63,7 @@
         @endif
 
         <form method="POST" action="{{ route('admin.reports.close', $report->id) }}" class="card space-y-4"
-              onsubmit="return confirm('Close this report?')">
+              data-modal-confirm-form data-confirm-title="Close report" data-confirm-message="Close this report?">
             @csrf
             <h2 class="text-lg font-semibold text-primary">Decision</h2>
             <div class="space-y-1">
@@ -87,7 +87,7 @@
         </form>
     @elseif($report->blog_status === 'SUSPENDED')
         <form method="POST" action="{{ route('admin.reports.lift', $report->id) }}"
-              onsubmit="return confirm('Lift the suspension of this blog?')">
+              data-modal-confirm-form data-confirm-title="Lift suspension" data-confirm-message="Lift the suspension of this blog?">
             @csrf
             <button type="submit" class="btn-secondary">Lift blog suspension</button>
         </form>

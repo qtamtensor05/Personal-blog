@@ -60,7 +60,7 @@
                     </form>
                 @else
                     <form method="POST" action="{{ route('admin.users.restrict', $user->id) }}" class="space-y-3"
-                          onsubmit="return confirm('Restrict this account? The user will be signed out immediately.')">
+                          data-modal-confirm-form data-confirm-title="Restrict account" data-confirm-message="Restrict this account? The user will be signed out immediately.">
                         @csrf
                         <div class="space-y-1">
                             <label for="kind" class="block text-sm font-medium text-primary">Action</label>
@@ -97,7 +97,7 @@
                             </span>
                             @if($canManageRoles && ! $isSelf)
                                 <form method="POST" action="{{ route('admin.users.roles.revoke', [$user->id, $role['role_id']]) }}"
-                                      onsubmit="return confirm('Revoke this role?')">
+                                      data-modal-confirm-form data-confirm-title="Revoke role" data-confirm-message="Revoke this role?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-500 hover:underline">Revoke</button>

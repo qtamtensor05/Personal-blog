@@ -126,7 +126,7 @@
     </div>
 
     <form method="POST" action="{{ route('blogs.posts.destroy', [$blog->id, $post->id]) }}" class="mt-8"
-          onsubmit="return confirm('Delete this post?')">
+          data-modal-confirm-form data-confirm-title="Delete post" data-confirm-message="Delete this post?">
         @csrf
         @method('DELETE')
         <button type="submit" class="text-sm text-red-500 hover:underline">Delete post</button>

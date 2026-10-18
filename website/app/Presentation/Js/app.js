@@ -106,7 +106,7 @@ function initErrorModal() {
     modal.dataset.initialized = 'true';
     modal.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', () => close()));
     cancel.addEventListener('click', () => close());
-    confirm.addEventListener('click', () => close(input.classList.contains('hidden') ? null : input.value));
+    confirm.addEventListener('click', () => close(input.classList.contains('hidden') ? true : input.value));
     modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
@@ -138,7 +138,7 @@ function initErrorModal() {
     });
 
     window.requestModalConfirmation = (modalTitle, prompt) => new Promise((resolve) => {
-        pending = (value) => resolve(value !== null);
+        pending = (value) => resolve(value === true);
         title.textContent = modalTitle;
         message.textContent = prompt;
         input.classList.add('hidden');

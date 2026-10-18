@@ -34,7 +34,11 @@
 <body class="antialiased">
     <!-- Header -->
     <header class="bg-surface border-b border-default sticky top-0 z-50">
-        <nav class="container-custom py-4">
+        <nav
+            class="container-custom py-4"
+            x-data="{ mobileMenuOpen: false }"
+            @keydown.escape.window="mobileMenuOpen = false"
+        >
             <div class="flex items-center justify-between">
                 <!-- Logo/Brand -->
                 <a href="{{ url('/') }}" class="flex items-center gap-2 text-primary font-semibold text-lg hover:text-accent-primary transition-colors">
@@ -82,7 +86,7 @@
                             @endif
                         </a>
                         @include('layouts.partials.theme-toggle')
-                        <div class="relative" x-data="{ open: false }">
+                        <div class="relative hidden md:block" x-data="{ open: false }">
                             <button
                                 @click="open = !open"
                                 @click.away="open = false"
@@ -140,9 +144,12 @@
 
                     <!-- Mobile Menu Toggle -->
                     <button
+                        type="button"
                         @click="mobileMenuOpen = !mobileMenuOpen"
                         class="md:hidden btn-ghost p-2"
                         aria-label="Toggle menu"
+                        :aria-expanded="mobileMenuOpen.toString()"
+                        aria-controls="mobile-navigation"
                     >
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -153,6 +160,7 @@
 
             <!-- Mobile Navigation -->
             <div
+                id="mobile-navigation"
                 x-show="mobileMenuOpen"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 -translate-y-2"
@@ -163,7 +171,7 @@
                 class="md:hidden mt-4 pt-4 border-t border-default"
                 style="display: none;"
             >
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-3" @click="if ($event.target.closest('a, button[type=submit]')) mobileMenuOpen = false">
                     <a href="{{ url('/') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
                         Home
                     </a>
@@ -177,6 +185,21 @@
                         <a href="{{ route('blogs.create') }}" class="text-sm font-medium text-accent-primary hover:text-accent-primary transition-colors">
                             Create Blog
                         </a>
+                        <div class="border-t border-default pt-3"></div>
+                        <a href="{{ route('profile.edit') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
+                            Profile
+                        </a>
+                        @if($canAccessAdminConsole)
+                            <a href="{{ route('admin.dashboard') }}" class="text-sm font-medium text-accent-primary hover:text-accent-primary transition-colors">
+                                Admin Console
+                            </a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="text-left text-sm font-medium hover:text-accent-primary transition-colors">
+                                Sign Out
+                            </button>
+                        </form>
                     @endauth
                 </div>
             </div>

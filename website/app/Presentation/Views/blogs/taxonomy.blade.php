@@ -55,7 +55,7 @@
                                 @endif
                             </div>
                             <form method="POST" action="{{ route('blogs.categories.destroy', [$blog->id, $category->id]) }}"
-                                  onsubmit="return confirm('Delete this category?')">
+                                  data-modal-confirm-form data-confirm-title="Delete category" data-confirm-message="Delete this category?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-sm text-red-500 hover:underline">Delete</button>
@@ -85,7 +85,7 @@
                 <div class="flex flex-wrap gap-2 border-t border-default pt-4">
                     @foreach($tags as $tag)
                         <form method="POST" action="{{ route('blogs.tags.destroy', [$blog->id, $tag->id]) }}"
-                              onsubmit="return confirm('Delete tag {{ $tag->name }}?')" class="inline-flex">
+                              data-modal-confirm-form data-confirm-title="Delete tag" data-confirm-message="Delete tag {{ $tag->name }}?" class="inline-flex">
                             @csrf
                             @method('DELETE')
                             <span class="badge gap-2">

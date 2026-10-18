@@ -62,7 +62,7 @@
         <a href="{{ route('blogs.taxonomy', $blog->id) }}" class="btn-secondary">Categories &amp; Tags</a>
         <a href="{{ route('blogs.pages.index', $blog->id) }}" class="btn-secondary">Pages</a>
         <a href="{{ route('blogs.domains.index', $blog->id) }}" class="btn-secondary">Domains</a>
-        <form method="POST" action="{{ route('blogs.destroy', $blog->id) }}" class="inline" onsubmit="return confirm('Delete this blog? This cannot be undone.')">
+        <form method="POST" action="{{ route('blogs.destroy', $blog->id) }}" class="inline" data-modal-confirm-form data-confirm-title="Delete blog" data-confirm-message="Delete this blog? This cannot be undone.">
             @csrf
             @method('DELETE')
             <button type="submit" class="text-sm text-red-500 hover:underline">Delete Blog</button>

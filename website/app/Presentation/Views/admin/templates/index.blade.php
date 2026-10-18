@@ -134,8 +134,12 @@ function showTemplateActionError(message) {
     window.showErrorModal?.(message);
 }
 
-function publishTemplate(id) {
-    if (!confirm('Publish this template? Users will be able to choose it for their blogs.')) return;
+async function publishTemplate(id) {
+    const confirmed = await window.requestModalConfirmation(
+        'Publish template',
+        'Publish this template? Users will be able to choose it for their blogs.',
+    );
+    if (!confirmed) return;
 
     fetch(`/admin/templates/${id}/publish`, {
         method: 'POST',
@@ -149,8 +153,12 @@ function publishTemplate(id) {
     .catch(() => showTemplateActionError('Network error. Please try again.'));
 }
 
-function deleteTemplate(id, name) {
-    if (!confirm(`Delete template "${name}"? This cannot be undone.`)) return;
+async function deleteTemplate(id, name) {
+    const confirmed = await window.requestModalConfirmation(
+        'Delete template',
+        `Delete template "${name}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
 
     fetch(`/admin/templates/${id}`, {
         method: 'DELETE',
@@ -171,8 +179,12 @@ function restoreTemplate(id) {
     .catch(() => showTemplateActionError('Network error. Please try again.'));
 }
 
-function permanentlyDeleteTemplate(id, name) {
-    if (!confirm(`Permanently delete template "${name}"? This cannot be undone.`)) return;
+async function permanentlyDeleteTemplate(id, name) {
+    const confirmed = await window.requestModalConfirmation(
+        'Delete template permanently',
+        `Permanently delete template "${name}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
 
     fetch(`/admin/templates/${id}/permanent`, {
         method: 'DELETE',
