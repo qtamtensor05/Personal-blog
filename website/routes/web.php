@@ -28,6 +28,7 @@ use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
 use App\Presentation\Web\Controllers\TaxonomyController;
 use App\Presentation\Web\Controllers\TemplateGalleryController;
+use App\Presentation\Web\Controllers\TemplatePreviewController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -117,6 +118,10 @@ final class User
         ->with('post', $mockPost);
 })->name('posts.show');
 
+Route::get('/template-preview/{slug}', TemplatePreviewController::class)
+    ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->name('templates.preview');
+
 // Public blog home (custom domains come later with blog_domains)
 Route::get('/b/{slug}', PublicBlogController::class)
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
@@ -184,6 +189,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])
         ->whereUuid('notification')
         ->name('notifications.read');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
+        ->whereUuid('notification')
+        ->name('notifications.destroy');
 
     Route::post('/logout', function () {
         auth()->logout();
@@ -345,6 +353,10 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
             Route::get('/templates', [AdminTemplateController::class, 'index'])->name('templates.index');
             Route::get('/templates/create', [AdminTemplateController::class, 'create'])->name('templates.create');
             Route::post('/templates', [AdminTemplateController::class, 'store'])->name('templates.store');
+            Route::post('/templates/{template}/restore', [AdminTemplateController::class, 'restore'])
+                ->whereNumber('template')->name('templates.restore');
+            Route::delete('/templates/{template}/permanent', [AdminTemplateController::class, 'forceDestroy'])
+                ->whereNumber('template')->name('templates.force-destroy');
             Route::get('/templates/{template}/edit', [AdminTemplateController::class, 'edit'])
                 ->whereNumber('template')
                 ->name('templates.edit');

@@ -21,6 +21,7 @@ final readonly class TemplateRecord
         public int $updatedBy,
         public ?int $publishedBy,
         public ?string $publishedAt,
+        public ?string $deletedAt,
         public int $versionNumber,
         public ?TemplateData $publishedData,
         public ?TemplateData $draftData,

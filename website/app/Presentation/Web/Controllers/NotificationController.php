@@ -45,4 +45,14 @@ final class NotificationController extends Controller
 
         return back()->with('status', 'All notifications marked as read.');
     }
+
+    public function destroy(string $notification, Request $request, NotificationRepository $repository): RedirectResponse
+    {
+        abort_unless(
+            $repository->deleteForRecipient($notification, (int) $request->user()->id),
+            404,
+        );
+
+        return back()->with('status', 'Notification deleted.');
+    }
 }

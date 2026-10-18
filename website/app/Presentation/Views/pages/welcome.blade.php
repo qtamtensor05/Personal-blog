@@ -53,7 +53,7 @@
                         Explore articles
                     </x-button>
 
-                    <a href="{{ route('register') }}"
+                    <a href="{{ auth()->check() ? route('blogs.create') : route('register') }}"
                        style="display:inline-flex;align-items:center;justify-content:center;border-radius:.75rem;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);padding:.75rem 1.5rem;font-weight:600;color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)">
                         Start writing
                     </a>

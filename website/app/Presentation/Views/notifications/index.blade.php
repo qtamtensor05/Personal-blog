@@ -34,13 +34,23 @@
                             <p class="mt-1 text-sm text-secondary">{{ $notification->data['message'] ?? '' }}</p>
                             <p class="mt-2 text-xs text-secondary">{{ \Carbon\Carbon::parse($notification->createdAt)->diffForHumans() }}</p>
                         </div>
-                        @if($notification->isUnread())
-                            <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                        <div class="flex shrink-0 items-center gap-2">
+                            @if($notification->isUnread())
+                                <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn-ghost text-sm">Mark read</button>
+                                </form>
+                            @endif
+                                <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}"
+                                    data-modal-confirm-form
+                                    data-confirm-title="Delete notification"
+                                    data-confirm-message="Delete this notification?">
                                 @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn-ghost text-sm">Mark read</button>
+                                @method('DELETE')
+                                <button type="submit" class="btn-ghost text-sm text-red-500">Delete</button>
                             </form>
-                        @endif
+                        </div>
                     </div>
                 </article>
             @endforeach

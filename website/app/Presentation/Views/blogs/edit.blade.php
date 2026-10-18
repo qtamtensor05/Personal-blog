@@ -29,7 +29,7 @@
             <x-input
                 name="slug"
                 label="Slug"
-                hint="Lowercase letters, numbers and hyphens only"
+                hint="Generated from the blog name. Edit it when you need a different URL."
                 :value="old('slug', $blog->slug)"
                 :error="$errors->first('slug')"
                 required
@@ -86,4 +86,18 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const name = document.querySelector('[name=name]');
+    const slug = document.querySelector('[name=slug]');
+    if (!name || !slug) return;
+    let edited = slug.value !== name.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    name.addEventListener('input', () => { if (!edited) slug.value = slugify(name.value); });
+    slug.addEventListener('input', () => { edited = true; });
+})();
+</script>
+@endpush
 @endsection

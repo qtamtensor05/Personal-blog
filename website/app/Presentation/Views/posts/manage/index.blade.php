@@ -23,7 +23,7 @@
         <form method="POST" action="{{ route('blogs.posts.store', $blog->id) }}" class="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
             @csrf
             <x-input name="title" label="Title" required maxlength="160" />
-            <x-input name="slug" label="Slug" required maxlength="160" hint="e.g. my-first-post" />
+            <x-input name="slug" label="Slug" required maxlength="160" hint="Generated from the title; edit if needed." />
             <button type="submit" class="btn-primary">Create &amp; write</button>
         </form>
     </section>
@@ -67,4 +67,18 @@
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const title = document.querySelector('[name=title]');
+    const slug = document.querySelector('[name=slug]');
+    if (!title || !slug) return;
+    let edited = false;
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    title.addEventListener('input', () => { if (!edited) slug.value = slugify(title.value); });
+    slug.addEventListener('input', () => { edited = true; });
+})();
+</script>
+@endpush
 @endsection

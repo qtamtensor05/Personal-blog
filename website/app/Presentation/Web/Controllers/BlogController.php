@@ -18,6 +18,7 @@ use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 final class BlogController extends Controller
@@ -40,7 +41,7 @@ final class BlogController extends Controller
             $id = $create->execute(
                 ownerUserId: (int) $request->user()->id,
                 name: $request->validated('name'),
-                slug: $request->validated('slug'),
+                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
             );
         } catch (BlogSlugTaken $exception) {
@@ -85,7 +86,7 @@ final class BlogController extends Controller
                 actorId: (int) $request->user()->id,
                 blogId: $blog,
                 name: $request->validated('name'),
-                slug: $request->validated('slug'),
+                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
                 status: BlogStatus::from($request->validated('status')),
                 visibility: BlogVisibility::from($request->validated('visibility')),

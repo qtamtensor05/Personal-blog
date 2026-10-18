@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -38,13 +39,16 @@ final class PostController extends Controller
 
     public function store(int $blog, Request $request, ManagePostsService $service): RedirectResponse
     {
-        $data = $request->validate(['title' => ['required', 'string', 'max:160'], 'slug' => self::SLUG]);
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:160'],
+            'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+        ]);
 
         try {
             $id = $service->create(
                 (int) $request->user()->id,
                 $blog,
-                $data['slug'],
+                $data['slug'] ?: Str::slug($data['title']),
                 new PostDraft($data['title'], null, TiptapDocument::empty()),
             );
         } catch (BlogNotFound) {

@@ -17,7 +17,7 @@ final class CreateBlogRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:160'],
-            'slug' => ['required', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
     }

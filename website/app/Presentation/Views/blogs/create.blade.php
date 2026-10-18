@@ -27,7 +27,7 @@
                 name="slug"
                 label="Slug"
                 placeholder="my-awesome-blog"
-                hint="Lowercase letters, numbers and hyphens only. This will be your blog's URL."
+                hint="Generated from the blog name. Edit it when you need a different URL."
                 :error="$errors->first('slug')"
                 :value="old('slug')"
                 required
@@ -47,4 +47,18 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const name = document.querySelector('[name=name]');
+    const slug = document.querySelector('[name=slug]');
+    if (!name || !slug) return;
+    let edited = Boolean(slug.value);
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    name.addEventListener('input', () => { if (!edited) slug.value = slugify(name.value); });
+    slug.addEventListener('input', () => { edited = true; });
+})();
+</script>
+@endpush
 @endsection
