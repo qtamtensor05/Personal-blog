@@ -3,12 +3,15 @@
 @section('title', 'Reset Your Password')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<x-room-background id="login-bg" min-height="100vh" :pan="10" :dolly="0.12" :seconds="24" :scrim="0.65">
+<div class="h-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full">
         <!-- Header -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-primary mb-2">Forgot Your Password?</h1>
-            <p class="text-secondary">No worries! Enter your email and we'll send you reset instructions</p>
+            <h1 class="text-3xl font-bold text-mb-2" style="color: #ffffff;">Forgot Your Password?</h1>
+            <p class="text-secondary" style="color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.5);">
+                No worries! Enter your email and we'll send you reset instructions
+            </p>
         </div>
 
         <!-- Form Card -->
@@ -55,4 +58,5 @@
         </div>
     </div>
 </div>
+</x-room-background>
 @endsection
