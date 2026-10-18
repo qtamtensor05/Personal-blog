@@ -3,12 +3,16 @@
 @section('title', 'Sign In to Your Account')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full">
-        <!-- Header -->
+<x-room-background id="login-bg" min-height="100vh" :pan="10" :dolly="0.12" :seconds="24" :scrim="0.65">
+    <div class="w-full max-w-md py-8">
+        <!-- Header (white text, because it sits on the dark 3D scene) -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-primary mb-2">Welcome Back</h1>
-            <p class="text-secondary">Sign in to continue to your account</p>
+            <h1 class="text-3xl font-bold mb-2" style="color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.5)">
+                Welcome Back
+            </h1>
+            <p style="color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.5)">
+                Sign in to continue to your account
+            </p>
         </div>
 
         <!-- Login Form -->
@@ -45,11 +49,11 @@
                 <!-- Password Field -->
                 <div>
                     <x-input
-                        type="password"
                         name="password"
                         label="Password"
-                        :error="$errors->first('password')"
-                        placeholder="Enter your password"
+                        type="password"
+                        autocomplete="current-password"
+                        :toggle-password="true"
                         required
                     />
                     <div class="mt-2 text-right">
@@ -91,10 +95,10 @@
 
         <!-- Security Note -->
         <div class="mt-6 text-center">
-            <p class="text-xs text-secondary">
+            <p class="text-xs" style="color:rgba(255,255,255,.75);text-shadow:0 1px 6px rgba(0,0,0,.5)">
                 Your connection is secure and your data is encrypted.
             </p>
         </div>
     </div>
-</div>
+</x-room-background>
 @endsection

@@ -3,12 +3,16 @@
 @section('title', 'Create Your Account')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full">
-        <!-- Header -->
+<x-room-background id="register-bg" min-height="100vh" :pan="10" :dolly="0.12" :seconds="24" :scrim="0.65">
+    <div class="w-full max-w-md py-8">
+        <!-- Header (white text, because it sits on the dark 3D scene) -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-primary mb-2">Create Your Account</h1>
-            <p class="text-secondary">Join our community and start sharing your ideas</p>
+            <h1 class="text-3xl font-bold mb-2" style="color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.5)">
+                Create Your Account
+            </h1>
+            <p style="color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.5)">
+                Join our community and start sharing your ideas
+            </p>
         </div>
 
         <!-- Registration Form -->
@@ -112,10 +116,10 @@
 
         <!-- Additional Info -->
         <div class="mt-6 text-center">
-            <p class="text-xs text-secondary">
+            <p class="text-xs" style="color:rgba(255,255,255,.75);text-shadow:0 1px 6px rgba(0,0,0,.5)">
                 By creating an account, you'll receive a verification email to confirm your address.
             </p>
         </div>
     </div>
-</div>
+</x-room-background>
 @endsection
