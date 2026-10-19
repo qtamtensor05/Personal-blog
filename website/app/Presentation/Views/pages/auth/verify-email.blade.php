@@ -61,7 +61,8 @@
                             href="{{ url('/') }}"
                             class="text-accent-primary text-sm hover:underline"
                         >
-                            ← Back to Home
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Back to Home
                         </a>
                     </div>
                 </div>

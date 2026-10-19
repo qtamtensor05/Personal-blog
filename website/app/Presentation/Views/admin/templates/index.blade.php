@@ -238,9 +238,11 @@
             }
 
             async function deleteTemplate(id, name) {
+                const confirmMessage = @js(__('templates.delete_confirm', ['name' => ':name'])).replace(':name', name);
+    
                 const confirmed = await window.requestModalConfirmation(
                     @js(__('templates.delete')),
-                    @js(__('templates.delete_confirm', ['name' => '${name}'])),
+                    confirmMessage
                 );
                 if (!confirmed) return;
 

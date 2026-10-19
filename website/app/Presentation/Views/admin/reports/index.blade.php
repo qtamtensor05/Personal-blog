@@ -28,7 +28,7 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="btn-secondary">Filter</button>
+            <button type="submit" class="btn-primary px-4 py-2 rounded-md">Filter</button>
         </form>
 
         @if (count($reports) === 0)
@@ -95,8 +95,10 @@
                         <a
                             href="{{ route('admin.reports.index', array_merge($filters, ['page' => $page - 1])) }}"
                             class="btn-ghost"
-                            >← Previous</a
                         >
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Previous
+                        </a>
                     @else
                         <span></span>
                     @endif

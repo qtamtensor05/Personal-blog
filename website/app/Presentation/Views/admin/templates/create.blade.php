@@ -3,8 +3,8 @@
 @section ('title', __('templates.create_title') . ' - ' . __('admin.console'))
 
 @section ('content')
-    <div class="container-custom section-spacing max-w-6xl">
-        <div class="mb-8">
+    <div class="container-custom section-spacing max-w-5xl">
+        <div class="mb-8 px-4">
             <h1 class="text-hero mb-2">{{ __('templates.create_title') }}</h1>
             <p class="text-secondary">{{ __('templates.create_help') }}</p>
         </div>
@@ -12,7 +12,7 @@
         @include ('admin.templates._editor')
 
         <div
-            class="grid hidden items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)]"
+            class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)]"
             style="display: none"
         >
             <div class="card">

@@ -14,7 +14,10 @@
 <div class="container-custom section-spacing">
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <a href="{{ route('blogs.show', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← {{ $blog->name }}</a>
+            <a href="{{ route('blogs.show', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ $blog->name }}
+            </a>
             <p class="mt-3 text-sm font-semibold uppercase tracking-wider text-accent-primary">{{ __('template.studio') }}</p>
             <h1 class="text-hero mt-2">{{ $current ? __('template.edit_content', ['region' => $regionLabels[$activeRegion]]) : __('template.choose_template') }}</h1>
             @if($hasUnpublished)<x-badge variant="highlight" class="mt-2">{{ __('template.unpublished_changes') }}</x-badge>@endif
@@ -58,7 +61,10 @@
         <section class="card">
             <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div><p class="text-xs font-semibold uppercase tracking-wider text-accent-primary">{{ $regionLabels[$activeRegion] }}</p><p class="mt-1 text-sm text-secondary">{{ __('template.component_help') }}</p></div>
-                <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost px-3 py-2 text-sm">← {{ __('template.choose_other_region') }}</a>
+                <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost px-3 py-2 text-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    {{ __('template.choose_other_region') }}
+                </a>
             </div>
             <form method="POST" action="{{ route('blogs.design.content', $blog->id) }}" class="space-y-5">
                 @csrf
