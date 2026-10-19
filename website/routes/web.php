@@ -13,6 +13,7 @@ use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\HomeController;
+use App\Presentation\Web\Controllers\InterfaceLocaleController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\NotificationController;
@@ -33,6 +34,7 @@ use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::post('/interface-locale', InterfaceLocaleController::class)->name('interface-locale.update');
 
 Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
 

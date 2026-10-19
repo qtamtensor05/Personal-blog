@@ -201,37 +201,13 @@
                 @endif
 
                 <div class="space-y-1">
-                    <label for="cover_media_id" class="text-primary block text-sm font-medium"
-                        >Ảnh đại diện bài viết</label
-                    >
-                    <select id="cover_media_id" name="cover_media_id" class="input">
-                        <option value="">Chưa chọn ảnh đại diện</option>
-                        @foreach ($mediaAssets as $asset)
-                            <option
-                                value="{{ $asset->id }}"
-                                @selected ($post->coverMediaId === $asset->id)
-                            >
-                                #{{ $asset->id }} - {{ $asset->altText ?: 'Hình ảnh' }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-secondary text-xs">Dùng nút “Thêm hình ảnh” trong nội dung để tải ảnh mới, sau đó lưu hoặc tải lại trang để chọn làm ảnh đại diện.</p>
-                </div>
-                <div class="space-y-1">
-                    <label for="og_media_id" class="text-primary block text-sm font-medium"
-                        >Ảnh chia sẻ mạng xã hội</label
-                    >
-                    <select id="og_media_id" name="og_media_id" class="input">
-                        <option value="">Dùng ảnh đại diện</option>
-                        @foreach ($mediaAssets as $asset)
-                            <option
-                                value="{{ $asset->id }}"
-                                @selected ($post->ogMediaId === $asset->id)
-                            >
-                                #{{ $asset->id }} - {{ $asset->altText ?: 'Hình ảnh' }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @php($coverAsset = collect($mediaAssets)->firstWhere('id', $post->coverMediaId))
+                    <label for="cover_upload" class="text-primary block text-sm font-medium">Ảnh đại diện bài viết</label>
+                    <input type="hidden" id="cover_media_id" name="cover_media_id" value="{{ $post->coverMediaId }}" data-cover-media-id>
+                    <input type="hidden" name="og_media_id" value="{{ $post->ogMediaId }}">
+                    <div data-cover-preview>@if($coverAsset?->secureUrl)<img src="{{ $coverAsset->secureUrl }}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">@endif</div>
+                    <input id="cover_upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="input" data-cover-image-input>
+                    <p class="text-secondary text-xs" data-cover-status>Chọn ảnh, hệ thống sẽ tự tải lên. Sau đó nhấn “Lưu thông tin”.</p>
                 </div>
                 <x-input
                     name="seo_title"

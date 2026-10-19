@@ -86,6 +86,14 @@
 
                 <!-- Auth Actions -->
                 <div class="flex items-center gap-3">
+                    <form method="POST" action="{{ route('interface-locale.update') }}">
+                        @csrf
+                        <label class="sr-only" for="interface-locale">{{ __('template.language') }}</label>
+                        <select id="interface-locale" name="locale" class="input w-auto appearance-none py-1 text-sm" onchange="this.form.submit()">
+                            <option value="vi" @selected(app()->getLocale() === 'vi')>VI</option>
+                            <option value="en" @selected(app()->getLocale() === 'en')>EN</option>
+                        </select>
+                    </form>
                     @guest
                         @include ('layouts.partials.theme-toggle')
                         <a

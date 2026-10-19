@@ -2,18 +2,20 @@
 
 @section ('title', 'Edit — ' . $editable->title)
 
+@php
+    $editorConfig = [
+        'blogId' => $blog->id,
+        'content' => $editable->content->toArray(),
+        'mediaUrls' => (object) $mediaUrls,
+        'draftUrl' => route('blogs.pages.draft', [$blog->id, $page->id]),
+        'mediaUrl' => route('media.store'),
+    ];
+@endphp
+
 @section ('content')
     {{-- Reuses the post editor script; pages have no excerpt field. --}}
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
-        <script type="application/json" data-editor-config>
-            @json([
-                    'blogId' => $blog->id,
-                    'content' => $editable->content->toArray(),
-                    'mediaUrls' => (object) $mediaUrls,
-                    'draftUrl' => route('blogs.pages.draft', [$blog->id, $page->id]),
-                    'mediaUrl' => route('media.store'),
-                ])
-        </script>
+        <script type="application/json" data-editor-config>{{ Illuminate\Support\Js::from($editorConfig) }}</script>
 
         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>

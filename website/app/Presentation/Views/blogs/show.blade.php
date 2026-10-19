@@ -25,31 +25,31 @@
 
         <section class="mb-8">
             <div class="mb-4">
-                <p class="text-accent-primary text-sm font-semibold tracking-wider uppercase">Website management</p>
-                <h2 class="text-primary mt-1 text-2xl font-semibold">Home page and layout</h2>
-                <p class="text-secondary mt-1 text-sm">Edit the content in the fixed positions of the template currently in use.</p>
+                <p class="text-accent-primary text-sm font-semibold tracking-wider uppercase">{{ __('template.management') }}</p>
+                <h2 class="text-primary mt-1 text-2xl font-semibold">{{ __('template.home_and_layout') }}</h2>
+                <p class="text-secondary mt-1 text-sm">{{ __('template.fixed_positions_help') }}</p>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ([
                         'header' => [
-                            'Header',
-                            'Logo, blog name, menu, and top-of-page CTA.',
+                            __('template.header'),
+                            __('template.header_description'),
                             'fa-solid fa-heading'
                         ],
                         'body' => [
-                            'Body / Home page',
-                            'Banner, hero, content, latest posts, and categories.',
+                            __('template.home'),
+                            __('template.home_description'),
                             'fa-solid fa-house'
                         ],
                         'sidebar' => [
-                            'Sidebar',
-                            'Blogger info, latest posts, and newsletter.',
+                            __('template.sidebar'),
+                            __('template.sidebar_description'),
                             'fa-solid fa-table-columns'
                         ],
                         'footer' => [
-                            'Footer',
-                            'Description, links, social networks, and copyright.',
+                            __('template.footer'),
+                            __('template.footer_description'),
                             'fa-solid fa-grip-lines'
                         ]
                     ]
@@ -70,7 +70,7 @@
                         <span
                             class="text-accent-primary mt-4 inline-flex items-center gap-2 text-sm font-medium"
                         >
-                            Manage content
+                            {{ __('template.manage_content') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </span>
                     </a>
@@ -81,21 +81,21 @@
                     >
                         <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
                     </div>
-                    <h3 class="text-primary font-semibold">Posts</h3>
-                    <p class="text-secondary mt-2 text-sm">Create posts, add images, choose categories, and publish content.</p>
+                    <h3 class="text-primary font-semibold">{{ __('template.posts') }}</h3>
+                    <p class="text-secondary mt-2 text-sm">{{ __('template.posts_description') }}</p>
                     <div class="mt-4 flex flex-col items-start gap-2 text-sm font-medium">
                         <a
                             href="{{ route('blogs.posts.index', $blog->id) }}"
                             class="text-accent-primary inline-flex items-center gap-2 hover:underline"
                         >
-                            Add / manage posts
+                            {{ __('template.manage_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
                         <a
                             href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']).'#slot-latest-posts' }}"
                             class="text-accent-primary inline-flex items-center gap-2 hover:underline"
                         >
-                            Configure post display
+                            {{ __('template.configure_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
                     </div>
@@ -104,19 +104,13 @@
                     href="{{ route('blogs.media.index', $blog->id) }}"
                     class="card group hover:border-accent-primary block transition hover:-translate-y-0.5"
                 >
-                    <div
-                        class="bg-surface-secondary text-accent-primary mb-4 flex h-10 w-10 items-center justify-center rounded-md"
-                    >
+                    <div class="bg-surface-secondary text-accent-primary mb-4 flex h-10 w-10 items-center justify-center rounded-md">
                         <i class="fa-solid fa-photo-film" aria-hidden="true"></i>
                     </div>
-                    <h3 class="text-primary group-hover:text-accent-primary font-semibold">
-                        Media
-                    </h3>
-                    <p class="text-secondary mt-2 text-sm">Upload and manage images and videos used in templates and posts.</p>
-                    <span
-                        class="text-accent-primary mt-4 inline-flex items-center gap-2 text-sm font-medium"
-                    >
-                        Open Media library
+                    <h3 class="text-primary group-hover:text-accent-primary font-semibold">{{ __('template.media_library') }}</h3>
+                    <p class="text-secondary mt-2 text-sm">{{ __('template.media_library_description') }}</p>
+                    <span class="text-accent-primary mt-4 inline-flex items-center gap-2 text-sm font-medium">
+                        {{ __('template.open_media_library') }}
                         <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                     </span>
                 </a>
@@ -125,23 +119,23 @@
 
         <div class="mb-8">
             <div class="card">
-                <h2 class="text-primary mb-4 text-lg font-semibold">View Public Site</h2>
-                <p class="text-secondary mb-4 text-sm">See how your blog looks to visitors.</p>
+                <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('template.view_site') }}</h2>
+                <p class="text-secondary mb-4 text-sm">{{ __('template.view_site_description') }}</p>
                 <a
                     href="{{ route('public.blog', $blog->slug) }}"
                     target="_blank"
                     rel="noopener"
                     class="btn-secondary text-sm"
                 >
-                    Preview Blog
+                    {{ __('template.open_blog') }}
                 </a>
             </div>
         </div>
 
         <div class="border-default flex items-center gap-3 border-t pt-6">
-            <a href="{{ route('blogs.edit', $blog->id) }}" class="btn-secondary">Edit Blog Info</a>
+            <a href="{{ route('blogs.edit', $blog->id) }}" class="btn-secondary">{{ __('template.edit_blog') }}</a>
             <a href="{{ route('blogs.taxonomy', $blog->id) }}" class="btn-secondary"
-                >Categories &amp; Tags</a
+                >{{ __('template.categories') }}</a
             >
             <form
                 method="POST"
@@ -154,7 +148,7 @@
                 @csrf
                 @method ('DELETE')
                 <button type="submit" class="text-sm text-red-500 hover:underline">
-                    Delete Blog
+                    {{ __('template.delete_blog') }}
                 </button>
             </form>
         </div>
