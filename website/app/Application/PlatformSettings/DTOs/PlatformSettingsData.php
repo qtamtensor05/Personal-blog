@@ -43,7 +43,9 @@ final readonly class PlatformSettingsData
         }
 
         if ($maintenanceBannerEnabled && $maintenanceBannerMessage === '') {
-            throw new DomainException('Maintenance banner message is required when the banner is enabled.');
+            throw new DomainException(
+                'Maintenance banner message is required when the banner is enabled.',
+            );
         }
     }
 

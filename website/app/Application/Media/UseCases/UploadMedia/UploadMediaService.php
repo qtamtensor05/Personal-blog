@@ -35,7 +35,9 @@ final readonly class UploadMediaService implements UploadMediaUseCase
     ): MediaAssetRecord {
         // Mirrors CHECK ck_media_assets_0.
         if (($scope === MediaScope::Blog) !== ($blogId !== null)) {
-            throw new DomainException('blog_id is required for BLOG media and forbidden otherwise.');
+            throw new DomainException(
+                'blog_id is required for BLOG media and forbidden otherwise.',
+            );
         }
 
         $this->policy->authorize($actorId, $scope, $blogId);

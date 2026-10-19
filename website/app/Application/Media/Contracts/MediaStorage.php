@@ -12,7 +12,12 @@ interface MediaStorage
     /**
      * @throws MediaStorageFailed
      */
-    public function upload(string $localPath, string $folder, string $publicId, ?string $mimeType = null): StoredMedia;
+    public function upload(
+        string $localPath,
+        string $folder,
+        string $publicId,
+        ?string $mimeType = null,
+    ): StoredMedia;
 
     /**
      * Deleting an asset that no longer exists is treated as success.

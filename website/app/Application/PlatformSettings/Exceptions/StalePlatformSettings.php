@@ -10,6 +10,8 @@ final class StalePlatformSettings extends DomainException
 {
     public function __construct()
     {
-        parent::__construct('Platform settings were changed by another administrator. Reload and try again.');
+        parent::__construct(
+            'Platform settings were changed by another administrator. Reload and try again.',
+        );
     }
 }

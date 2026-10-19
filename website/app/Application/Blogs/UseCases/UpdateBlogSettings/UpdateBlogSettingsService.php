@@ -45,7 +45,9 @@ final readonly class UpdateBlogSettingsService
             throw new DomainException('Posts per page must be between 1 and 100.');
         }
 
-        foreach (['logo' => $logoMediaId, 'favicon' => $faviconMediaId, 'OG image' => $ogMediaId] as $label => $id) {
+        foreach (
+            ['logo' => $logoMediaId, 'favicon' => $faviconMediaId, 'OG image' => $ogMediaId] as $label => $id
+        ) {
             if ($id !== null && ! $this->media->isUsableForBlog($id, $blogId)) {
                 throw new DomainException("The selected {$label} is not an image of this blog.");
             }

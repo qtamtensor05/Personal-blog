@@ -11,7 +11,10 @@ use DomainException;
 
 final readonly class PublishRegionService
 {
-    public function __construct(private OwnedBlogGuard $guard, private BlogDesignRepository $designs) {}
+    public function __construct(
+        private OwnedBlogGuard $guard,
+        private BlogDesignRepository $designs,
+    ) {}
 
     public function execute(int $actorId, int $blogId, string $region): void
     {

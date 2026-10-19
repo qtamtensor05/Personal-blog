@@ -39,7 +39,11 @@ final readonly class ManageDomainsService
             throw new DomainException('This domain is already connected to a blog.');
         }
 
-        return $this->domains->create($blogId, $hostname, hash('sha256', $this->token($blogId, $hostname)));
+        return $this->domains->create(
+            $blogId,
+            $hostname,
+            hash('sha256', $this->token($blogId, $hostname)),
+        );
     }
 
     public function verify(int $actorId, int $blogId, int $domainId): bool
@@ -56,7 +60,11 @@ final readonly class ManageDomainsService
         // The stored hash must also match, so a changed app key cannot verify an old record.
         $verified = $found && hash_equals($domain->verificationTokenHash, hash('sha256', $token));
 
-        $this->domains->setStatus($blogId, $domainId, $verified ? DomainStatus::Verified : DomainStatus::Failed);
+        $this->domains->setStatus(
+            $blogId,
+            $domainId,
+            $verified ? DomainStatus::Verified : DomainStatus::Failed,
+        );
 
         return $verified;
     }
@@ -66,7 +74,10 @@ final readonly class ManageDomainsService
         $domain = $this->require($actorId, $blogId, $domainId);
 
         // DISABLED domains were verified before, so they can be switched back on.
-        if (! in_array($domain->status, [DomainStatus::Verified, DomainStatus::Disabled], true) || $domain->verifiedAt === null) {
+        if (
+            ! in_array($domain->status, [DomainStatus::Verified, DomainStatus::Disabled], true) ||
+            $domain->verifiedAt === null
+        ) {
             throw new DomainException('Verify the domain before activating it.');
         }
 
@@ -107,12 +118,14 @@ final readonly class ManageDomainsService
     {
         $this->guard->ensure($actorId, $blogId);
 
-        return $this->domains->find($blogId, $domainId) ?? throw new DomainException('Domain not found.');
+        return $this->domains->find($blogId, $domainId) ??
+            throw new DomainException('Domain not found.');
     }
 
     private function token(int $blogId, string $hostname): string
     {
-        return 'pbv-'.substr(hash_hmac('sha256', "blog-domain:{$blogId}:{$hostname}", $this->secret), 0, 40);
+        return 'pbv-'.
+            substr(hash_hmac('sha256', "blog-domain:{$blogId}:{$hostname}", $this->secret), 0, 40);
     }
 
     private function txtName(string $hostname): string
@@ -124,15 +137,22 @@ final readonly class ManageDomainsService
     {
         $hostname = rtrim(strtolower(trim($hostname)), '.');
 
-        $valid = strlen($hostname) <= 253
-            && preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $hostname) === 1;
+        $valid =
+            strlen($hostname) <= 253 &&
+            preg_match(
+                '/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/',
+                $hostname,
+            ) === 1;
 
         if (! $valid) {
             throw new DomainException('Enter a domain name such as blog.example.com.');
         }
 
         // The platform's own host (and its subdomains) cannot be claimed by a blog.
-        if ($hostname === $this->platformHost || str_ends_with($hostname, '.'.$this->platformHost)) {
+        if (
+            $hostname === $this->platformHost ||
+            str_ends_with($hostname, '.'.$this->platformHost)
+        ) {
             throw new DomainException('This domain belongs to the platform.');
         }
 

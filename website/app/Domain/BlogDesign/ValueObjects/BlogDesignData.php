@@ -31,20 +31,47 @@ final readonly class BlogDesignData implements JsonSerializable
         public string $layout = TemplateLayouts::DEFAULT,
     ) {}
 
-    public static function fromTemplate(int $templateId, int $templateVersion, TemplateData $data): self
-    {
-        return new self($templateId, $templateVersion, $data->sections, $data->designTokens, $data->postLayout, [], $data->layout);
+    public static function fromTemplate(
+        int $templateId,
+        int $templateVersion,
+        TemplateData $data,
+    ): self {
+        return new self(
+            $templateId,
+            $templateVersion,
+            $data->sections,
+            $data->designTokens,
+            $data->postLayout,
+            [],
+            $data->layout,
+        );
     }
 
     public function withDesignTokens(TemplateDesignTokens $tokens): self
     {
-        return new self($this->templateId, $this->templateVersion, $this->sections, $tokens, $this->postLayout, $this->slotContent, $this->layout);
+        return new self(
+            $this->templateId,
+            $this->templateVersion,
+            $this->sections,
+            $tokens,
+            $this->postLayout,
+            $this->slotContent,
+            $this->layout,
+        );
     }
 
     /** @param array<string, array<string, mixed>> $content */
     public function withSlotContent(array $content): self
     {
-        return new self($this->templateId, $this->templateVersion, $this->sections, $this->designTokens, $this->postLayout, $content, $this->layout);
+        return new self(
+            $this->templateId,
+            $this->templateVersion,
+            $this->sections,
+            $this->designTokens,
+            $this->postLayout,
+            $content,
+            $this->layout,
+        );
     }
 
     public function hasSlotContent(): bool
@@ -60,7 +87,10 @@ final readonly class BlogDesignData implements JsonSerializable
         return [
             'templateId' => $this->templateId,
             'templateVersion' => $this->templateVersion,
-            'sections' => array_map(fn (TemplateSectionConfig $s) => $s->jsonSerialize(), $this->sections),
+            'sections' => array_map(
+                fn (TemplateSectionConfig $s) => $s->jsonSerialize(),
+                $this->sections,
+            ),
             'designTokens' => $this->designTokens->jsonSerialize(),
             'postLayout' => $this->postLayout->jsonSerialize(),
             'slotContent' => $this->slotContent,
@@ -76,7 +106,10 @@ final readonly class BlogDesignData implements JsonSerializable
         return new self(
             templateId: (int) $data['templateId'],
             templateVersion: (int) $data['templateVersion'],
-            sections: array_map(fn (array $s) => TemplateSectionConfig::fromArray($s), $data['sections']),
+            sections: array_map(
+                fn (array $s) => TemplateSectionConfig::fromArray($s),
+                $data['sections'],
+            ),
             designTokens: TemplateDesignTokens::fromArray($data['designTokens']),
             postLayout: TemplatePostLayout::fromArray(
                 is_array($data['postLayout'] ?? null) ? $data['postLayout'] : [],

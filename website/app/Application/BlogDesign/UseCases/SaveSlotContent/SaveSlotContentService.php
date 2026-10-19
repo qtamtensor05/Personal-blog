@@ -46,21 +46,26 @@ final readonly class SaveSlotContentService
             $slotValues = array_intersect_key($values, $allowed);
             foreach (['mediaIds', 'categoryIds'] as $listField) {
                 if (isset($slotValues[$listField]) && is_string($slotValues[$listField])) {
-                    $slotValues[$listField] = array_values(array_filter(array_map('intval', explode(',', $slotValues[$listField]))));
+                    $slotValues[$listField] = array_values(
+                        array_filter(array_map('intval', explode(',', $slotValues[$listField]))),
+                    );
                 }
             }
-            foreach (array_filter([
-                $slotValues['mediaId'] ?? null,
-                ...($slotValues['mediaIds'] ?? []),
-            ]) as $mediaId) {
+            foreach (
+                array_filter([$slotValues['mediaId'] ?? null, ...$slotValues['mediaIds'] ?? []]) as $mediaId
+            ) {
                 if (! $this->media->isUsableForBlog((int) $mediaId, $blogId)) {
-                    throw new DomainException('Selected media does not belong to this blog or is not ready.');
+                    throw new DomainException(
+                        'Selected media does not belong to this blog or is not ready.',
+                    );
                 }
             }
-            foreach (array_filter([
-                $slotValues['categoryId'] ?? null,
-                ...($slotValues['categoryIds'] ?? []),
-            ]) as $categoryId) {
+            foreach (
+                array_filter([
+                    $slotValues['categoryId'] ?? null,
+                    ...$slotValues['categoryIds'] ?? [],
+                ]) as $categoryId
+            ) {
                 if ($this->taxonomy->findCategory($blogId, (int) $categoryId) === null) {
                     throw new DomainException('Selected category does not belong to this blog.');
                 }

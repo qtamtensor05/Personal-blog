@@ -30,7 +30,9 @@ final readonly class ApplyTemplateService
 
         $existing = $this->designs->find($blogId);
         if ($existing?->draftData !== null || $existing?->publishedData !== null) {
-            throw new DomainException('This blog already has a template. Its fixed layout cannot be changed.');
+            throw new DomainException(
+                'This blog already has a template. Its fixed layout cannot be changed.',
+            );
         }
 
         $template = $this->templates->find($templateId);
@@ -46,7 +48,11 @@ final readonly class ApplyTemplateService
 
         $this->designs->saveDraft(
             $blogId,
-            BlogDesignData::fromTemplate($template->id, $template->versionNumber, $template->publishedData),
+            BlogDesignData::fromTemplate(
+                $template->id,
+                $template->versionNumber,
+                $template->publishedData,
+            ),
             $actorId,
         );
     }

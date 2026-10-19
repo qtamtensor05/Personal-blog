@@ -18,8 +18,14 @@ final readonly class ManageTaxonomyService
         private TaxonomyRepository $taxonomy,
     ) {}
 
-    public function createCategory(int $actorId, int $blogId, string $name, string $slug, ?string $description, ?int $parentId): int
-    {
+    public function createCategory(
+        int $actorId,
+        int $blogId,
+        string $name,
+        string $slug,
+        ?string $description,
+        ?int $parentId,
+    ): int {
         $this->guard->ensure($actorId, $blogId);
         $this->ensureCategorySlugFree($blogId, $slug);
         $this->ensureParentValid($blogId, null, $parentId);
@@ -42,7 +48,15 @@ final readonly class ManageTaxonomyService
         $this->ensureCategorySlugFree($blogId, $slug, $categoryId);
         $this->ensureParentValid($blogId, $categoryId, $parentId);
 
-        $this->taxonomy->updateCategory($blogId, $categoryId, $name, $slug, $description, $parentId, $isActive);
+        $this->taxonomy->updateCategory(
+            $blogId,
+            $categoryId,
+            $name,
+            $slug,
+            $description,
+            $parentId,
+            $isActive,
+        );
     }
 
     public function deleteCategory(int $actorId, int $blogId, int $categoryId): void
@@ -69,8 +83,13 @@ final readonly class ManageTaxonomyService
         return $this->taxonomy->createTag($blogId, $name, $slug);
     }
 
-    public function updateTag(int $actorId, int $blogId, int $tagId, string $name, string $slug): void
-    {
+    public function updateTag(
+        int $actorId,
+        int $blogId,
+        int $tagId,
+        string $name,
+        string $slug,
+    ): void {
         $this->guard->ensure($actorId, $blogId);
 
         if ($this->taxonomy->findTag($blogId, $tagId) === null) {

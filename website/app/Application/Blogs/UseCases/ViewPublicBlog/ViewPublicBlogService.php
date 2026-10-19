@@ -45,7 +45,9 @@ final readonly class ViewPublicBlogService
         }
 
         $isOwner = $viewerId !== null && $viewerId === $blog->ownerUserId;
-        $isPublic = $blog->status === BlogStatus::Published && $blog->visibility !== BlogVisibility::Private;
+        $isPublic =
+            $blog->status === BlogStatus::Published &&
+            $blog->visibility !== BlogVisibility::Private;
 
         if (! $isPublic && ! $isOwner) {
             throw new BlogNotFound;
@@ -65,7 +67,10 @@ final readonly class ViewPublicBlogService
         $dynamicPostLimit = $settings->postsPerPage;
         foreach ($sections as $section) {
             if (in_array($section->section, ['recent_posts', 'sidebar_posts'], true)) {
-                $dynamicPostLimit = max($dynamicPostLimit, min(12, (int) ($design?->slotContent[$section->key]['limit'] ?? 6)));
+                $dynamicPostLimit = max(
+                    $dynamicPostLimit,
+                    min(12, (int) ($design?->slotContent[$section->key]['limit'] ?? 6)),
+                );
             }
         }
 
@@ -75,7 +80,10 @@ final readonly class ViewPublicBlogService
             sections: $sections,
             designTokens: $design?->designTokens ?? TemplateDesignTokens::default(),
             postLayout: $design?->postLayout ?? TemplatePostLayout::default(),
-            noIndex: $usingDraft || ! $isPublic || $blog->visibility === BlogVisibility::Unlisted || ! $blog->discoverable,
+            noIndex: $usingDraft ||
+                ! $isPublic ||
+                $blog->visibility === BlogVisibility::Unlisted ||
+                ! $blog->discoverable,
             isOwnerPreview: $usingDraft || ! $isPublic,
             // Only PUBLISHED posts; drafts and archived posts are never listed.
             posts: $this->posts->publishedForBlog($blog->id, $dynamicPostLimit),
