@@ -22,6 +22,7 @@
         <meta name="robots" content="noindex,nofollow" />
     @endif
     <meta property="og:title" content="{{ $staticPage->seoTitle ?? $staticPage->title }}" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body
@@ -40,33 +41,26 @@
         @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
-    <phantom-ui
-        loading
-        animation="shimmer"
-        reveal="0.2"
-        aria-label="{{ __('public.loading_content') }}"
-    >
-        <main class="container-custom max-w-3xl py-10">
-            <a
-                href="{{ route('public.blog', $blog->slug) }}"
-                class="text-sm"
-                style="color: var(--d-primary)"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-                {{ $blog->name }}
-            </a>
+    <main data-animate="page" class="container-custom max-w-3xl py-10">
+        <a
+            href="{{ route('public.blog', $blog->slug) }}"
+            class="text-sm"
+            style="color: var(--d-primary)"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            {{ $blog->name }}
+        </a>
 
-            <article class="mt-6">
-                <h1
-                    class="text-hero mb-8"
-                    style="font-family: var(--d-heading-font), sans-serif; color: var(--d-text)"
-                >
-                    {{ $staticPage->title }}
-                </h1>
-                {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
-                <div class="post-content">{!! $html !!}</div>
-            </article>
-        </main>
-    </phantom-ui>
+        <article class="mt-6">
+            <h1
+                class="text-hero mb-8"
+                style="font-family: var(--d-heading-font), sans-serif; color: var(--d-text)"
+            >
+                {{ $staticPage->title }}
+            </h1>
+            {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
+            <div class="post-content">{!! $html !!}</div>
+        </article>
+    </main>
 </body>
 </html>

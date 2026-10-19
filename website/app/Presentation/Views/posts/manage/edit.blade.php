@@ -14,7 +14,7 @@
     @endphp
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
         <script type="application/json" data-editor-config>
-            {{ Illuminate\Support\Js::encode($editorConfig) }}
+            {!! json_encode($editorConfig, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
         </script>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -92,21 +92,28 @@
                         aria-label="{{ __('post.toolbar_label') }}"
                     >
                         @foreach ([
+                                'paragraph' => [__('post.toolbar.paragraph'), 'fa-paragraph'],
                                 'bold' => [__('post.toolbar.bold'), 'fa-bold'],
                                 'italic' => [__('post.toolbar.italic'), 'fa-italic'],
+                                'underline' => [__('post.toolbar.underline'), 'fa-underline'],
+                                'strike' => [__('post.toolbar.strike'), 'fa-strikethrough'],
                                 'h2' => [__('post.toolbar.heading2'), 'fa-heading'],
                                 'h3' => [__('post.toolbar.heading3'), 'fa-heading'],
+                                'h4' => [__('post.toolbar.heading4'), 'fa-heading'],
                                 'bulletList' => [__('post.toolbar.bullet_list'), 'fa-list-ul'],
                                 'orderedList' => [__('post.toolbar.numbered_list'), 'fa-list-ol'],
                                 'blockquote' => [__('post.toolbar.quote'), 'fa-quote-left'],
                                 'codeBlock' => [__('post.toolbar.code'), 'fa-code'],
+                                'horizontalRule' => [__('post.toolbar.divider'), 'fa-minus'],
+                                'undo' => [__('post.toolbar.undo'), 'fa-rotate-left'],
+                                'redo' => [__('post.toolbar.redo'), 'fa-rotate-right'],
                                 'link' => [__('post.toolbar.link'), 'fa-link'],
                                 'image' => [__('post.toolbar.image'), 'fa-image']
                             ]
                             as $command => [$label, $icon])
                             <button
                                 type="button"
-                                class="btn-ghost h-9 w-9 justify-center"
+                                class="btn-ghost editor-toolbar-button h-9 w-9 justify-center"
                                 data-command="{{ $command }}"
                                 aria-label="{{ $label }}"
                                 title="{{ $label }}"
@@ -124,6 +131,7 @@
                     <textarea
                         id="post-content-fallback"
                         data-editor-fallback
+                        hidden
                         class="post-editor-fallback"
                         aria-label="{{ __('post.content') }}"
                         placeholder="{{ __('post.start_writing') }}"
@@ -133,8 +141,15 @@
                             )
                         }}</textarea
                     >
+                    <div data-editor-loading class="post-editor-loading" aria-hidden="true">
+                        <div class="skeleton h-6 w-2/3 rounded-md"></div>
+                        <div class="skeleton h-4 w-full rounded-md"></div>
+                        <div class="skeleton h-4 w-11/12 rounded-md"></div>
+                        <div class="skeleton h-4 w-4/5 rounded-md"></div>
+                        <div class="skeleton mt-6 h-28 w-full rounded-md"></div>
+                    </div>
                     <div data-editor></div>
-                    <p class="text-secondary text-xs">{{ __('post.content_help') }}</p>
+                    <p class="text-secondary mt-2 text-xs">{{ __('post.content_help') }}</p>
                 </div>
             </div>
 
@@ -287,64 +302,6 @@
 
 @push ('scripts')
     <script>
-        (() => {
-            const root = document.querySelector('[data-post-editor]');
-            <textarea
-                id="post-content-fallback"
-                data-editor-fallback
-                class="post-editor-fallback"
-                aria-label="{{ __('post.content') }}"
-                placeholder="{{ __('post.start_writing') }}"
-            >
-                {{
-            $editable->content->plainText(
-                20000,
-            )
-        }}
-            </textarea>;
-            if (!root || !fallback) return;
-            const config = JSON.parse(root.querySelector('[data-editor-config]').textContent);
-            const title = root.querySelector('[name="title"]');
-            const status = root.querySelector('[data-save-status]');
-            let timer;
-            const saveFallback = async () => {
-                const paragraphs = fallback.value
-                    .split(/\n+/)
-                    .map((text) => ({
-                        type: 'paragraph',
-                        ...(text ? { content: [{ type: 'text', text }] } : {}),
-                    }));
-                status.textContent = 'Saving.';
-                try {
-                    const response = await fetch(config.draftUrl, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        },
-                        body: JSON.stringify({
-                            title: title.value,
-                            content: { type: 'doc', content: paragraphs },
-                        }),
-                    });
-                    if (!response.ok) throw new Error('Could not save the post content.');
-                    status.textContent = 'Draft saved';
-                } catch (error) {
-                    status.textContent = error.message;
-                    status.classList.add('text-red-500');
-                }
-            };
-            const schedule = () => {
-                status.textContent = 'Unsaved changes';
-                clearTimeout(timer);
-                timer = setTimeout(saveFallback, 900);
-            };
-            fallback.addEventListener('input', schedule);
-            title.addEventListener('input', schedule);
-        })();
-    </script>
-    <script>
         (function () {
             const title = document.getElementById('title');
             const slug = document.querySelector('[name=slug]');
@@ -377,10 +334,10 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = {{
-            Illuminate\Support\Js::from(
-                route('blogs.posts.status', [$blog->id, $post->id]),
-            )
-        }};
+                    Illuminate\Support\Js::from(
+                        route('blogs.posts.status', [$blog->id, $post->id]),
+                    )
+                }};
                 form.innerHTML =
                     '<input name="_token" value="{{ csrf_token() }}"><input name="_method" value="PATCH"><input name="status" value="DRAFT">';
                 document.body.append(form);

@@ -10,14 +10,15 @@
     'isFeatured' => false,
 ])
 
-<article class="card group transition-shadow hover:shadow-md">
+<article data-animate="post-card" class="card group transition-shadow hover:shadow-md">
     @if ($image)
         <a href="{{ $url }}">
-            <div class="aspect-video overflow-hidden rounded-t-lg">
+            <div data-image-frame class="media-frame aspect-video overflow-hidden rounded-t-lg">
                 <img
                     src="{{ $image }}"
                     alt="{{ $title }}"
-                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    class="media-image h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    data-image-reveal
                     loading="lazy"
                 />
             </div>

@@ -27,6 +27,7 @@
     @if ($cover)
         <meta property="og:image" content="{{ $cover['url'] }}" />
     @endif
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body
@@ -45,64 +46,60 @@
         @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
-    <phantom-ui
-        loading
-        animation="shimmer"
-        reveal="0.2"
-        aria-label="{{ __('public.loading_post') }}"
-    >
-        <main class="container-custom {{ $contentWidthClass }} py-10">
-            @if ($layout->showBlogName)
-                <a
-                    href="{{ route('public.blog', $blog->slug) }}"
-                    class="text-sm"
-                    style="color: var(--d-primary)"
-                    ><i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
-                </a>
-            @endif
+    <main data-animate="page" class="container-custom {{ $contentWidthClass }} py-10">
+        @if ($layout->showBlogName)
+            <a
+                href="{{ route('public.blog', $blog->slug) }}"
+                class="text-sm"
+                style="color: var(--d-primary)"
+                ><i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
+            </a>
+        @endif
 
-            <article
-                class="{{ $layout->showBlogName ? 'mt-6' : '' }} {{ $articleClass }}"
-                @if ($layout->variant === 'card') style="border-color: var(--d-secondary)" @endif
-            >
-                <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
-                    <h1
-                        class="text-hero mb-3"
-                        style="font-family: var(--d-heading-font), sans-serif; color: var(--d-text)"
+        <article
+            class="{{ $layout->showBlogName ? 'mt-6' : '' }} {{ $articleClass }}"
+            @if ($layout->variant === 'card') style="border-color: var(--d-secondary)" @endif
+        >
+            <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
+                <h1
+                    class="text-hero mb-3"
+                    style="font-family: var(--d-heading-font), sans-serif; color: var(--d-text)"
+                >
+                    {{ $post->title }}
+                </h1>
+                @if ($layout->showPublishedDate && $post->publishedAt)
+                    <time
+                        datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"
+                        class="text-sm opacity-70"
                     >
-                        {{ $post->title }}
-                    </h1>
-                    @if ($layout->showPublishedDate && $post->publishedAt)
-                        <time
-                            datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"
-                            class="text-sm opacity-70"
-                        >
-                            {{
-                                \Carbon\Carbon::parse($post->publishedAt)
-                                    ->timezone($settings->timezone)
-                                    ->format('d/m/Y')
-                            }}
-                        </time>
-                    @endif
-                </header>
+                        {{
+                            \Carbon\Carbon::parse($post->publishedAt)
+                                ->timezone($settings->timezone)
+                                ->format('d/m/Y')
+                        }}
+                    </time>
+                @endif
+            </header>
 
-                @if ($layout->showCover && $cover)
+            @if ($layout->showCover && $cover)
+                <div data-image-frame class="media-frame mb-8 overflow-hidden rounded-md">
                     <img
                         src="{{ $cover['url'] }}"
                         alt=""
-                        class="mb-8 w-full rounded-md"
+                        class="media-image block h-auto w-full rounded-md"
+                        data-image-reveal
                         @if ($cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
                     />
-                @endif
+                </div>
+            @endif
 
-                {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
-                <div class="post-content">{!! $html !!}</div>
-            </article>
+            {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
+            <div class="post-content">{!! $html !!}</div>
+        </article>
 
-            <div class="mt-12 border-t pt-6" style="border-color: var(--d-secondary)">
-                @include ('public.partials.report-form', ['blog' => $blog, 'postSlug' => $post->slug])
-            </div>
-        </main>
-    </phantom-ui>
+        <div class="mt-12 border-t pt-6" style="border-color: var(--d-secondary)">
+            @include ('public.partials.report-form', ['blog' => $blog, 'postSlug' => $post->slug])
+        </div>
+    </main>
 </body>
 </html>

@@ -512,25 +512,25 @@
             if (target?.tagName === 'DETAILS') target.open = true;
             const csrf = document.querySelector('meta[name="csrf-token"]').content;
             const uploadUrl = {{
-            Illuminate\Support\Js::from(
-                route('media.store'),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    route('media.store'),
+                )
+            }};
             const blogId = {{
-            Illuminate\Support\Js::from(
-                $blog->id,
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    $blog->id,
+                )
+            }};
             const uploadText = {{
-            Illuminate\Support\Js::from(
-                __('template.uploading', ['file' => '__FILE__']),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    __('template.uploading', ['file' => '__FILE__']),
+                )
+            }};
             const uploadedText = {{
-            Illuminate\Support\Js::from(
-                __('template.uploaded_save'),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    __('template.uploaded_save'),
+                )
+            }};
 
             async function upload(file, status) {
                 const body = new FormData();

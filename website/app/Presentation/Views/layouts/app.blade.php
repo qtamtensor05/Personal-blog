@@ -35,6 +35,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     />
 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 
     @stack ('styles')
@@ -302,11 +303,9 @@
     </header>
 
     <!-- Main Content -->
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('ui.loading_page') }}">
-        <main>
-            @yield ('content')
-        </main>
-    </phantom-ui>
+    <main data-animate="page">
+        @yield ('content')
+    </main>
 
     <!-- Footer -->
     <footer class="bg-surface border-default mt-16 border-t">
