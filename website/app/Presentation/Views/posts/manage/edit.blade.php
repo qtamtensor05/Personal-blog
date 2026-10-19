@@ -15,6 +15,7 @@
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
         <script type="application/json" data-editor-config>
             {!! Illuminate\Support\Js::encode($editorConfig) !!}
+
         </script>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -22,6 +23,7 @@
                 <a onclick="window.history.back(); return false;" href="{{ route('blogs.posts.index', $blog->id) }}" class="btn-ghost" aria-label="{{ __('post.editor_back') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('post.editor_back') }}</a>
                 <span class="text-secondary text-sm" data-save-status aria-live="polite">{{ __('post.saved') }}</span>
             </div>
+
         </div>
 
         @if (session('status'))
@@ -67,11 +69,17 @@
                     <div class="border-default flex flex-wrap gap-1 rounded-t-xl border border-b-0 bg-surface-secondary p-2" role="toolbar" aria-label="{{ __('post.toolbar_label') }}">
                         @foreach ([
                             'bold' => [__('post.toolbar.bold'), 'fa-bold'], 'italic' => [__('post.toolbar.italic'), 'fa-italic'],
+                            'paragraph' => [__('post.toolbar.paragraph'), 'fa-paragraph'],
+                            'underline' => [__('post.toolbar.underline'), 'fa-underline'],
+                            'strike' => [__('post.toolbar.strike'), 'fa-strikethrough'],
                             'h2' => [__('post.toolbar.heading2'), 'fa-heading'], 'h3' => [__('post.toolbar.heading3'), 'fa-heading'],
+                            'h4' => [__('post.toolbar.heading4'), 'fa-heading'],
                             'alignLeft' => [__('post.toolbar.align_left'), 'fa-align-left'], 'alignCenter' => [__('post.toolbar.align_center'), 'fa-align-center'],
                             'alignRight' => [__('post.toolbar.align_right'), 'fa-align-right'], 'alignJustify' => [__('post.toolbar.align_justify'), 'fa-align-justify'],
                             'bulletList' => [__('post.toolbar.bullet_list'), 'fa-list-ul'], 'orderedList' => [__('post.toolbar.numbered_list'), 'fa-list-ol'],
                             'blockquote' => [__('post.toolbar.quote'), 'fa-quote-left'], 'codeBlock' => [__('post.toolbar.code'), 'fa-code'],
+                            'horizontalRule' => [__('post.toolbar.divider'), 'fa-minus'],
+                            'undo' => [__('post.toolbar.undo'), 'fa-rotate-left'], 'redo' => [__('post.toolbar.redo'), 'fa-rotate-right'],
                             'link' => [__('post.toolbar.link'), 'fa-link'], 'image' => [__('post.toolbar.image'), 'fa-image']
                         ] as $command => [$label, $icon])
                             <button type="button" class="btn-ghost h-9 w-9 justify-center" data-command="{{ $command }}" aria-label="{{ $label }}" title="{{ $label }}">
@@ -87,12 +95,25 @@
                             role="status" aria-live="polite"></span>
                     </div>
                     <input type="hidden" name="content" data-post-content value="{{ json_encode($editable->content->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}" />
+                    <textarea
+                        data-editor-fallback
+                        hidden
+                        class="post-editor-fallback"
+                        aria-label="{{ __('post.content') }}"
+                        placeholder="{{ __('post.start_writing') }}"
+                    >{{ $editable->content->plainText(20000) }}</textarea>
+                    <div data-editor-loading class="post-editor-loading" aria-hidden="true">
+                        <div class="skeleton h-6 w-2/3 rounded-md"></div>
+                        <div class="skeleton h-4 w-full rounded-md"></div>
+                        <div class="skeleton h-4 w-11/12 rounded-md"></div>
+                        <div class="skeleton h-4 w-4/5 rounded-md"></div>
+                        <div class="skeleton mt-6 h-28 w-full rounded-md"></div>
+                    </div>
                     <div id="post-content-editor" data-editor tabindex="0" role="textbox" aria-multiline="true" aria-label="{{ __('post.content') }}"></div>
                     <p class="text-secondary text-xs">{{ __('post.content_help') }}</p>
                     @if ($errors->has('content')) <p class="text-sm text-red-600" role="alert">{{ $errors->first('content') }} Nhập nội dung trong khung soạn thảo phía trên; có thể dùng nút Xem trước để kiểm tra.</p> @endif
+
                 </div>
-
-
             </div>
 
             {{-- Post details --}}
@@ -101,9 +122,12 @@
 
                 <x-input name="slug_editor" :label="__('post.slug')" :value="old('slug', $post->slug)" :error="$errors->first('slug')" required maxlength="160" data-publish-slug-source />
 
+
                 @if (count($categories) > 0)
                     <fieldset class="space-y-1">
-                        <legend class="text-primary text-sm font-medium">{{ __('post.categories') }}</legend>
+                        <legend class="text-primary text-sm font-medium">
+                            {{ __('post.categories') }}
+                        </legend>
                         @foreach ($categories as $category)
                             <label class="flex items-center gap-2 text-sm">
                                 <input
@@ -120,7 +144,9 @@
 
                 @if (count($tags) > 0)
                     <fieldset class="space-y-1">
-                        <legend class="text-primary text-sm font-medium">{{ __('post.tags') }}</legend>
+                        <legend class="text-primary text-sm font-medium">
+                            {{ __('post.tags') }}
+                        </legend>
                         <div class="flex flex-wrap gap-x-4 gap-y-1">
                             @foreach ($tags as $tag)
                                 <label class="flex items-center gap-2 text-sm">
@@ -143,6 +169,7 @@
                     <input type="hidden" id="cover_media_id" value="{{ $post->coverMediaId }}" data-cover-media-id>
                     <div data-cover-preview>@if($coverAsset?->secureUrl)<img src="{{ $coverAsset->secureUrl }}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">@endif</div>
                     <input id="cover_upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="input" data-cover-image-input>
+
                     <p class="text-secondary text-xs" data-cover-status>{{ __('post.cover_help') }}</p>
                 </div>
                 <x-input
@@ -170,6 +197,7 @@
                 </label>
 
             </section>
+
         </div>
             <div class="mt-6 flex justify-end">
                 <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane mr-2" aria-hidden="true"></i>{{ __('post.publish') }}</button>
@@ -186,7 +214,12 @@
         >
             @csrf
             @method ('DELETE')
-            <button type="submit" class="text-sm text-red-500 hover:underline">{{ __('post.delete') }}</button>
+            <button
+                type="submit"
+                class="rounded-md border border-red-500 px-4 py-2 text-sm text-red-500 hover:underline"
+            >
+                {{ __('post.delete') }}
+            </button>
         </form>
     </div>
 @endsection
@@ -222,8 +255,18 @@
         document.querySelector('[data-post-visibility]')?.addEventListener('change', async (event) => {
             const value = event.target.value;
             if (value === 'DRAFT') {
-                const form = document.createElement('form'); form.method = 'POST'; form.action = {{ Illuminate\Support\Js::from(route('blogs.posts.status', [$blog->id, $post->id])) }};
-                form.innerHTML = '<input name="_token" value="{{ csrf_token() }}"><input name="_method" value="PATCH"><input name="status" value="DRAFT">'; document.body.append(form); form.submit(); return;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = {{
+                    Illuminate\Support\Js::from(
+                        route('blogs.posts.status', [$blog->id, $post->id]),
+                    )
+                }};
+                form.innerHTML =
+                    '<input name="_token" value="{{ csrf_token() }}"><input name="_method" value="PATCH"><input name="status" value="DRAFT">';
+                document.body.append(form);
+                form.submit();
+                return;
             }
             if (value === 'PUBLIC') document.querySelector('[data-publish-form]')?.requestSubmit();
         });

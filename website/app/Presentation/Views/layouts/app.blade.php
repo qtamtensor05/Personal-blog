@@ -35,6 +35,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     />
 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 
     @stack ('styles')
@@ -51,9 +52,9 @@
                 <!-- Logo/Brand -->
                 <a
                     href="{{ url('/') }}"
-                    class="text-primary hover:text-accent-primary flex items-center gap-2 text-lg font-semibold transition-colors"
+                    class="hover:text-accent-primary flex items-center justify-center gap-2 text-lg font-semibold transition-colors"
                 >
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center">
+<span class="flex h-8 w-8 shrink-0 items-center justify-center">
                         <i class="fa-solid fa-book-open text-xl leading-none" aria-hidden="true"></i>
                     </span>
                     <span>{{ config('app.name', 'Blog') }}</span>
@@ -87,10 +88,19 @@
                 <div class="flex items-center gap-3">
                     <form method="POST" action="{{ route('interface-locale.update') }}">
                         @csrf
-                        <label class="sr-only" for="interface-locale">{{ __('template.language') }}</label>
-                        <select id="interface-locale" name="locale" class="input w-auto appearance-none py-1 text-sm" onchange="this.form.submit()">
-                            <option value="vi" @selected(app()->getLocale() === 'vi')>VI</option>
-                            <option value="en" @selected(app()->getLocale() === 'en')>EN</option>
+                        <label
+                            class="sr-only"
+                            for="interface-locale"
+                            >{{ __('template.language') }}</label
+                        >
+                        <select
+                            id="interface-locale"
+                            name="locale"
+                            class="input w-auto appearance-none py-1 text-sm"
+                            onchange="this.form.submit()"
+                        >
+                            <option value="vi" @selected (app()->getLocale() === 'vi')>VI</option>
+                            <option value="en" @selected (app()->getLocale() === 'en')>EN</option>
                         </select>
                     </form>
                     @guest
@@ -283,11 +293,9 @@
     </header>
 
     <!-- Main Content -->
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('ui.loading_page') }}">
-        <main>
-            @yield ('content')
-        </main>
-    </phantom-ui>
+    <main data-animate="page">
+        @yield ('content')
+    </main>
 
     <!-- Footer -->
     <footer class="bg-surface border-default mt-16 border-t">
@@ -308,7 +316,9 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-primary mb-3 text-sm font-semibold">{{ __('ui.quick_links') }}</h4>
+                    <h4 class="text-primary mb-3 text-sm font-semibold">
+                        {{ __('ui.quick_links') }}
+                    </h4>
                     <ul class="space-y-2 text-sm">
                         <li>
                             <a

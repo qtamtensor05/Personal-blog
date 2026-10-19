@@ -47,7 +47,11 @@
                                 <x-badge
                                     :variant="$blog->status->value === 'PUBLISHED' ? 'primary' : 'default'"
                                 >
-                                    {{ __('blog.status_'.$blog->status->value) }}
+                                    {{
+                                        __(
+                                            'blog.status_' . $blog->status->value,
+                                        )
+                                    }}
                                 </x-badge>
                             </div>
                             @if ($blog->description)

@@ -21,7 +21,12 @@
                     @csrf
                     @method ('PUT')
 
-                    <x-input name="name" :label="__('templates.name_label')" :value="$template->name" required />
+                    <x-input
+                        name="name"
+                        :label="__('templates.name_label')"
+                        :value="$template->name"
+                        required
+                    />
 
                     <x-input
                         name="slug"
@@ -52,7 +57,9 @@
 
                     @if ($tokens !== null)
                         <div class="border-default border-t pt-6">
-                            <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('templates.design_tokens') }}</h2>
+                            <h2 class="text-primary mb-4 text-lg font-semibold">
+                                {{ __('templates.design_tokens') }}
+                            </h2>
                             <div class="grid gap-4 md:grid-cols-2">
                                 <x-input
                                     name="primaryColor"
@@ -217,7 +224,11 @@
                                                     name="section_image_positions[]"
                                                     class="input"
                                                 >
-                                                    @foreach (['full' => __('templates.full_width'), 'left' => __('templates.align_left'), 'right' => __('templates.align_right')]
+                                                    @foreach ([
+                                                            'full' => __('templates.full_width'),
+                                                            'left' => __('templates.align_left'),
+                                                            'right' => __('templates.align_right')
+                                                        ]
                                                         as $position => $label)
                                                         <option
                                                             value="{{ $position }}"
@@ -254,7 +265,11 @@
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
                             {{ __('templates.save') }}
                         </button>
-                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">{{ __('templates.cancel') }}</a>
+                        <a
+                            href="{{ route('admin.templates.index') }}"
+                            class="btn-ghost"
+                            >{{ __('templates.cancel') }}</a
+                        >
                     </div>
                 </form>
             </div>
@@ -396,7 +411,7 @@
                 const form = new FormData();
                 form.append('file', file);
                 form.append('scope', 'PLATFORM');
-                status.textContent = @js(__('templates.uploading_image'));
+                status.textContent = @js (__('templates.uploading_image'));
                 try {
                     const response = await fetch('{{ route('media.store') }}', {
                         method: 'POST',
@@ -431,7 +446,7 @@
                 )
                     .map(
                         (field, index) =>
-                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js(__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js(__('templates.choose_section_type'))}</span></div>`,
+                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js (__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js (__('templates.choose_section_type'))}</span></div>`,
                     )
                     .join('');
             }

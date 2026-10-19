@@ -10,14 +10,15 @@
     'isFeatured' => false,
 ])
 
-<article class="card group transition-shadow hover:shadow-md">
+<article data-animate="post-card" class="card group transition-shadow hover:shadow-md">
     @if ($image)
         <a href="{{ $url }}">
-            <div class="aspect-video overflow-hidden rounded-t-lg">
+            <div data-image-frame class="media-frame aspect-video overflow-hidden rounded-t-lg">
                 <img
                     src="{{ $image }}"
                     alt="{{ $title }}"
-                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    class="media-image h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    data-image-reveal
                     loading="lazy"
                 />
             </div>
@@ -29,7 +30,11 @@
         <div class="text-secondary flex items-center gap-3 text-xs">
             @if ($date)
                 <time datetime="{{ date('Y-m-d', strtotime($date)) }}">
-                    {{ \Illuminate\Support\Carbon::parse($date)->locale(app()->getLocale())->translatedFormat('M j, Y') }}
+                    {{
+                        \Illuminate\Support\Carbon::parse($date)
+                            ->locale(app()->getLocale())
+                            ->translatedFormat('M j, Y')
+                    }}
                 </time>
             @endif
 
@@ -39,7 +44,11 @@
             @endif
 
             <span class="text-border">•</span>
-            <span>{{ __('post.minutes_read', ['minutes' => $readTime]) }}</span>
+            <span>{{
+                __('post.minutes_read', [
+                    'minutes' => $readTime,
+                ])
+            }}</span>
         </div>
 
         <!-- Title -->

@@ -36,7 +36,10 @@
                                 <div
                                     class="text-secondary flex h-full w-full items-center justify-center"
                                 >
-                                    <i class="fa-regular fa-image h-16 w-16 opacity-30" aria-hidden="true"></i>
+                                    <i
+                                        class="fa-regular fa-image h-16 w-16 opacity-30"
+                                        aria-hidden="true"
+                                    ></i>
                                 </div>
                             </div>
                         @endif

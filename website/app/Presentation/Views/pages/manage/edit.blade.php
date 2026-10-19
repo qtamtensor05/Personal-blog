@@ -15,7 +15,9 @@
 @section ('content')
     {{-- Reuses the post editor script; pages have no excerpt field. --}}
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
-        <script type="application/json" data-editor-config>{{ Illuminate\Support\Js::from($editorConfig) }}</script>
+        <script type="application/json" data-editor-config>
+            {{ Illuminate\Support\Js::from($editorConfig) }}
+        </script>
 
         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -23,8 +25,10 @@
                     onclick="window.history.back(); return false;"
                     href="{{ route('blogs.pages.index', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
-                    >← Pages</a
                 >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Pages
+                </a>
                 <div class="mt-2 flex items-center gap-2">
                     <x-badge
                         :variant="$page->status->value === 'PUBLISHED' ? 'primary' : 'default'"
@@ -56,7 +60,9 @@
                         @csrf
                         @method ('PATCH')
                         <input type="hidden" name="status" value="DRAFT" />
-                        <button type="submit" class="btn-secondary text-sm">{{ __('pages.unpublish') }}</button>
+                        <button type="submit" class="btn-secondary text-sm">
+                            {{ __('pages.unpublish') }}
+                        </button>
                     </form>
                 @endif
                 <form

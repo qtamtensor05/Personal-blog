@@ -3,7 +3,11 @@
     @if (auth()->id() !== $blog->ownerUserId)
         <details class="text-sm opacity-80">
             <summary class="cursor-pointer">
-                {{ __('public.report_content', ['content' => isset($postSlug) ? __('public.this_post') : __('public.this_blog')]) }}
+                {{
+                    __('public.report_content', [
+                        'content' => isset($postSlug) ? __('public.this_post') : __('public.this_blog'),
+                    ])
+                }}
             </summary>
 
             @if (session('report_status'))
@@ -33,7 +37,9 @@
                     class="textarea min-h-0"
                     placeholder="{{ __('public.report_placeholder') }}"
                 ></textarea>
-                <button type="submit" class="btn-secondary text-sm">{{ __('public.send_report') }}</button>
+                <button type="submit" class="btn-secondary text-sm">
+                    {{ __('public.send_report') }}
+                </button>
             </form>
         </details>
     @endif

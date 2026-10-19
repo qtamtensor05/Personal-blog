@@ -38,7 +38,11 @@ final class PostController extends Controller
             abort(404);
         }
 
-        return view('posts.manage.index', ['blog' => $record, 'posts' => $posts->forBlog($blog), 'deletedPosts' => $posts->deletedForBlog($blog)]);
+        return view('posts.manage.index', [
+            'blog' => $record,
+            'posts' => $posts->forBlog($blog),
+            'deletedPosts' => $posts->deletedForBlog($blog),
+        ]);
     }
 
     public function store(
@@ -316,11 +320,18 @@ final class PostController extends Controller
             return back()->withErrors(['general' => $exception->getMessage()]);
         }
 
-        return redirect()->route('blogs.posts.index', $blog)->with('status', 'Post moved to Recently deleted.');
+        return redirect()
+            ->route('blogs.posts.index', $blog)
+            ->with('status', 'Post moved to Recently deleted.');
     }
 
-    public function restore(int $blog, int $post, Request $request, OwnedBlogGuard $guard, PostRepository $posts): RedirectResponse
-    {
+    public function restore(
+        int $blog,
+        int $post,
+        Request $request,
+        OwnedBlogGuard $guard,
+        PostRepository $posts,
+    ): RedirectResponse {
         try {
             $guard->ensure((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {
@@ -331,8 +342,13 @@ final class PostController extends Controller
         return back()->with('status', 'Post restored.');
     }
 
-    public function forceDestroy(int $blog, int $post, Request $request, OwnedBlogGuard $guard, PostRepository $posts): RedirectResponse
-    {
+    public function forceDestroy(
+        int $blog,
+        int $post,
+        Request $request,
+        OwnedBlogGuard $guard,
+        PostRepository $posts,
+    ): RedirectResponse {
         try {
             $guard->ensure((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {

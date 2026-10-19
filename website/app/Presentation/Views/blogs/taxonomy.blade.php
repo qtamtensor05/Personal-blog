@@ -9,8 +9,10 @@
                 onclick="window.history.back(); return false;"
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← {{ $blog->name }}</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ $blog->name }}
+            </a>
             <h1 class="text-hero mt-2">{{ __('taxonomy.title') }}</h1>
             <p class="text-secondary">{{ __('taxonomy.help') }}</p>
         </div>
@@ -37,18 +39,26 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name" :label="__('taxonomy.name')" :error="$errors->first('name')" required data-slug-source />
+                        <x-input
+                            name="name"
+                            :label="__('taxonomy.name')"
+                            :error="$errors->first('name')"
+                            required
+                            data-slug-source
+                        />
                         <x-input
                             name="slug"
-                             :label="__('taxonomy.slug')"
+                            :label="__('taxonomy.slug')"
                             required
-                             :hint="__('taxonomy.slug_hint')"
+                            :hint="__('taxonomy.slug_hint')"
                             :error="$errors->first('slug')"
                             data-slug-target
                         />
                     </div>
                     <div class="space-y-1">
-                        <label for="parent_id" class="text-primary block text-sm font-medium"
+                        <label
+                            for="parent_id"
+                            class="text-primary block text-sm font-medium"
                             >{{ __('taxonomy.parent') }}</label
                         >
                         <select name="parent_id" id="parent_id" class="input">
@@ -80,7 +90,10 @@
                                         >{{ $category->slug }}</span
                                     >
                                     @if (!$category->isActive)
-                                        <x-badge class="ml-1">{{ __('taxonomy.inactive') }}</x-badge>
+                                        <x-badge
+                                            class="ml-1"
+                                            >{{ __('taxonomy.inactive') }}</x-badge
+                                        >
                                     @endif
                                 </div>
                                 <form
@@ -116,8 +129,21 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name" :label="__('taxonomy.name')" :error="$errors->first('name')" required data-slug-source />
-                        <x-input name="slug" :label="__('taxonomy.slug')" :hint="__('taxonomy.slug_hint')" :error="$errors->first('slug')" required data-slug-target />
+                        <x-input
+                            name="name"
+                            :label="__('taxonomy.name')"
+                            :error="$errors->first('name')"
+                            required
+                            data-slug-source
+                        />
+                        <x-input
+                            name="slug"
+                            :label="__('taxonomy.slug')"
+                            :hint="__('taxonomy.slug_hint')"
+                            :error="$errors->first('slug')"
+                            required
+                            data-slug-target
+                        />
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
                         {{ __('taxonomy.add_tag') }}

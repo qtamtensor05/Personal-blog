@@ -33,7 +33,9 @@
 
             <div class="grid gap-6 lg:grid-cols-2">
                 <section class="card h-fit">
-                    <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('profile.information') }}</h2>
+                    <h2 class="text-primary mb-4 text-lg font-semibold">
+                        {{ __('profile.information') }}
+                    </h2>
                     <div class="mb-6 flex items-center gap-4">
                         @if ($profile->avatarUrl)
                             <img
@@ -70,7 +72,10 @@
                             <p class="text-sm text-red-600">{{ $message }}</p>
                         @enderror
                         <div>
-                            <label class="text-primary mb-1 block text-sm font-medium">{{ __('profile.email') }}</label>
+                            <label
+                                class="text-primary mb-1 block text-sm font-medium"
+                                >{{ __('profile.email') }}</label
+                            >
                             <input
                                 class="input bg-surface-secondary"
                                 value="{{ $profile->email }}"
@@ -83,8 +88,14 @@
 
                 <div class="space-y-6">
                     <section class="card">
-                        <h2 class="text-primary mb-2 text-lg font-semibold">{{ __('profile.image') }}</h2>
-                        <p class="text-secondary mb-4 text-sm">{{ __('profile.image_formats', ['size' => config('media.max_upload_kb') / 1024]) }}</p>
+                        <h2 class="text-primary mb-2 text-lg font-semibold">
+                            {{ __('profile.image') }}
+                        </h2>
+                        <p class="text-secondary mb-4 text-sm">{{
+                            __('profile.image_formats', [
+                                'size' => config('media.max_upload_kb') / 1024,
+                            ])
+                        }}</p>
                         <div class="space-y-4">
                             <input
                                 type="file"
@@ -113,7 +124,9 @@
                     </section>
 
                     <section class="card">
-                        <h2 class="text-primary mb-2 text-lg font-semibold">{{ __('profile.change_password') }}</h2>
+                        <h2 class="text-primary mb-2 text-lg font-semibold">
+                            {{ __('profile.change_password') }}
+                        </h2>
                         <p class="text-secondary mb-4 text-sm">{{ __('profile.password_help') }}</p>
                         <div class="space-y-4">
                             <x-input

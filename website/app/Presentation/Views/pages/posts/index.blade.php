@@ -42,7 +42,10 @@
             @if ($search !== '')
                 <div class="mb-6">
                     <p class="text-secondary text-sm">
-                        {{ __('posts.results_for') }} "<strong class="text-primary">{{ $search }}</strong>"
+                        {{ __('posts.results_for') }} "<strong
+                            class="text-primary"
+                            >{{ $search }}</strong
+                        >"
                         <a
                             href="{{ route('posts.index') }}"
                             class="text-accent-primary ml-2 hover:underline"
@@ -70,7 +73,10 @@
                             :title="__('posts.none_found')"
                             :message="__('posts.none_match')"
                         >
-                            <x-button :href="route('posts.index')">{{ __('posts.view_all') }}</x-button>
+                            <x-button
+                                :href="route('posts.index')"
+                                >{{ __('posts.view_all') }}</x-button
+                            >
                         </x-empty-state>
                     </div>
                 @endforelse

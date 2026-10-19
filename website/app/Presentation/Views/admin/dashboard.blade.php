@@ -13,7 +13,7 @@
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             @if ($canManageUsers)
                 <a href="{{ route('admin.users.index') }}" class="card group block">
-                    <i class="fa-solid fa-chart-line mb-4 h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-solid fa-user h-8 w-8" aria-hidden="true"></i>
                     <h2 class="text-primary group-hover:text-accent-primary text-lg font-semibold">
                         {{ __('admin.users') }}
                     </h2>
@@ -23,7 +23,7 @@
 
             @if ($canModerateContent)
                 <a href="{{ route('admin.reports.index') }}" class="card group block">
-                    <i class="fa-solid fa-chart-line mb-4 h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-solid fa-file-lines h-8 w-8" aria-hidden="true"></i>
                     <h2 class="text-primary group-hover:text-accent-primary text-lg font-semibold">
                         {{ __('admin.reports') }}
                     </h2>
@@ -33,7 +33,7 @@
 
             @if ($canManageTemplates)
                 <a href="{{ route('admin.templates.index') }}" class="card group block">
-                    <i class="fa-solid fa-chart-line mb-4 h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-solid fa-pencil h-8 w-8" aria-hidden="true"></i>
                     <h2 class="text-primary group-hover:text-accent-primary text-lg font-semibold">
                         {{ __('admin.templates') }}
                     </h2>
@@ -43,7 +43,7 @@
 
             @if ($canManageSettings)
                 <a href="{{ route('admin.settings.edit') }}" class="card group block">
-                    <i class="fa-solid fa-chart-line mb-4 h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-solid fa-gear h-8 w-8" aria-hidden="true"></i>
                     <h2 class="text-primary group-hover:text-accent-primary text-lg font-semibold">
                         {{ __('admin.settings') }}
                     </h2>
@@ -53,7 +53,7 @@
 
             @if ($canViewAuditLogs)
                 <a href="{{ route('admin.audit-logs') }}" class="card group block">
-                    <i class="fa-solid fa-chart-line mb-4 h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-regular fa-message h-8 w-8" aria-hidden="true"></i>
                     <h2 class="text-primary group-hover:text-accent-primary text-lg font-semibold">
                         {{ __('admin.audit') }}
                     </h2>

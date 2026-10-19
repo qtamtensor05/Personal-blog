@@ -132,70 +132,130 @@ function initPostEditor(root) {
         editor.view.dom.classList.toggle('post-content', previewing);
         status.textContent = previewing ? 'Đang xem trước nội dung bài viết.' : 'Đang chỉnh sửa bài viết.';
     });
+    root.querySelector('[data-editor-fallback]').hidden = true;
+    root.querySelector('[data-editor-loading]')?.setAttribute('hidden', '');
 
     let timer = null;
     let dirty = false;
+    let saving = null;
 
     const setStatus = (text, isError = false) => {
+        if (!status) return;
         status.textContent = text;
         status.classList.toggle('text-red-500', isError);
+        status.classList.toggle('text-accent-primary', !isError);
+    };
+
+    const updateToolbar = () => {
+        root.querySelectorAll('[data-command]').forEach((button) => {
+            const command = button.dataset.command;
+            const active =
+                {
+                    bold: () => editor.isActive('bold'),
+                    italic: () => editor.isActive('italic'),
+                    underline: () => editor.isActive('underline'),
+                    strike: () => editor.isActive('strike'),
+                    h2: () => editor.isActive('heading', { level: 2 }),
+                    h3: () => editor.isActive('heading', { level: 3 }),
+                    h4: () => editor.isActive('heading', { level: 4 }),
+                    bulletList: () => editor.isActive('bulletList'),
+                    orderedList: () => editor.isActive('orderedList'),
+                    blockquote: () => editor.isActive('blockquote'),
+                    codeBlock: () => editor.isActive('codeBlock'),
+                    link: () => editor.isActive('link'),
+                }[command]?.() ?? false;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', String(active));
+            const canRun = {
+                undo: () => editor.can().undo(),
+                redo: () => editor.can().redo(),
+            }[command];
+            if (canRun) button.disabled = !canRun();
+        });
     };
 
     async function save() {
         clearTimeout(timer);
+        if (saving) {
+            await saving;
+            return dirty ? save() : true;
+        }
         if (!dirty) return true;
+
         dirty = false;
         setStatus('Saving…');
+        const payload = JSON.stringify({
+            title: titleInput.value,
+            // Pages have no excerpt field.
+            excerpt: excerptInput?.value || null,
+            content: editor.getJSON(),
+        });
 
-        try {
-            const response = await fetch(config.draftUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrf,
-                },
-                body: JSON.stringify({
-                    title: titleInput.value,
-                    // Pages have no excerpt field.
-                    excerpt: excerptInput?.value || null,
-                    content: editor.getJSON(),
-                }),
-            });
+        saving = (async () => {
+            try {
+                const response = await fetch(config.draftUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: payload,
+                });
 
-            if (!response.ok) {
-                const body = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    dirty = true;
+                    setStatus(body.message ?? 'Could not save the draft.', true);
+                    return false;
+                }
+
+                // A user may have edited while the request was in flight.
+                if (dirty) {
+                    setStatus('Unsaved changes');
+                    return false;
+                }
+                setStatus('Draft saved');
+                return true;
+            } catch {
                 dirty = true;
-                setStatus(body.message ?? 'Could not save the draft.', true);
+                setStatus('Offline. Changes are not saved yet.', true);
                 return false;
+            } finally {
+                saving = null;
             }
+        })();
 
-            setStatus('Draft saved');
-            return true;
-        } catch {
-            dirty = true;
-            setStatus('Offline. Changes are not saved yet.', true);
-            return false;
-        }
+        return saving;
     }
 
     const scheduleSave = () => {
         dirty = true;
         setStatus('Unsaved changes');
         clearTimeout(timer);
-        timer = setTimeout(save, 1500);
+        timer = setTimeout(() => void save(), 1500);
     };
 
-    editor.on('update', scheduleSave);
+    editor.on('update', () => {
+        scheduleSave();
+        updateToolbar();
+    });
+    editor.on('selectionUpdate', updateToolbar);
+    editor.on('transaction', updateToolbar);
     titleInput.addEventListener('input', scheduleSave);
     excerptInput?.addEventListener('input', scheduleSave);
+    updateToolbar();
 
-    // Toolbar
+    // Toolbar commands are kept explicit so each action remains easy to audit.
     const commands = {
+        paragraph: () => editor.chain().focus().setParagraph().run(),
         bold: () => editor.chain().focus().toggleBold().run(),
         italic: () => editor.chain().focus().toggleItalic().run(),
+        underline: () => editor.chain().focus().toggleUnderline().run(),
+        strike: () => editor.chain().focus().toggleStrike().run(),
         h2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
         h3: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+        h4: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
         bulletList: () => editor.chain().focus().toggleBulletList().run(),
         orderedList: () => editor.chain().focus().toggleOrderedList().run(),
         blockquote: () => editor.chain().focus().toggleBlockquote().run(),
@@ -204,18 +264,28 @@ function initPostEditor(root) {
         alignCenter: () => editor.chain().focus().setTextAlign('center').run(),
         alignRight: () => editor.chain().focus().setTextAlign('right').run(),
         alignJustify: () => editor.chain().focus().setTextAlign('justify').run(),
+        horizontalRule: () => editor.chain().focus().setHorizontalRule().run(),
+        undo: () => editor.chain().focus().undo().run(),
+        redo: () => editor.chain().focus().redo().run(),
         link: async () => {
+            const currentHref = editor.getAttributes('link').href ?? '';
             const href = await window.requestModalInput(
                 'Add link',
                 'Link URL (https://…)',
-                editor.getAttributes('link').href ?? '',
+                currentHref,
             );
             if (href === null) return;
-            if (href === '') {
-                editor.chain().focus().unsetLink().run();
-            } else {
-                editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
+            const value = href.trim();
+            if (!value) {
+                editor.chain().focus().extendMarkRange('link').unsetLink().run();
+                return;
             }
+            // Only allow web links and email links; reject javascript:, data:, etc.
+            if (!/^(https?:\/\/|mailto:)/i.test(value)) {
+                setStatus('Use a link starting with https://, http:// or mailto:.', true);
+                return;
+            }
+            editor.chain().focus().extendMarkRange('link').setLink({ href: value }).run();
         },
         image: () => fileInput.click(),
     };
@@ -295,11 +365,25 @@ function initPostEditor(root) {
         form.append('blog_id', config.blogId);
         coverStatus.textContent = 'Đang tải ảnh đại diện...';
         try {
-            const response = await fetch(config.mediaUrl, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: form });
+            const response = await fetch(config.mediaUrl, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: form,
+            });
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(body.message ?? Object.values(body.errors ?? {})[0]?.[0] ?? 'Không thể tải ảnh.');
+            if (!response.ok)
+                throw new Error(
+                    body.message ??
+                        Object.values(body.errors ?? {})[0]?.[0] ??
+                        'Không thể tải ảnh.',
+                );
             root.querySelector('[data-cover-media-id]').value = body.data.id;
-            root.querySelector('[data-cover-preview]').innerHTML = `<img src="${body.data.url}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">`;
+            const preview = root.querySelector('[data-cover-preview]');
+            const image = document.createElement('img');
+            image.src = body.data.url;
+            image.alt = '';
+            image.className = 'mb-2 aspect-video w-full rounded-md object-cover';
+            preview.replaceChildren(image);
             coverStatus.textContent = 'Đã tải ảnh. Nhấn “Lưu thông tin” để áp dụng.';
         } catch (error) {
             coverStatus.textContent = error.message;
@@ -308,9 +392,35 @@ function initPostEditor(root) {
     });
 
     // Save pending changes before publishing.
-    window.addEventListener('beforeunload', (event) => {
-        if (dirty) event.preventDefault();
+    let publishing = false;
+    root.querySelector('[data-publish-form]')?.addEventListener('submit', async (event) => {
+        if (publishing) return;
+        if (!dirty && !saving) return;
+        event.preventDefault();
+        const form = event.currentTarget;
+        const button = form.querySelector('button[type=submit]');
+        if (button) button.disabled = true;
+        const saved = await save();
+        if (saved) {
+            publishing = true;
+            form.requestSubmit();
+        } else if (button) {
+            button.disabled = false;
+        }
     });
+
+    window.addEventListener('beforeunload', (event) => {
+        if (dirty || saving) event.preventDefault();
+    });
+
+    window.addEventListener(
+        'pagehide',
+        () => {
+            clearTimeout(timer);
+            editor.destroy();
+        },
+        { once: true },
+    );
 }
 
 document.querySelectorAll('[data-post-editor]').forEach((root) => {
@@ -318,9 +428,20 @@ document.querySelectorAll('[data-post-editor]').forEach((root) => {
         initPostEditor(root);
     } catch (error) {
         console.error('Post editor failed to initialize.', error);
+
+        const loading = root.querySelector('[data-editor-loading]');
+        const fallback = root.querySelector('[data-editor-fallback]');
         const status = root.querySelector('[data-save-status]');
+
+        loading?.setAttribute('hidden', '');
+
+        if (fallback) {
+            fallback.hidden = false;
+        }
+
         if (status) {
-            status.textContent = 'Trình soạn thảo chưa tải được. Hãy tải lại trang; nếu lỗi vẫn còn, báo quản trị viên.';
+            status.textContent =
+                'Trình soạn thảo chưa tải được. Hãy tải lại trang; nếu lỗi vẫn còn, báo quản trị viên.';
             status.classList.add('text-red-500');
         }
     }

@@ -6,12 +6,22 @@
     <article class="py-12">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <!-- Breadcrumb -->
-            <nav class="text-secondary mb-8 flex items-center text-sm" aria-label="{{ __('ui.breadcrumb') }}">
+            <nav
+                class="text-secondary mb-8 flex items-center text-sm"
+                aria-label="{{ __('ui.breadcrumb') }}"
+            >
                 <a href="{{ url('/') }}" class="hover:text-accent-primary">{{ __('post.home') }}</a>
                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                <a href="{{ route('posts.index') }}" class="hover:text-accent-primary">{{ __('post.posts') }}</a>
+                <a
+                    href="{{ route('posts.index') }}"
+                    class="hover:text-accent-primary"
+                    >{{ __('post.posts') }}</a
+                >
                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                <span class="text-primary">{{ $post['title'] ?? __('post.not_found') }}</span>
+                <span class="text-primary">{{
+                    $post['title'] ??
+                        __('post.not_found')
+                }}</span>
             </nav>
 
             <!-- Article Header -->
@@ -44,7 +54,7 @@
                             <div class="text-primary font-medium">
                                 {{
                                     $post['author'] ??
-                                    __('post.unknown_author')
+                                        __('post.unknown_author')
                                 }}
                             </div>
                             <div class="text-xs">{{ __('post.author') }}</div>
@@ -63,7 +73,11 @@
                     <div class="text-default hidden sm:block">•</div>
                     <div>
                         <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                        {{ __('post.minutes_read', ['minutes' => 5]) }}
+                        {{
+                            __('post.minutes_read', [
+                                'minutes' => 5,
+                            ])
+                        }}
                     </div>
                 </div>
             </header>
@@ -90,7 +104,7 @@
                 <div class="text-primary space-y-6 leading-relaxed">
                     {!!
                         $post['content'] ??
-                            '<p>'.e(__('post.content_unavailable')).'</p>'
+                            '<p>' . e(__('post.content_unavailable')) . '</p>'
                     !!}
                 </div>
             </div>
@@ -98,7 +112,9 @@
             <!-- Tags (if available) -->
             @if (!empty($post['tags']))
                 <div class="border-default mt-12 border-t pt-8">
-                    <h3 class="text-secondary mb-3 text-sm font-medium">{{ __('post.tagged_with') }}</h3>
+                    <h3 class="text-secondary mb-3 text-sm font-medium">
+                        {{ __('post.tagged_with') }}
+                    </h3>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($post['tags'] as $tag)
                             <a
@@ -114,7 +130,9 @@
 
             <!-- Share Section -->
             <div class="border-default mt-12 border-t pt-8">
-                <h3 class="text-secondary mb-3 text-sm font-medium">{{ __('post.share_article') }}</h3>
+                <h3 class="text-secondary mb-3 text-sm font-medium">
+                    {{ __('post.share_article') }}
+                </h3>
                 <div class="flex gap-3">
                     <button
                         class="bg-surface-secondary hover:bg-accent-primary hover:text-surface text-primary rounded-lg px-4 py-2 transition-colors"

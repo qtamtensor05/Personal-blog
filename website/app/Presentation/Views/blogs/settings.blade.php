@@ -8,8 +8,10 @@
             <a onclick="window.history.back(); return false;"
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← {{ $blog->name }}</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ $blog->name }}
+            </a>
             <h1 class="text-hero mt-2">{{ __('settings.title') }}</h1>
             <p class="text-secondary">{{ __('settings.intro') }}</p>
         </div>
@@ -34,7 +36,9 @@
                 <h2 class="text-primary text-lg font-semibold">{{ __('settings.general') }}</h2>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="space-y-1">
-                        <label for="locale" class="text-primary block text-sm font-medium"
+                        <label
+                            for="locale"
+                            class="text-primary block text-sm font-medium"
                             >{{ __('settings.language') }}</label
                         >
                         <select name="locale" id="locale" class="input">
@@ -49,7 +53,9 @@
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label for="timezone" class="text-primary block text-sm font-medium"
+                        <label
+                            for="timezone"
+                            class="text-primary block text-sm font-medium"
                             >{{ __('settings.timezone') }}</label
                         >
                         <select name="timezone" id="timezone" class="input" required>
@@ -140,7 +146,9 @@
             </section>
 
             <section class="card space-y-4">
-                <h2 class="text-primary text-lg font-semibold">{{ __('settings.social_links') }}</h2>
+                <h2 class="text-primary text-lg font-semibold">
+                    {{ __('settings.social_links') }}
+                </h2>
                 <div class="grid gap-4 sm:grid-cols-2">
                     @foreach ($platforms as $platform)
                         <x-input
@@ -157,7 +165,11 @@
 
             <div class="flex items-center gap-3">
                 <button type="submit" class="btn-primary">{{ __('settings.save') }}</button>
-                <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost">{{ __('settings.cancel') }}</a>
+                <a
+                    href="{{ route('blogs.show', $blog->id) }}"
+                    class="btn-ghost"
+                    >{{ __('settings.cancel') }}</a
+                >
             </div>
         </form>
     </div>

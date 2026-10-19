@@ -8,9 +8,9 @@
     }}
 >
     <div
-        class="bg-surface-secondary mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full"
+        class="bg-surface-secondary border-accent-primary mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border"
     >
-        <i class="fa-regular fa-folder-open text-secondary h-8 w-8 opacity-50" aria-hidden="true"></i>
+        <i class="fa-solid fa-bell-slash text-accent-primary" aria-hidden="true"></i>
     </div>
 
     <h3 class="text-primary mb-2 text-lg font-semibold">{{ $message }}</h3>

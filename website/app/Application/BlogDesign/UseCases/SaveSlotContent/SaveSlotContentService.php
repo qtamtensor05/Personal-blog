@@ -65,7 +65,9 @@ final readonly class SaveSlotContentService
                     continue;
                 }
                 if (! $this->media->isUsableForBlog((int) $slide['mediaId'], $blogId)) {
-                    throw new DomainException('Selected slide media does not belong to this blog or is not ready.');
+                    throw new DomainException(
+                        'Selected slide media does not belong to this blog or is not ready.',
+                    );
                 }
             }
             foreach (

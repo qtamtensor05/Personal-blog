@@ -25,8 +25,10 @@ use Illuminate\View\View;
 
 final class BlogController extends Controller
 {
-    public function index(Request $request, BlogRepository $blogs): View|RedirectResponse
-    {
+    public function index(
+        Request $request,
+        BlogRepository $blogs,
+    ): View|RedirectResponse {
         $ownedBlogs = $blogs->ownedBy((int) $request->user()->id);
 
         return $ownedBlogs !== []
@@ -34,8 +36,10 @@ final class BlogController extends Controller
             : view('blogs.index', ['blogs' => []]);
     }
 
-    public function create(Request $request, BlogRepository $blogs): View|RedirectResponse
-    {
+    public function create(
+        Request $request,
+        BlogRepository $blogs,
+    ): View|RedirectResponse {
         $ownedBlogs = $blogs->ownedBy((int) $request->user()->id);
 
         if ($ownedBlogs !== []) {
@@ -45,13 +49,16 @@ final class BlogController extends Controller
         return view('blogs.create');
     }
 
-    public function store(CreateBlogRequest $request, CreateBlogUseCase $create): RedirectResponse
-    {
+    public function store(
+        CreateBlogRequest $request,
+        CreateBlogUseCase $create,
+    ): RedirectResponse {
         try {
             $id = $create->execute(
                 ownerUserId: (int) $request->user()->id,
                 name: $request->validated('name'),
-                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
+                slug: $request->validated('slug')
+                    ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
             );
         } catch (BlogAlreadyExists $exception) {
@@ -79,7 +86,10 @@ final class BlogController extends Controller
         $record = $blogs->find($blog);
 
         // Workspace page: owner only. Public rendering is a separate route.
-        if ($record === null || $record->ownerUserId !== (int) $request->user()->id) {
+        if (
+            $record === null
+            || $record->ownerUserId !== (int) $request->user()->id
+        ) {
             abort(404);
         }
 
@@ -90,11 +100,17 @@ final class BlogController extends Controller
         ]);
     }
 
-    public function edit(int $blog, BlogRepository $blogs, Request $request): View
-    {
+    public function edit(
+        int $blog,
+        BlogRepository $blogs,
+        Request $request,
+    ): View {
         $record = $blogs->find($blog);
 
-        if ($record === null || $record->ownerUserId !== (int) $request->user()->id) {
+        if (
+            $record === null
+            || $record->ownerUserId !== (int) $request->user()->id
+        ) {
             abort(404);
         }
 
@@ -107,14 +123,21 @@ final class BlogController extends Controller
         UpdateBlogUseCase $update,
     ): RedirectResponse {
         try {
+            $status = $request->validated('status');
+
             $update->execute(
                 actorId: (int) $request->user()->id,
                 blogId: $blog,
                 name: $request->validated('name'),
-                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
+                slug: $request->validated('slug')
+                    ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
-                status: BlogStatus::from($request->validated('status')),
-                visibility: BlogVisibility::from($request->validated('visibility') ?? 'PUBLIC'),
+                status: $status === 'PRIVATE'
+                    ? BlogStatus::Published
+                    : BlogStatus::from($status),
+                visibility: BlogVisibility::from(
+                    $request->validated('visibility') ?? 'PUBLIC',
+                ),
                 discoverable: (bool) $request->validated('discoverable'),
             );
         } catch (BlogNotFound) {
@@ -129,7 +152,9 @@ final class BlogController extends Controller
                 ->withInput();
         }
 
-        return redirect()->route('blogs.show', $blog)->with('status', 'Blog updated successfully.');
+        return redirect()
+            ->route('blogs.show', $blog)
+            ->with('status', 'Blog updated successfully.');
     }
 
     public function destroy(
@@ -145,6 +170,8 @@ final class BlogController extends Controller
             return back()->withErrors(['general' => $exception->getMessage()]);
         }
 
-        return redirect()->route('blogs.index')->with('status', 'Blog deleted.');
+        return redirect()
+            ->route('blogs.index')
+            ->with('status', 'Blog deleted.');
     }
 }

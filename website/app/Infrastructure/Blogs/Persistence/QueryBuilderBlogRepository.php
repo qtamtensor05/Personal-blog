@@ -99,7 +99,9 @@ final class QueryBuilderBlogRepository implements BlogRepository
                 'name' => $name,
                 'slug' => $slug,
                 'description' => $description,
-                'status' => $status === BlogStatus::Draft ? BlogStatus::Draft->value : BlogStatus::Published->value,
+                'status' => $status === BlogStatus::Draft
+                        ? BlogStatus::Draft->value
+                        : BlogStatus::Published->value,
                 'visibility' => $visibility->value,
                 'discoverable' => $discoverable,
                 'published_at' => $status === BlogStatus::Published && $existing->published_at === null

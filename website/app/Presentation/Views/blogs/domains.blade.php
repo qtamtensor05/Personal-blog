@@ -9,8 +9,10 @@
                 onclick="window.history.back(); return false;"
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← {{ $blog->name }}</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ $blog->name }}
+            </a>
             <h1 class="text-hero mt-2">{{ __('domains.title') }}</h1>
             <p class="text-secondary">{{ __('domains.intro') }}</p>
         </div>
@@ -44,9 +46,11 @@
         </section>
 
         @if (count($domains) === 0)
-            <x-empty-state :message="__('domains.no_domains')"
-                >{{ __('domains.blog_available', ['url' => route('public.blog', $blog->slug)]) }}</x-empty-state
-            >
+            <x-empty-state :message="__('domains.no_domains')">{{
+                __('domains.blog_available', [
+                    'url' => route('public.blog', $blog->slug),
+                ])
+            }}</x-empty-state>
         @else
             <div class="space-y-4">
                 @foreach ($domains as ['domain' => $domain, 'dns' => $dns])
@@ -60,7 +64,7 @@
                                 >
                                 <x-badge
                                     :variant="$status === 'ACTIVE' ? 'primary' : ($status === 'FAILED' ? 'highlight' : 'default')"
-                                    >{{ __('ui.domain_status_'.$status) }}</x-badge
+                                    >{{ __('ui.domain_status_' . $status) }}</x-badge
                                 >
                             </div>
 

@@ -77,7 +77,11 @@
 
                         <!-- Password Requirements -->
                         <div class="bg-surface-secondary rounded-lg p-4">
-                            <p class="text-primary mb-2 text-xs font-medium">{{ __('auth.password_requirements_title') }}</p>
+                            <p class="text-primary mb-2 text-xs font-medium">{{
+                                __(
+                                    'auth.password_requirements_title',
+                                )
+                            }}</p>
                             <ul class="text-secondary space-y-1 text-xs">
                                 <li>• {{ __('auth.password_min_length') }}</li>
                                 <li>• {{ __('auth.password_case_mix') }}</li>

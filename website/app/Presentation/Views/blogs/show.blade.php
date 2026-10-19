@@ -11,7 +11,11 @@
                     <p class="text-secondary font-mono text-sm">{{ $blog->slug }}</p>
                 </div>
                 <x-badge :variant="$blog->status->value === 'PUBLISHED' ? 'primary' : 'default'">
-                    {{ __('blog.status_'.$blog->status->value) }}
+                    {{
+                        __(
+                            'blog.status_' . $blog->status->value,
+                        )
+                    }}
                 </x-badge>
             </div>
             @if ($blog->description)
@@ -26,8 +30,14 @@
         <section class="mb-8">
             <div class="mb-4">
                 <p class="text-accent-primary text-sm font-semibold tracking-wider uppercase">{{ __('template.management') }}</p>
-                <h2 class="text-primary mt-1 text-2xl font-semibold">{{ __('template.home_and_layout') }}</h2>
-                <p class="text-secondary mt-1 text-sm">{{ __('template.fixed_positions_help') }}</p>
+                <h2 class="text-primary mt-1 text-2xl font-semibold">
+                    {{ __('template.home_and_layout') }}
+                </h2>
+                <p class="text-secondary mt-1 text-sm">{{
+                    __(
+                        'template.fixed_positions_help',
+                    )
+                }}</p>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -37,11 +47,7 @@
                             __('template.header_description'),
                             'fa-solid fa-heading'
                         ],
-                        'body' => [
-                            __('template.home'),
-                            __('template.home_description'),
-                            'fa-solid fa-house'
-                        ],
+                        'body' => [__('template.home'), __('template.home_description'), 'fa-solid fa-house'],
                         'sidebar' => [
                             __('template.sidebar'),
                             __('template.sidebar_description'),
@@ -91,18 +97,37 @@
                             {{ __('template.manage_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
+
+                        <a
+                            href="{{ route('public.blog.section', [$blog->slug, 'posts']) }}"
+                            class="text-accent-primary inline-flex items-center gap-2 hover:underline"
+                        >
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i
+                            >{{ __('template.view_site') }}
+                        </a>
+
                     </div>
                 </article>
                 <a
                     href="{{ route('blogs.media.index', $blog->id) }}"
                     class="card group hover:border-accent-primary block transition hover:-translate-y-0.5"
                 >
-                    <div class="bg-surface-secondary text-accent-primary mb-4 flex h-10 w-10 items-center justify-center rounded-md">
+                    <div
+                        class="bg-surface-secondary text-accent-primary mb-4 flex h-10 w-10 items-center justify-center rounded-md"
+                    >
                         <i class="fa-solid fa-photo-film" aria-hidden="true"></i>
                     </div>
-                    <h3 class="text-primary group-hover:text-accent-primary font-semibold">{{ __('template.media_library') }}</h3>
-                    <p class="text-secondary mt-2 text-sm">{{ __('template.media_library_description') }}</p>
-                    <span class="text-accent-primary mt-4 inline-flex items-center gap-2 text-sm font-medium">
+                    <h3 class="text-primary group-hover:text-accent-primary font-semibold">
+                        {{ __('template.media_library') }}
+                    </h3>
+                    <p class="text-secondary mt-2 text-sm">{{
+                        __(
+                            'template.media_library_description',
+                        )
+                    }}</p>
+                    <span
+                        class="text-accent-primary mt-4 inline-flex items-center gap-2 text-sm font-medium"
+                    >
                         {{ __('template.open_media_library') }}
                         <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                     </span>
@@ -112,8 +137,14 @@
 
         <div class="mb-8">
             <div class="card">
-                <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('template.view_site') }}</h2>
-                <p class="text-secondary mb-4 text-sm">{{ __('template.view_site_description') }}</p>
+                <h2 class="text-primary mb-4 text-lg font-semibold">
+                    {{ __('template.view_site') }}
+                </h2>
+                <p class="text-secondary mb-4 text-sm">{{
+                    __(
+                        'template.view_site_description',
+                    )
+                }}</p>
                 <a
                     href="{{ route('public.blog', $blog->slug) }}"
                     target="_blank"
@@ -126,63 +157,219 @@
         </div>
 
         <section class="border-default border-t pt-6" aria-labelledby="blog-settings-heading">
-            <h2 id="blog-settings-heading" class="text-primary mb-4 text-lg font-semibold">{{ __('template.blog_settings') }}</h2>
+            <h2 id="blog-settings-heading" class="text-primary mb-4 text-lg font-semibold">
+                {{ __('template.blog_settings') }}
+            </h2>
             <div class="grid gap-6 lg:grid-cols-2">
                 <section id="blog-information" class="card space-y-4">
-                    <h3 class="text-primary font-semibold"><i class="fa-solid fa-gear mr-2" aria-hidden="true"></i>{{ __('template.edit_blog') }}</h3>
-                    <form method="POST" action="{{ route('blogs.update', $blog->id) }}" class="space-y-3">
+                    <h3 class="text-primary font-semibold">
+                        <i class="fa-solid fa-gear mr-2" aria-hidden="true"></i
+                        >{{ __('template.edit_blog') }}
+                    </h3>
+                    <form
+                        method="POST"
+                        action="{{ route('blogs.update', $blog->id) }}"
+                        class="space-y-3"
+                    >
                         @csrf
-                        @method('PUT')
-                        <x-input name="name" :label="__('template.blog_name')" :value="old('name', $blog->name)" required />
-                        <x-input name="slug" :label="__('template.slug')" :value="old('slug', $blog->slug)" required />
-                        <x-textarea name="description" :label="__('template.description')" rows="3">{{ old('description', $blog->description) }}</x-textarea>
+                        @method ('PUT')
+                        <x-input
+                            name="name"
+                            :label="__('template.blog_name')"
+                            :value="old('name', $blog->name)"
+                            required
+                        />
+                        <x-input
+                            name="slug"
+                            :label="__('template.slug')"
+                            :value="old('slug', $blog->slug)"
+                            required
+                        />
+                        <x-textarea
+                            name="description"
+                            :label="__('template.description')"
+                            rows="3"
+                            >{{
+                                old(
+                                    'description',
+                                    $blog->description,
+                                )
+                            }}</x-textarea
+                        >
                         <div>
-                            <label for="blog-status" class="text-primary mb-1 block text-sm font-medium">{{ __('template.status') }}</label>
+                            <label
+                                for="blog-status"
+                                class="text-primary mb-1 block text-sm font-medium"
+                                >{{ __('template.status') }}</label
+                            >
                             <select id="blog-status" name="status" class="input">
                                 @foreach (['DRAFT', 'PUBLISHED'] as $status)
-                                    <option value="{{ $status }}" @selected(old('status', $blog->status->value) === $status)>{{ __('blog.status_'.$status) }}</option>
+                                    <option
+                                        value="{{ $status }}"
+                                        @selected(old('status', $blog->status->value) === $status)
+                                    >
+                                        {{ __('blog.status_' . $status) }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
-                        <input type="hidden" name="visibility" value="{{ old('visibility', $blog->visibility->value) }}">
-                        <input type="hidden" name="discoverable" value="{{ $blog->discoverable ? 1 : 0 }}">
-                        @if ($errors->hasAny(['name', 'slug', 'description', 'status', 'visibility', 'discoverable'])) <p class="text-sm text-red-500">{{ $errors->first() }}</p> @endif
-                        <button type="submit" class="btn-primary">{{ __('template.save_changes') }}</button>
+
+                        <input
+                            type="hidden"
+                            name="visibility"
+                            value="{{ old('visibility', $blog->visibility->value) }}"
+                        />
+
+                        <input
+                            type="hidden"
+                            name="discoverable"
+                            value="{{ old('discoverable', $blog->discoverable ? 1 : 0) }}"
+                        />
+
+                        @if ($errors->any())
+                            <p class="text-sm text-red-500">{{ $errors->first() }}</p>
+                        @endif
+
+                        <button type="submit" class="btn-primary rounded-md px-4 py-2">
+                            {{ __('template.save_changes') }}
+                        </button>
                     </form>
                 </section>
 
                 <section id="blog-taxonomy" class="card space-y-5">
-                    <h3 class="text-primary font-semibold"><i class="fa-solid fa-tags mr-2" aria-hidden="true"></i>{{ __('template.categories') }}</h3>
+                    <h3 class="text-primary font-semibold">
+                        <i class="fa-solid fa-tags mr-2" aria-hidden="true"></i
+                        >{{ __('template.categories') }}
+                    </h3>
                     <div>
-                        <h4 class="text-primary mb-2 text-sm font-medium">{{ __('template.categories') }}</h4>
-                        <form method="POST" action="{{ route('blogs.categories.store', $blog->id) }}" class="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                        <h4 class="text-primary mb-2 text-sm font-medium">
+                            {{ __('template.categories') }}
+                        </h4>
+                        <form
+                            method="POST"
+                            action="{{ route('blogs.categories.store', $blog->id) }}"
+                            class="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+                        >
                             @csrf
-                            <x-input name="name" :label="__('template.name')" required data-slug-source />
-                            <x-input name="slug" :label="__('template.slug')" required data-slug-target />
-                            <input type="hidden" name="parent_id" value="">
-                            <button class="btn-secondary self-end" type="submit">{{ __('template.add') }}</button>
+                            <x-input
+                                name="name"
+                                :label="__('template.name')"
+                                required
+                                data-slug-source
+                            />
+                            <x-input
+                                name="slug"
+                                :label="__('template.slug')"
+                                required
+                                data-slug-target
+                            />
+                            <input type="hidden" name="parent_id" value="" />
+                            <button
+                                class="bg-accent-primary self-end rounded-md border px-4 py-2 !text-white"
+                                type="submit"
+                            >
+                                {{ __('template.add') }}
+                            </button>
                         </form>
                         <ul class="divide-default divide-y">
                             @forelse ($categories as $category)
-                                <li class="flex items-center justify-between gap-3 py-2"><span>{{ $category->name }} <small class="text-secondary">{{ $category->slug }}</small></span><form method="POST" action="{{ route('blogs.categories.destroy', [$blog->id, $category->id]) }}" data-modal-confirm-form data-confirm-title="{{ __('template.delete_category') }}" data-confirm-message="{{ __('template.confirm_delete_category') }}">@csrf @method('DELETE')<button class="text-red-500" type="submit" aria-label="{{ __('template.delete_category') }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form></li>
-                            @empty <li class="py-2 text-sm text-secondary">{{ __('template.no_categories') }}</li> @endforelse
+                                <li class="flex items-center justify-between gap-3 py-2">
+                                    <span
+                                        >{{ $category->name }}
+                                        <small
+                                            class="text-secondary"
+                                            >{{ $category->slug }}</small
+                                        ></span
+                                    >
+                                    <form
+                                        method="POST"
+                                        action="{{ route('blogs.categories.destroy', [$blog->id, $category->id]) }}"
+                                        data-modal-confirm-form
+                                        data-confirm-title="{{ __('template.delete_category') }}"
+                                        data-confirm-message="{{ __('template.confirm_delete_category') }}"
+                                    >
+                                        @csrf
+                                        @method ('DELETE')
+                                        <button
+                                            class="text-red-500"
+                                            type="submit"
+                                            aria-label="{{ __('template.delete_category') }}"
+                                        >
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </li>
+                            @empty
+                                <li class="text-secondary py-2 text-sm">
+                                    {{ __('template.no_categories') }}
+                                </li>
+                            @endforelse
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-primary mb-2 text-sm font-medium">{{ __('template.tags') }}</h4>
-                        <form method="POST" action="{{ route('blogs.tags.store', $blog->id) }}" class="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                        <h4 class="text-primary mb-2 text-sm font-medium">
+                            {{ __('template.tags') }}
+                        </h4>
+                        <form
+                            method="POST"
+                            action="{{ route('blogs.tags.store', $blog->id) }}"
+                            class="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+                        >
                             @csrf
-                            <x-input name="name" :label="__('template.name')" required data-slug-source />
-                            <x-input name="slug" :label="__('template.slug')" required data-slug-target />
-                            <button class="btn-secondary self-end" type="submit">{{ __('template.add') }}</button>
+                            <x-input
+                                name="name"
+                                :label="__('template.name')"
+                                required
+                                data-slug-source
+                            />
+                            <x-input
+                                name="slug"
+                                :label="__('template.slug')"
+                                required
+                                data-slug-target
+                            />
+                            <button
+                                class="bg-accent-primary self-end rounded-md border px-4 py-2 !text-white"
+                                type="submit"
+                            >
+                                {{ __('template.add') }}
+                            </button>
                         </form>
                         <ul class="divide-default divide-y">
                             @forelse ($tags as $tag)
-                                <li class="flex items-center justify-between gap-3 py-2"><span>{{ $tag->name }} <small class="text-secondary">{{ $tag->slug }}</small></span><form method="POST" action="{{ route('blogs.tags.destroy', [$blog->id, $tag->id]) }}" data-modal-confirm-form data-confirm-title="{{ __('template.delete_tag') }}" data-confirm-message="{{ __('template.confirm_delete_tag') }}">@csrf @method('DELETE')<button class="text-red-500" type="submit" aria-label="{{ __('template.delete_tag') }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></form></li>
-                            @empty <li class="py-2 text-sm text-secondary">{{ __('template.no_tags') }}</li> @endforelse
+                                <li class="flex items-center justify-between gap-3 py-2">
+                                    <span
+                                        >{{ $tag->name }}
+                                        <small class="text-secondary">{{ $tag->slug }}</small></span
+                                    >
+                                    <form
+                                        method="POST"
+                                        action="{{ route('blogs.tags.destroy', [$blog->id, $tag->id]) }}"
+                                        data-modal-confirm-form
+                                        data-confirm-title="{{ __('template.delete_tag') }}"
+                                        data-confirm-message="{{ __('template.confirm_delete_tag') }}"
+                                    >
+                                        @csrf
+                                        @method ('DELETE')
+                                        <button
+                                            class="text-red-500"
+                                            type="submit"
+                                            aria-label="{{ __('template.delete_tag') }}"
+                                        >
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </li>
+                            @empty
+                                <li class="text-secondary py-2 text-sm">
+                                    {{ __('template.no_tags') }}
+                                </li>
+                            @endforelse
                         </ul>
                     </div>
-                    @if ($errors->any()) <p class="text-sm text-red-500">{{ $errors->first() }}</p> @endif
+                    @if ($errors->any())
+                        <p class="text-sm text-red-500">{{ $errors->first() }}</p>
+                    @endif
                 </section>
             </div>
         </section>
@@ -197,7 +384,10 @@
             >
                 @csrf
                 @method ('DELETE')
-                <button type="submit" class="text-sm text-red-500 hover:underline">
+                <button
+                    type="submit"
+                    class="rounded-md border border-red-500 px-4 py-2 text-sm text-red-500 hover:underline"
+                >
                     {{ __('template.delete_blog') }}
                 </button>
             </form>

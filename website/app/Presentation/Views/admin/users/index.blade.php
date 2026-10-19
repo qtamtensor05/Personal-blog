@@ -71,7 +71,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-primary my-auto rounded-md px-6 py-2">Filter</button>
+            <button type="submit" class="btn-primary rounded-md px-6 py-2">Filter</button>
         </form>
 
         @if (count($users) === 0)
@@ -161,7 +161,8 @@
                             href="{{ route('admin.users.index', array_merge($filters, ['page' => $page - 1])) }}"
                             class="btn-ghost"
                         >
-                            ← Previous
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Previous
                         </a>
                     @else
                         <span></span>

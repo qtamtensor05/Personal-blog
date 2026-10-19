@@ -12,8 +12,10 @@
             <a
                 href="{{ route('admin.users.index') }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← Users</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                Users
+            </a>
             <div class="mt-2 flex flex-wrap items-center gap-3">
                 <h1 class="text-hero">{{ $user->name }}</h1>
                 <x-badge

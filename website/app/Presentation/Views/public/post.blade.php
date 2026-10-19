@@ -27,6 +27,7 @@
     @if ($cover)
         <meta property="og:image" content="{{ $cover['url'] }}" />
     @endif
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body
@@ -41,20 +42,27 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
+
+    <div class="container-custom flex justify-end pt-3">
+        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
+    </div>
+
     <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_post') }}">
-        <main class="container-custom {{ $contentWidthClass }} py-10">
-            <a
-                href="{{ route('public.blog', $blog->slug) }}"
-                onclick="window.history.back(); return false;"
-                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
-                style="color: var(--d-primary); border-color: var(--d-secondary)"
-            >
-                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                {{ __('post.back_previous') }}
-            </a>
+        <main data-animate="page" class="container-custom {{ $contentWidthClass }} py-10">
+            @if ($layout->showBlogName)
+                <a
+                    href="{{ route('public.blog', $blog->slug) }}"
+                    onclick="window.history.back(); return false;"
+                    class="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
+                    style="color: var(--d-primary); border-color: var(--d-secondary)"
+                >
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    {{ __('post.back_previous') }}
+                </a>
+            @endif
 
             <article
-                class="mt-6 {{ $articleClass }}"
+                class="{{ $layout->showBlogName ? 'mt-6' : '' }} {{ $articleClass }}"
                 @if ($layout->variant === 'card') style="border-color: var(--d-secondary)" @endif
             >
                 <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
@@ -64,6 +72,7 @@
                     >
                         {{ $post->title }}
                     </h1>
+
                     <a
                         href="{{ route('public.blog', $blog->slug) }}"
                         target="_blank"
@@ -78,27 +87,27 @@
                         @endif
                         <span>{{ $author?->name ?? $blog->name }}</span>
                     </a>
+
                     @if ($layout->showPublishedDate && $post->publishedAt)
                         <time
                             datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"
                             class="text-sm opacity-70"
                         >
-                            {{
-                                \Carbon\Carbon::parse($post->publishedAt)
-                                    ->timezone($settings->timezone)
-                                    ->format('d/m/Y')
-                            }}
+                            {{ \Carbon\Carbon::parse($post->publishedAt)->timezone($settings->timezone)->format('d/m/Y') }}
                         </time>
                     @endif
                 </header>
 
                 @if ($layout->showCover && $cover)
-                    <img
-                        src="{{ $cover['url'] }}"
-                        alt=""
-                        class="mb-8 w-full rounded-md"
-                        @if ($cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
-                    />
+                    <div data-image-frame class="media-frame mb-8 overflow-hidden rounded-md">
+                        <img
+                            src="{{ $cover['url'] }}"
+                            alt=""
+                            class="media-image block h-auto w-full rounded-md"
+                            data-image-reveal
+                            @if ($cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
+                        />
+                    </div>
                 @endif
 
                 {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
