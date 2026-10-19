@@ -30,7 +30,10 @@ final class ProfileServicesTest extends TestCase
 
     public function test_it_requires_the_current_password(): void
     {
-        $service = new ChangeProfilePasswordService(new FakeProfileRepository, new FakeProfilePasswordHasher);
+        $service = new ChangeProfilePasswordService(
+            new FakeProfileRepository,
+            new FakeProfilePasswordHasher,
+        );
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('current password is incorrect');

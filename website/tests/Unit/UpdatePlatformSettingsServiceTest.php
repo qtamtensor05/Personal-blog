@@ -18,10 +18,11 @@ final class UpdatePlatformSettingsServiceTest extends TestCase
         $repository = new FakePlatformSettingsRepository;
         $audit = new FakePlatformSettingsAuditLogger;
         $service = new UpdatePlatformSettingsService($repository, $audit);
-        $data = PlatformSettingsData::fromArray(array_replace(
-            PlatformSettingsData::defaults()->toArray(),
-            ['site_name' => 'Updated Platform'],
-        ));
+        $data = PlatformSettingsData::fromArray(
+            array_replace(PlatformSettingsData::defaults()->toArray(), [
+                'site_name' => 'Updated Platform',
+            ]),
+        );
 
         $updated = $service->execute(42, $data, 0);
 

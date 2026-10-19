@@ -24,8 +24,12 @@ final class PageController extends Controller
 {
     private const SLUG = ['required', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'];
 
-    public function index(int $blog, Request $request, OwnedBlogGuard $guard, PageRepository $pages): View
-    {
+    public function index(
+        int $blog,
+        Request $request,
+        OwnedBlogGuard $guard,
+        PageRepository $pages,
+    ): View {
         try {
             $record = $guard->ensure((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {
@@ -35,8 +39,11 @@ final class PageController extends Controller
         return view('pages.manage.index', ['blog' => $record, 'pages' => $pages->forBlog($blog)]);
     }
 
-    public function store(int $blog, Request $request, ManagePagesService $service): RedirectResponse
-    {
+    public function store(
+        int $blog,
+        Request $request,
+        ManagePagesService $service,
+    ): RedirectResponse {
         // page_key is varchar(80), and it is taken from the slug at creation.
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
@@ -44,11 +51,18 @@ final class PageController extends Controller
         ]);
 
         try {
-            $id = $service->create((int) $request->user()->id, $blog, $data['slug'], $data['title']);
+            $id = $service->create(
+                (int) $request->user()->id,
+                $blog,
+                $data['slug'],
+                $data['title'],
+            );
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException|InvalidArgumentException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('blogs.pages.edit', [$blog, $id]);
@@ -82,8 +96,12 @@ final class PageController extends Controller
         ]);
     }
 
-    public function saveDraft(int $blog, int $page, Request $request, ManagePagesService $service): JsonResponse
-    {
+    public function saveDraft(
+        int $blog,
+        int $page,
+        Request $request,
+        ManagePagesService $service,
+    ): JsonResponse {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'content' => ['required', 'array'],
@@ -105,43 +123,74 @@ final class PageController extends Controller
         return new JsonResponse(['saved_at' => now()->toAtomString()]);
     }
 
-    public function updateMeta(int $blog, int $page, Request $request, ManagePagesService $service): RedirectResponse
-    {
+    public function updateMeta(
+        int $blog,
+        int $page,
+        Request $request,
+        ManagePagesService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'slug' => self::SLUG,
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:500'],
         ]);
 
-        return $this->run($blog, $page, fn () => $service->updateMeta(
-            (int) $request->user()->id,
+        return $this->run(
             $blog,
             $page,
-            $data['slug'],
-            $data['seo_title'] ?? null,
-            $data['seo_description'] ?? null,
-        ), 'Page details saved.');
+            fn () => $service->updateMeta(
+                (int) $request->user()->id,
+                $blog,
+                $page,
+                $data['slug'],
+                $data['seo_title'] ?? null,
+                $data['seo_description'] ?? null,
+            ),
+            'Page details saved.',
+        );
     }
 
-    public function publish(int $blog, int $page, Request $request, ManagePagesService $service): RedirectResponse
-    {
-        return $this->run($blog, $page, fn () => $service->publish((int) $request->user()->id, $blog, $page), 'Page published.');
+    public function publish(
+        int $blog,
+        int $page,
+        Request $request,
+        ManagePagesService $service,
+    ): RedirectResponse {
+        return $this->run(
+            $blog,
+            $page,
+            fn () => $service->publish((int) $request->user()->id, $blog, $page),
+            'Page published.',
+        );
     }
 
-    public function changeStatus(int $blog, int $page, Request $request, ManagePagesService $service): RedirectResponse
-    {
+    public function changeStatus(
+        int $blog,
+        int $page,
+        Request $request,
+        ManagePagesService $service,
+    ): RedirectResponse {
         $data = $request->validate(['status' => ['required', 'in:DRAFT,ARCHIVED']]);
 
         return $this->run(
             $blog,
             $page,
-            fn () => $service->changeStatus((int) $request->user()->id, $blog, $page, PostStatus::from($data['status'])),
+            fn () => $service->changeStatus(
+                (int) $request->user()->id,
+                $blog,
+                $page,
+                PostStatus::from($data['status']),
+            ),
             'Page status updated.',
         );
     }
 
-    public function destroy(int $blog, int $page, Request $request, ManagePagesService $service): RedirectResponse
-    {
+    public function destroy(
+        int $blog,
+        int $page,
+        Request $request,
+        ManagePagesService $service,
+    ): RedirectResponse {
         try {
             $service->delete((int) $request->user()->id, $blog, $page);
         } catch (BlogNotFound) {
@@ -160,9 +209,13 @@ final class PageController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
-        return redirect()->route('blogs.pages.edit', [$blog, $page])->with('status', $message);
+        return redirect()
+            ->route('blogs.pages.edit', [$blog, $page])
+            ->with('status', $message);
     }
 }

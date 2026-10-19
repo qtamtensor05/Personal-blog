@@ -43,18 +43,29 @@ final class BlogDesignController extends Controller
             'design' => $design,
             'templates' => $templates->published(),
             'mediaAssets' => $media->readyForBlog($blog),
-            'activeRegion' => in_array($request->query('region'), ['header', 'body', 'sidebar', 'footer'], true)
+            'activeRegion' => in_array(
+                $request->query('region'),
+                ['header', 'body', 'sidebar', 'footer'],
+                true,
+            )
                 ? (string) $request->query('region')
                 : 'body',
         ]);
     }
 
-    public function applyTemplate(int $blog, Request $request, ApplyTemplateService $apply): RedirectResponse
-    {
+    public function applyTemplate(
+        int $blog,
+        Request $request,
+        ApplyTemplateService $apply,
+    ): RedirectResponse {
         $request->validate(['template_id' => ['required', 'integer', 'min:1']]);
 
         try {
-            $apply->execute((int) $request->user()->id, $blog, (int) $request->input('template_id'));
+            $apply->execute(
+                (int) $request->user()->id,
+                $blog,
+                (int) $request->input('template_id'),
+            );
         } catch (BlogNotFound) {
             abort(404);
         } catch (TemplateNotFound) {
@@ -65,7 +76,10 @@ final class BlogDesignController extends Controller
 
         return redirect()
             ->route('blogs.design.edit', $blog)
-            ->with('status', 'Template applied. Its fallback content is ready in your draft preview.');
+            ->with(
+                'status',
+                'Template applied. Its fallback content is ready in your draft preview.',
+            );
     }
 
     public function saveSlotContent(
@@ -84,7 +98,9 @@ final class BlogDesignController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()
@@ -97,8 +113,12 @@ final class BlogDesignController extends Controller
             );
     }
 
-    public function publishRegion(int $blog, string $region, Request $request, PublishRegionService $publish): RedirectResponse
-    {
+    public function publishRegion(
+        int $blog,
+        string $region,
+        Request $request,
+        PublishRegionService $publish,
+    ): RedirectResponse {
         try {
             $publish->execute((int) $request->user()->id, $blog, $region);
         } catch (BlogNotFound) {

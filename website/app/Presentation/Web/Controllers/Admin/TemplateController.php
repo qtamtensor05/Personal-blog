@@ -44,8 +44,10 @@ final class TemplateController extends Controller
         return view('admin.templates.create');
     }
 
-    public function store(CreateTemplateRequest $request, CreateTemplateUseCase $create): JsonResponse|RedirectResponse
-    {
+    public function store(
+        CreateTemplateRequest $request,
+        CreateTemplateUseCase $create,
+    ): JsonResponse|RedirectResponse {
         try {
             $id = $create->execute(
                 actorId: (int) $request->user()->id,
@@ -59,16 +61,25 @@ final class TemplateController extends Controller
                 draftData: $this->templateData($request),
             );
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
-            return $request->expectsJson() ? $this->error($exception->getMessage(), 422) : back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return $request->expectsJson()
+                ? $this->error($exception->getMessage(), 422)
+                : back()
+                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withInput();
         }
 
         return $request->expectsJson()
             ? new JsonResponse(['data' => ['id' => $id]], 201)
-            : redirect()->route('admin.templates.edit', $id)->with('status', 'Template draft created.');
+            : redirect()
+                ->route('admin.templates.edit', $id)
+                ->with('status', 'Template draft created.');
     }
 
-    public function edit(int $template, TemplateRepository $templates, MediaAssetRepository $media): View
-    {
+    public function edit(
+        int $template,
+        TemplateRepository $templates,
+        MediaAssetRepository $media,
+    ): View {
         $record = $templates->find($template);
 
         if ($record === null) {
@@ -76,7 +87,7 @@ final class TemplateController extends Controller
         }
 
         $mediaUrls = [];
-        $sections = $record->draftData?->sections ?? $record->publishedData?->sections ?? [];
+        $sections = $record->draftData?->sections ?? ($record->publishedData?->sections ?? []);
         foreach ($sections as $section) {
             $content = $section->props['content'] ?? null;
             if (! is_array($content)) {
@@ -118,21 +129,34 @@ final class TemplateController extends Controller
                     ? (int) $request->validated('preview_media_id')
                     : null,
                 demoUrl: $request->validated('demo_url'),
-                draftData: $this->templateData($request, $templates->find($template)?->draftData ?? $templates->find($template)?->publishedData),
+                draftData: $this->templateData(
+                    $request,
+                    $templates->find($template)?->draftData ??
+                        $templates->find($template)?->publishedData,
+                ),
             );
         } catch (TemplateNotFound) {
             return $request->expectsJson() ? $this->error('Template not found.', 404) : abort(404);
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
-            return $request->expectsJson() ? $this->error($exception->getMessage(), 422) : back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return $request->expectsJson()
+                ? $this->error($exception->getMessage(), 422)
+                : back()
+                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withInput();
         }
 
         return $request->expectsJson()
             ? new JsonResponse(null, 204)
-            : redirect()->route('admin.templates.edit', $template)->with('status', 'Template draft saved.');
+            : redirect()
+                ->route('admin.templates.edit', $template)
+                ->with('status', 'Template draft saved.');
     }
 
-    public function publish(int $template, PublishTemplateUseCase $publish, Request $request): JsonResponse
-    {
+    public function publish(
+        int $template,
+        PublishTemplateUseCase $publish,
+        Request $request,
+    ): JsonResponse {
         $statusValue = $request->input('status', TemplateStatus::Published->value);
 
         try {
@@ -176,8 +200,11 @@ final class TemplateController extends Controller
         return new JsonResponse(null, 204);
     }
 
-    public function destroy(int $template, DeleteTemplateUseCase $delete, Request $request): JsonResponse
-    {
+    public function destroy(
+        int $template,
+        DeleteTemplateUseCase $delete,
+        Request $request,
+    ): JsonResponse {
         try {
             $delete->execute((int) $request->user()->id, $template);
         } catch (TemplateNotFound) {
@@ -227,15 +254,28 @@ final class TemplateController extends Controller
         }
 
         $starter = $base ?? TemplateStarters::blog();
-        $requested = array_values(array_unique(array_filter($request->validated('sections', []), 'is_string')));
+        $requested = array_values(
+            array_unique(array_filter($request->validated('sections', []), 'is_string')),
+        );
         $visibility = $request->validated('slot_visibility', []);
         $order = $request->validated('slot_order', []);
-        usort($requested, fn (string $left, string $right) => ((int) ($order[$left] ?? 99)) <=> ((int) ($order[$right] ?? 99)));
+        usort(
+            $requested,
+            fn (string $left, string $right) => ((int) ($order[$left] ?? 99)) <=>
+                ((int) ($order[$right] ?? 99)),
+        );
         $labels = [
-            'header' => 'Header', 'hero' => 'Banner chính', 'image_text' => 'Ảnh và nội dung',
-            'gallery' => 'Gallery ảnh', 'recent_posts' => 'Bài viết mới', 'categories' => 'Chuyên mục',
-            'cta' => 'CTA', 'profile' => 'Giới thiệu blogger', 'sidebar_posts' => 'Bài viết sidebar',
-            'newsletter' => 'Newsletter', 'footer' => 'Footer',
+            'header' => 'Header',
+            'hero' => 'Banner chính',
+            'image_text' => 'Ảnh và nội dung',
+            'gallery' => 'Gallery ảnh',
+            'recent_posts' => 'Bài viết mới',
+            'categories' => 'Chuyên mục',
+            'cta' => 'CTA',
+            'profile' => 'Giới thiệu blogger',
+            'sidebar_posts' => 'Bài viết sidebar',
+            'newsletter' => 'Newsletter',
+            'footer' => 'Footer',
         ];
         $sections = array_map(
             fn (string $section) => new TemplateSectionConfig(

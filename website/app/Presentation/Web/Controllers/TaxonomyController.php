@@ -18,8 +18,12 @@ final class TaxonomyController extends Controller
 {
     private const SLUG = ['required', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'];
 
-    public function index(int $blog, Request $request, OwnedBlogGuard $guard, TaxonomyRepository $taxonomy): View
-    {
+    public function index(
+        int $blog,
+        Request $request,
+        OwnedBlogGuard $guard,
+        TaxonomyRepository $taxonomy,
+    ): View {
         try {
             $record = $guard->ensure((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {
@@ -33,38 +37,60 @@ final class TaxonomyController extends Controller
         ]);
     }
 
-    public function storeCategory(int $blog, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
-        $data = $request->validate($this->categoryRules());
+    public function storeCategory(
+        int $blog,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
+        $data = $request->validate($this->categoryRules(), $this->validationMessages());
 
-        return $this->run($blog, fn () => $service->createCategory(
-            (int) $request->user()->id,
+        return $this->run(
             $blog,
-            $data['name'],
-            $data['slug'],
-            $data['description'] ?? null,
-            isset($data['parent_id']) ? (int) $data['parent_id'] : null,
-        ), 'Category created.');
+            fn () => $service->createCategory(
+                (int) $request->user()->id,
+                $blog,
+                $data['name'],
+                $data['slug'],
+                $data['description'] ?? null,
+                isset($data['parent_id']) ? (int) $data['parent_id'] : null,
+            ),
+            'Category created.',
+        );
     }
 
-    public function updateCategory(int $blog, int $category, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
-        $data = $request->validate($this->categoryRules() + ['is_active' => ['required', 'boolean']]);
+    public function updateCategory(
+        int $blog,
+        int $category,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
+        $data = $request->validate(
+            $this->categoryRules() + ['is_active' => ['required', 'boolean']],
+            $this->validationMessages(),
+        );
 
-        return $this->run($blog, fn () => $service->updateCategory(
-            (int) $request->user()->id,
+        return $this->run(
             $blog,
-            $category,
-            $data['name'],
-            $data['slug'],
-            $data['description'] ?? null,
-            isset($data['parent_id']) ? (int) $data['parent_id'] : null,
-            (bool) $data['is_active'],
-        ), 'Category updated.');
+            fn () => $service->updateCategory(
+                (int) $request->user()->id,
+                $blog,
+                $category,
+                $data['name'],
+                $data['slug'],
+                $data['description'] ?? null,
+                isset($data['parent_id']) ? (int) $data['parent_id'] : null,
+                (bool) $data['is_active'],
+            ),
+            'Category updated.',
+        );
     }
 
-    public function destroyCategory(int $blog, int $category, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
+    public function destroyCategory(
+        int $blog,
+        int $category,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
         return $this->run(
             $blog,
             fn () => $service->deleteCategory((int) $request->user()->id, $blog, $category),
@@ -72,30 +98,64 @@ final class TaxonomyController extends Controller
         );
     }
 
-    public function storeTag(int $blog, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
-        $data = $request->validate(['name' => ['required', 'string', 'max:160'], 'slug' => self::SLUG]);
+    public function storeTag(
+        int $blog,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
+        $data = $request->validate(
+            [
+                'name' => ['required', 'string', 'max:160'],
+                'slug' => self::SLUG,
+            ],
+            $this->validationMessages(),
+        );
 
         return $this->run(
             $blog,
-            fn () => $service->createTag((int) $request->user()->id, $blog, $data['name'], $data['slug']),
+            fn () => $service->createTag(
+                (int) $request->user()->id,
+                $blog,
+                $data['name'],
+                $data['slug'],
+            ),
             'Tag created.',
         );
     }
 
-    public function updateTag(int $blog, int $tag, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
-        $data = $request->validate(['name' => ['required', 'string', 'max:160'], 'slug' => self::SLUG]);
+    public function updateTag(
+        int $blog,
+        int $tag,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
+        $data = $request->validate(
+            [
+                'name' => ['required', 'string', 'max:160'],
+                'slug' => self::SLUG,
+            ],
+            $this->validationMessages(),
+        );
 
         return $this->run(
             $blog,
-            fn () => $service->updateTag((int) $request->user()->id, $blog, $tag, $data['name'], $data['slug']),
+            fn () => $service->updateTag(
+                (int) $request->user()->id,
+                $blog,
+                $tag,
+                $data['name'],
+                $data['slug'],
+            ),
             'Tag updated.',
         );
     }
 
-    public function destroyTag(int $blog, int $tag, Request $request, ManageTaxonomyService $service): RedirectResponse
-    {
+    public function destroyTag(
+        int $blog,
+        int $tag,
+        Request $request,
+        ManageTaxonomyService $service,
+    ): RedirectResponse {
         return $this->run(
             $blog,
             fn () => $service->deleteTag((int) $request->user()->id, $blog, $tag),
@@ -116,6 +176,16 @@ final class TaxonomyController extends Controller
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private function validationMessages(): array
+    {
+        return [
+            'slug.regex' => 'Slug chỉ được chứa chữ thường không dấu, số và dấu gạch ngang.',
+        ];
+    }
+
     private function run(int $blog, callable $action, string $message): RedirectResponse
     {
         try {
@@ -123,7 +193,9 @@ final class TaxonomyController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('blogs.taxonomy', $blog)->with('status', $message);

@@ -25,7 +25,12 @@ final class UpdatePlatformSettingsRequest extends FormRequest
             'default_blog_post_limit' => ['required', 'integer', 'between:1,10000'],
             'default_media_quota_mb' => ['required', 'integer', 'between:1,10240'],
             'maintenance_banner_enabled' => ['required', 'boolean'],
-            'maintenance_banner_message' => ['nullable', 'string', 'max:500', 'required_if:maintenance_banner_enabled,1'],
+            'maintenance_banner_message' => [
+                'nullable',
+                'string',
+                'max:500',
+                'required_if:maintenance_banner_enabled,1',
+            ],
         ];
     }
 }

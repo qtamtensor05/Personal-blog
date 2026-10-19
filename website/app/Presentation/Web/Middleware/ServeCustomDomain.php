@@ -32,7 +32,10 @@ final readonly class ServeCustomDomain
     {
         $host = strtolower($request->getHost());
 
-        if ($host === DomainServiceProvider::platformHost() || in_array($host, ['localhost', '127.0.0.1'], true)) {
+        if (
+            $host === DomainServiceProvider::platformHost() ||
+            in_array($host, ['localhost', '127.0.0.1'], true)
+        ) {
             return $next($request);
         }
 
@@ -51,17 +54,22 @@ final readonly class ServeCustomDomain
 
         $path = trim($request->path(), '/');
 
-        return response(match (true) {
-            $path === '' => app()->call([app(PublicBlogController::class), '__invoke'], ['slug' => $slug]),
-            preg_match('#^p/('.self::SLUG.')$#', $path, $m) === 1 => app()->call(
-                [app(PublicPageController::class), '__invoke'],
-                ['slug' => $slug, 'page' => $m[1]],
-            ),
-            preg_match('#^('.self::SLUG.')$#', $path, $m) === 1 => app()->call(
-                [app(PublicPostController::class), '__invoke'],
-                ['slug' => $slug, 'post' => $m[1]],
-            ),
-            default => abort(404),
-        });
+        return response(
+            match (true) {
+                $path === '' => app()->call(
+                    [app(PublicBlogController::class), '__invoke'],
+                    ['slug' => $slug],
+                ),
+                preg_match('#^p/('.self::SLUG.')$#', $path, $m) === 1 => app()->call(
+                    [app(PublicPageController::class), '__invoke'],
+                    ['slug' => $slug, 'page' => $m[1]],
+                ),
+                preg_match('#^('.self::SLUG.')$#', $path, $m) === 1 => app()->call(
+                    [app(PublicPostController::class), '__invoke'],
+                    ['slug' => $slug, 'post' => $m[1]],
+                ),
+                default => abort(404),
+            },
+        );
     }
 }

@@ -13,16 +13,14 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AccessControlSeeder::class);
 
-        $email = config('bootstrap.admin_email')
-            ?: env('BOOTSTRAP_ADMIN_EMAIL');
+        $email = config('bootstrap.admin_email') ?: env('BOOTSTRAP_ADMIN_EMAIL');
 
-        $password = config('bootstrap.admin_password')
-            ?: env('BOOTSTRAP_ADMIN_PASSWORD');
+        $password = config('bootstrap.admin_password') ?: env('BOOTSTRAP_ADMIN_PASSWORD');
 
         if (! $email && ! $password) {
             $this->call(LifestyleEditorialTemplateSeeder::class);
             $this->command?->warn(
-                'Skipping Owner account: bootstrap credentials are not configured.'
+                'Skipping Owner account: bootstrap credentials are not configured.',
             );
 
             return;
@@ -35,16 +33,14 @@ class DatabaseSeeder extends Seeder
             strlen($password) < 12
         ) {
             throw new RuntimeException(
-                'Configure a valid BOOTSTRAP_ADMIN_EMAIL and a BOOTSTRAP_ADMIN_PASSWORD of at least 12 characters.'
+                'Configure a valid BOOTSTRAP_ADMIN_EMAIL and a BOOTSTRAP_ADMIN_PASSWORD of at least 12 characters.',
             );
         }
 
         $now = now();
 
         DB::transaction(function () use ($email, $password, $now): void {
-            $user = DB::table('users')
-                ->where('email', $email)
-                ->first();
+            $user = DB::table('users')->where('email', $email)->first();
 
             if ($user === null) {
                 $userId = DB::table('users')->insertGetId([
@@ -60,13 +56,11 @@ class DatabaseSeeder extends Seeder
                 $userId = $user->id;
             }
 
-            $roleId = DB::table('platform_roles')
-                ->where('code', 'SUPER_ADMIN')
-                ->value('id');
+            $roleId = DB::table('platform_roles')->where('code', 'SUPER_ADMIN')->value('id');
 
             if (! $roleId) {
                 throw new RuntimeException(
-                    'SUPER_ADMIN role was not created by AccessControlSeeder.'
+                    'SUPER_ADMIN role was not created by AccessControlSeeder.',
                 );
             }
 

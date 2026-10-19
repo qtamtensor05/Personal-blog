@@ -59,7 +59,9 @@ final class BlogSettingsController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('blogs.settings.edit', $blog)->with('status', 'Settings saved.');

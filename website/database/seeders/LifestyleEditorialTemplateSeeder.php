@@ -24,13 +24,18 @@ final class LifestyleEditorialTemplateSeeder extends Seeder
             ->value('users.id');
 
         if ($adminId === null) {
-            $this->command?->warn('Skipping Lifestyle Editorial template: no SUPER_ADMIN user exists.');
+            $this->command?->warn(
+                'Skipping Lifestyle Editorial template: no SUPER_ADMIN user exists.',
+            );
 
             return;
         }
 
         $now = now();
-        $data = json_encode(TemplateStarters::lifestyleEditorial(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        $data = json_encode(
+            TemplateStarters::lifestyleEditorial(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE,
+        );
 
         DB::table('templates')->insert([
             'name' => 'Lifestyle Editorial',

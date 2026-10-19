@@ -27,9 +27,11 @@ final class AccessControlServiceProvider extends ServiceProvider
         $router->aliasMiddleware('permission', EnsurePlatformPermission::class);
 
         View::composer('layouts.app', function ($view): void {
-            $canAccessAdminConsole = Auth::check() && $this->app
-                ->make(PermissionResolver::class)
-                ->has((int) Auth::id(), PlatformPermission::AccessAdminConsole);
+            $canAccessAdminConsole =
+                Auth::check() &&
+                $this->app
+                    ->make(PermissionResolver::class)
+                    ->has((int) Auth::id(), PlatformPermission::AccessAdminConsole);
 
             $view->with('canAccessAdminConsole', $canAccessAdminConsole);
         });

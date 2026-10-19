@@ -26,8 +26,12 @@ final class PostController extends Controller
 {
     private const SLUG = ['required', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'];
 
-    public function index(int $blog, Request $request, OwnedBlogGuard $guard, PostRepository $posts): View
-    {
+    public function index(
+        int $blog,
+        Request $request,
+        OwnedBlogGuard $guard,
+        PostRepository $posts,
+    ): View {
         try {
             $record = $guard->ensure((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {
@@ -37,8 +41,11 @@ final class PostController extends Controller
         return view('posts.manage.index', ['blog' => $record, 'posts' => $posts->forBlog($blog)]);
     }
 
-    public function store(int $blog, Request $request, ManagePostsService $service): RedirectResponse
-    {
+    public function store(
+        int $blog,
+        Request $request,
+        ManagePostsService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
@@ -54,7 +61,9 @@ final class PostController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException|InvalidArgumentException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('blogs.posts.edit', [$blog, $id]);
@@ -96,8 +105,12 @@ final class PostController extends Controller
     /**
      * JSON autosave / save from the Tiptap editor.
      */
-    public function saveDraft(int $blog, int $post, Request $request, ManagePostsService $service): JsonResponse
-    {
+    public function saveDraft(
+        int $blog,
+        int $post,
+        Request $request,
+        ManagePostsService $service,
+    ): JsonResponse {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'excerpt' => ['nullable', 'string', 'max:1000'],
@@ -109,7 +122,11 @@ final class PostController extends Controller
                 (int) $request->user()->id,
                 $blog,
                 $post,
-                new PostDraft($data['title'], $data['excerpt'] ?? null, TiptapDocument::fromArray($data['content'])),
+                new PostDraft(
+                    $data['title'],
+                    $data['excerpt'] ?? null,
+                    TiptapDocument::fromArray($data['content']),
+                ),
             );
         } catch (BlogNotFound) {
             return new JsonResponse(['message' => 'Not found.'], 404);
@@ -120,8 +137,12 @@ final class PostController extends Controller
         return new JsonResponse(['saved_at' => now()->toAtomString()]);
     }
 
-    public function updateMeta(int $blog, int $post, Request $request, ManagePostsService $service): RedirectResponse
-    {
+    public function updateMeta(
+        int $blog,
+        int $post,
+        Request $request,
+        ManagePostsService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'slug' => self::SLUG,
             'cover_media_id' => ['nullable', 'integer', 'min:1'],
@@ -135,40 +156,67 @@ final class PostController extends Controller
             'tag_ids.*' => ['integer', 'min:1'],
         ]);
 
-        return $this->run($blog, $post, fn () => $service->updateMeta(
-            (int) $request->user()->id,
+        return $this->run(
             $blog,
             $post,
-            $data['slug'],
-            isset($data['cover_media_id']) ? (int) $data['cover_media_id'] : null,
-            isset($data['og_media_id']) ? (int) $data['og_media_id'] : null,
-            $data['seo_title'] ?? null,
-            $data['seo_description'] ?? null,
-            (bool) $data['is_featured'],
-            array_map('intval', $data['category_ids'] ?? []),
-            array_map('intval', $data['tag_ids'] ?? []),
-        ), 'Post details saved.');
+            fn () => $service->updateMeta(
+                (int) $request->user()->id,
+                $blog,
+                $post,
+                $data['slug'],
+                isset($data['cover_media_id']) ? (int) $data['cover_media_id'] : null,
+                isset($data['og_media_id']) ? (int) $data['og_media_id'] : null,
+                $data['seo_title'] ?? null,
+                $data['seo_description'] ?? null,
+                (bool) $data['is_featured'],
+                array_map('intval', $data['category_ids'] ?? []),
+                array_map('intval', $data['tag_ids'] ?? []),
+            ),
+            'Post details saved.',
+        );
     }
 
-    public function publish(int $blog, int $post, Request $request, ManagePostsService $service): RedirectResponse
-    {
-        return $this->run($blog, $post, fn () => $service->publish((int) $request->user()->id, $blog, $post), 'Post published.');
+    public function publish(
+        int $blog,
+        int $post,
+        Request $request,
+        ManagePostsService $service,
+    ): RedirectResponse {
+        return $this->run(
+            $blog,
+            $post,
+            fn () => $service->publish((int) $request->user()->id, $blog, $post),
+            'Post published.',
+        );
     }
 
-    public function changeStatus(int $blog, int $post, Request $request, ManagePostsService $service): RedirectResponse
-    {
+    public function changeStatus(
+        int $blog,
+        int $post,
+        Request $request,
+        ManagePostsService $service,
+    ): RedirectResponse {
         $data = $request->validate(['status' => ['required', 'in:DRAFT,ARCHIVED']]);
 
         return $this->run(
             $blog,
             $post,
-            fn () => $service->changeStatus((int) $request->user()->id, $blog, $post, PostStatus::from($data['status'])),
+            fn () => $service->changeStatus(
+                (int) $request->user()->id,
+                $blog,
+                $post,
+                PostStatus::from($data['status']),
+            ),
             'Post status updated.',
         );
     }
 
-    public function destroy(int $blog, int $post, Request $request, ManagePostsService $service): RedirectResponse
-    {
+    public function destroy(
+        int $blog,
+        int $post,
+        Request $request,
+        ManagePostsService $service,
+    ): RedirectResponse {
         try {
             $service->delete((int) $request->user()->id, $blog, $post);
         } catch (BlogNotFound) {
@@ -187,9 +235,13 @@ final class PostController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
-        return redirect()->route('blogs.posts.edit', [$blog, $post])->with('status', $message);
+        return redirect()
+            ->route('blogs.posts.edit', [$blog, $post])
+            ->with('status', $message);
     }
 }

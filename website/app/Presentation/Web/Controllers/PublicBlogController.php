@@ -16,8 +16,13 @@ use Illuminate\View\View;
 
 final class PublicBlogController extends Controller
 {
-    public function __invoke(string $slug, Request $request, ViewPublicBlogService $viewBlog, MediaAssetRepository $media, TiptapHtmlRenderer $renderer): View
-    {
+    public function __invoke(
+        string $slug,
+        Request $request,
+        ViewPublicBlogService $viewBlog,
+        MediaAssetRepository $media,
+        TiptapHtmlRenderer $renderer,
+    ): View {
         try {
             $page = $viewBlog->execute($slug, $request->user() ? (int) $request->user()->id : null);
         } catch (BlogNotFound) {
@@ -37,12 +42,20 @@ final class PublicBlogController extends Controller
                     $mediaUrls[(int) $id] = $asset->secureUrl;
                 }
             }
-            if ($section->section === 'document' && isset($content['content']) && is_array($content['content'])) {
+            if (
+                $section->section === 'document' &&
+                isset($content['content']) &&
+                is_array($content['content'])
+            ) {
                 $document = TiptapDocument::fromArray($content['content']);
                 $assets = [];
                 foreach ($document->mediaIds() as $id) {
                     if (($asset = $media->find($id)) !== null) {
-                        $assets[$id] = ['url' => $asset->secureUrl, 'width' => $asset->width, 'height' => $asset->height];
+                        $assets[$id] = [
+                            'url' => $asset->secureUrl,
+                            'width' => $asset->width,
+                            'height' => $asset->height,
+                        ];
                     }
                 }
                 $documentHtml[$section->key] = $renderer->render($document, $assets);

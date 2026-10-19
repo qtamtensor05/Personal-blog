@@ -54,7 +54,9 @@ final class MediaController extends Controller
             $asset = $upload->execute(
                 actorId: (int) $request->user()->id,
                 scope: MediaScope::from($request->validated('scope')),
-                blogId: $request->validated('blog_id') !== null ? (int) $request->validated('blog_id') : null,
+                blogId: $request->validated('blog_id') !== null
+                    ? (int) $request->validated('blog_id')
+                    : null,
                 localPath: $file->getRealPath(),
                 originalName: $file->getClientOriginalName(),
                 mimeType: $file->getMimeType(),

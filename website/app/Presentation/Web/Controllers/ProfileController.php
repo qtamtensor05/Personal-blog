@@ -42,7 +42,9 @@ final class ProfileController extends Controller
             try {
                 $passwords->assertCurrentPassword($userId, (string) $data['current_password']);
             } catch (DomainException $exception) {
-                throw ValidationException::withMessages(['current_password' => $exception->getMessage()]);
+                throw ValidationException::withMessages([
+                    'current_password' => $exception->getMessage(),
+                ]);
             }
         }
 
@@ -73,12 +75,18 @@ final class ProfileController extends Controller
         $names->execute($userId, (string) $data['name']);
 
         if ($changesPassword) {
-            $passwords->execute($userId, (string) $data['current_password'], (string) $data['password']);
+            $passwords->execute(
+                $userId,
+                (string) $data['current_password'],
+                (string) $data['password'],
+            );
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('status', 'Profile and password updated. Please sign in again.');
+            return redirect()
+                ->route('login')
+                ->with('status', 'Profile and password updated. Please sign in again.');
         }
 
         return back()->with('status', 'Profile updated.');

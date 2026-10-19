@@ -14,10 +14,13 @@ final class LocalMediaStorageTest extends TestCase
     {
         Storage::fake('public');
         $source = tempnam(sys_get_temp_dir(), 'avatar-');
-        file_put_contents($source, base64_decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-            true,
-        ));
+        file_put_contents(
+            $source,
+            base64_decode(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                true,
+            ),
+        );
 
         try {
             $storage = new LocalMediaStorage('public');

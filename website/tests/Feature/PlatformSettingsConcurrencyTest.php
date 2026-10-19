@@ -15,7 +15,9 @@ it('rejects a stale platform settings update', function (): void {
     expect($actorId)->toBeGreaterThan(0);
 
     $first = $repository->update(
-        PlatformSettingsData::fromArray(array_replace($initial->data->toArray(), ['site_name' => 'First admin save'])),
+        PlatformSettingsData::fromArray(
+            array_replace($initial->data->toArray(), ['site_name' => 'First admin save']),
+        ),
         $initial->revision,
         $actorId,
     );
@@ -23,7 +25,9 @@ it('rejects a stale platform settings update', function (): void {
     expect($first->revision)->toBe($initial->revision + 1);
 
     $repository->update(
-        PlatformSettingsData::fromArray(array_replace($initial->data->toArray(), ['site_name' => 'Stale admin save'])),
+        PlatformSettingsData::fromArray(
+            array_replace($initial->data->toArray(), ['site_name' => 'Stale admin save']),
+        ),
         $initial->revision,
         $actorId,
     );

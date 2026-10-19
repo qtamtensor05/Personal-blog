@@ -45,12 +45,17 @@ final class BlogController extends Controller
                 description: $request->validated('description'),
             );
         } catch (BlogSlugTaken $exception) {
-            return back()->withErrors(['slug' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['slug' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()
             ->route('blogs.design.edit', $id)
-            ->with('status', 'Blog created. Choose a template published by an admin to start your design.');
+            ->with(
+                'status',
+                'Blog created. Choose a template published by an admin to start your design.',
+            );
     }
 
     public function show(int $blog, BlogRepository $blogs, Request $request): View
@@ -95,18 +100,23 @@ final class BlogController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (BlogSlugTaken $exception) {
-            return back()->withErrors(['slug' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['slug' => $exception->getMessage()])
+                ->withInput();
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
-        return redirect()
-            ->route('blogs.show', $blog)
-            ->with('status', 'Blog updated successfully.');
+        return redirect()->route('blogs.show', $blog)->with('status', 'Blog updated successfully.');
     }
 
-    public function destroy(int $blog, DeleteBlogUseCase $delete, Request $request): RedirectResponse
-    {
+    public function destroy(
+        int $blog,
+        DeleteBlogUseCase $delete,
+        Request $request,
+    ): RedirectResponse {
         try {
             $delete->execute((int) $request->user()->id, $blog);
         } catch (BlogNotFound) {
@@ -115,8 +125,6 @@ final class BlogController extends Controller
             return back()->withErrors(['general' => $exception->getMessage()]);
         }
 
-        return redirect()
-            ->route('blogs.index')
-            ->with('status', 'Blog deleted.');
+        return redirect()->route('blogs.index')->with('status', 'Blog deleted.');
     }
 }

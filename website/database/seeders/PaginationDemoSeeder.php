@@ -71,17 +71,30 @@ final class PaginationDemoSeeder extends Seeder
                     [
                         'title' => sprintf('Pagination demo post %02d', $number),
                         'author_user_id' => $userId,
-                        'excerpt' => sprintf('Demo article %02d used to verify page navigation and ordering.', $number),
-                        'content_json' => json_encode([
-                            'type' => 'doc',
-                            'content' => [[
-                                'type' => 'paragraph',
-                                'content' => [[
-                                    'type' => 'text',
-                                    'text' => sprintf('Pagination demo content for article %02d.', $number),
-                                ]],
-                            ]],
-                        ], JSON_THROW_ON_ERROR),
+                        'excerpt' => sprintf(
+                            'Demo article %02d used to verify page navigation and ordering.',
+                            $number,
+                        ),
+                        'content_json' => json_encode(
+                            [
+                                'type' => 'doc',
+                                'content' => [
+                                    [
+                                        'type' => 'paragraph',
+                                        'content' => [
+                                            [
+                                                'type' => 'text',
+                                                'text' => sprintf(
+                                                    'Pagination demo content for article %02d.',
+                                                    $number,
+                                                ),
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            JSON_THROW_ON_ERROR,
+                        ),
                         'status' => 'PUBLISHED',
                         'published_at' => $now->copy()->subMinutes($number),
                         'is_featured' => $number === 1,

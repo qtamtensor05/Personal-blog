@@ -49,11 +49,17 @@ final class TiptapHtmlRenderer
             'blockquote' => '<blockquote>'.$inner().'</blockquote>',
             'codeBlock' => sprintf(
                 '<pre><code%s>%s</code></pre>',
-                $node['attrs']['language'] ? ' class="language-'.e($node['attrs']['language']).'"' : '',
+                $node['attrs']['language']
+                    ? ' class="language-'.e($node['attrs']['language']).'"'
+                    : '',
                 $inner(),
             ),
             'image' => $this->image($node, $media),
-            'layout' => '<div class="template-layout template-layout-'.$this->safeColumns($node).'">'.$inner().'</div>',
+            'layout' => '<div class="template-layout template-layout-'.
+                $this->safeColumns($node).
+                '">'.
+                $inner().
+                '</div>',
             'layoutCell' => '<div class="template-layout-cell">'.$inner().'</div>',
             default => '',
         };
@@ -79,7 +85,11 @@ final class TiptapHtmlRenderer
                 'strike' => "<s>{$html}</s>",
                 'underline' => "<u>{$html}</u>",
                 'code' => "<code>{$html}</code>",
-                'link' => '<a href="'.e($mark['attrs']['href']).'" rel="noopener nofollow ugc">'.$html.'</a>',
+                'link' => '<a href="'.
+                    e($mark['attrs']['href']).
+                    '" rel="noopener nofollow ugc">'.
+                    $html.
+                    '</a>',
                 default => $html,
             };
         }
@@ -101,9 +111,10 @@ final class TiptapHtmlRenderer
             return '';
         }
 
-        $size = $asset['width'] !== null && $asset['height'] !== null
-            ? sprintf(' width="%d" height="%d"', $asset['width'], $asset['height'])
-            : '';
+        $size =
+            $asset['width'] !== null && $asset['height'] !== null
+                ? sprintf(' width="%d" height="%d"', $asset['width'], $asset['height'])
+                : '';
 
         return sprintf(
             '<figure><img src="%s" alt="%s" loading="lazy"%s></figure>',

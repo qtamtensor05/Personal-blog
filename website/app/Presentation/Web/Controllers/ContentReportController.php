@@ -16,21 +16,32 @@ use Illuminate\Routing\Controller;
  */
 final class ContentReportController extends Controller
 {
-    public function __invoke(string $slug, Request $request, ModerateContentService $service): RedirectResponse
-    {
+    public function __invoke(
+        string $slug,
+        Request $request,
+        ModerateContentService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'post' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'reason' => ['required', 'string', 'min:10', 'max:2000'],
         ]);
 
         try {
-            $service->report((int) $request->user()->id, $slug, $data['post'] ?? null, $data['reason']);
+            $service->report(
+                (int) $request->user()->id,
+                $slug,
+                $data['post'] ?? null,
+                $data['reason'],
+            );
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
             return back()->withErrors(['report' => $exception->getMessage()]);
         }
 
-        return back()->with('report_status', 'Thanks. Your report has been sent to the moderators.');
+        return back()->with(
+            'report_status',
+            'Thanks. Your report has been sent to the moderators.',
+        );
     }
 }

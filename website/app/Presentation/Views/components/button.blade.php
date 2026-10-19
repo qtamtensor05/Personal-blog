@@ -1,4 +1,4 @@
-@props([
+@props ([
     'variant' => 'primary',
     'type' => 'button',
     'size' => 'md',
@@ -6,29 +6,43 @@
 ])
 
 @php
-$baseClasses = 'btn';
+    $baseClasses = 'btn';
 
-$variantClasses = match($variant) {
-    'secondary' => 'btn-secondary',
-    'ghost' => 'btn-ghost',
-    default => 'btn-primary',
-};
+    $variantClasses = match ($variant) {
+        'secondary' => 'btn-secondary',
+        'ghost' => 'btn-ghost',
+        default => 'btn-primary',
+    };
 
-$sizeClasses = match($size) {
-    'sm' => 'btn-sm',
-    'lg' => 'btn-lg',
-    default => '',
-};
+    $sizeClasses = match ($size) {
+        'sm' => 'btn-sm',
+        'lg' => 'btn-lg',
+        default => '',
+    };
 
-$classes = trim("$baseClasses $variantClasses $sizeClasses");
+    $classes = trim("$baseClasses $variantClasses $sizeClasses");
 @endphp
 
 @if ($href)
-    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
+    <a
+        href="{{ $href }}"
+        {{
+            $attributes->merge([
+                'class' => $classes,
+            ])
+        }}
+    >
         {{ $slot }}
     </a>
 @else
-    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
+    <button
+        type="{{ $type }}"
+        {{
+            $attributes->merge([
+                'class' => $classes,
+            ])
+        }}
+    >
         {{ $slot }}
     </button>
 @endif

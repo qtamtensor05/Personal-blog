@@ -57,7 +57,13 @@ final class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:254'],
         ]);
 
-        $name = trim((string) preg_replace('/[._-]+/', ' ', strstr($data['email'], '@', true) ?: $data['email']));
+        $name = trim(
+            (string) preg_replace(
+                '/[._-]+/',
+                ' ',
+                strstr($data['email'], '@', true) ?: $data['email'],
+            ),
+        );
         $name = ucwords($name === '' ? 'Administrator' : $name);
 
         try {
@@ -80,20 +86,22 @@ final class UserController extends Controller
             throw new DomainException('The SUPER_ADMIN role is not configured.');
         }
 
-        $users->grantRole(
-            $user->id(),
-            (int) $adminRole['id'],
-            (int) $request->user()->id,
-            null,
-        );
+        $users->grantRole($user->id(), (int) $adminRole['id'], (int) $request->user()->id, null);
 
         return redirect()
             ->route('admin.users.index')
-            ->with('status', 'Admin account created. A verification email was sent to the address.');
+            ->with(
+                'status',
+                'Admin account created. A verification email was sent to the address.',
+            );
     }
 
-    public function show(int $user, Request $request, AdminUserRepository $users, PermissionResolver $permissions): View
-    {
+    public function show(
+        int $user,
+        Request $request,
+        AdminUserRepository $users,
+        PermissionResolver $permissions,
+    ): View {
         $record = $users->find($user) ?? abort(404);
 
         return view('admin.users.show', [
@@ -102,25 +110,35 @@ final class UserController extends Controller
             'permissions' => $users->permissions(),
             'permissionOverrides' => $users->permissionOverrides($user),
             'isSelf' => $record->id === (int) $request->user()->id,
-            'canManageRoles' => $permissions->has((int) $request->user()->id, PlatformPermission::ManageRoles),
+            'canManageRoles' => $permissions->has(
+                (int) $request->user()->id,
+                PlatformPermission::ManageRoles,
+            ),
         ]);
     }
 
-    public function restrict(int $user, Request $request, ManageUsersService $service): RedirectResponse
-    {
+    public function restrict(
+        int $user,
+        Request $request,
+        ManageUsersService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'kind' => ['required', 'in:LOCK,SUSPEND,DISABLE'],
             'reason' => ['required', 'string', 'max:2000'],
             'ends_at' => ['nullable', 'date'],
         ]);
 
-        return $this->run($user, fn () => $service->restrict(
-            (int) $request->user()->id,
+        return $this->run(
             $user,
-            $data['kind'],
-            $data['reason'],
-            isset($data['ends_at']) ? new DateTimeImmutable($data['ends_at']) : null,
-        ), 'Restriction applied. The user has been signed out.');
+            fn () => $service->restrict(
+                (int) $request->user()->id,
+                $user,
+                $data['kind'],
+                $data['reason'],
+                isset($data['ends_at']) ? new DateTimeImmutable($data['ends_at']) : null,
+            ),
+            'Restriction applied. The user has been signed out.',
+        );
     }
 
     public function lift(int $user, Request $request, ManageUsersService $service): RedirectResponse
@@ -134,23 +152,34 @@ final class UserController extends Controller
         );
     }
 
-    public function grantRole(int $user, Request $request, ManageUsersService $service): RedirectResponse
-    {
+    public function grantRole(
+        int $user,
+        Request $request,
+        ManageUsersService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'role_id' => ['required', 'integer', 'min:1'],
             'expires_at' => ['nullable', 'date'],
         ]);
 
-        return $this->run($user, fn () => $service->grantRole(
-            (int) $request->user()->id,
+        return $this->run(
             $user,
-            (int) $data['role_id'],
-            isset($data['expires_at']) ? new DateTimeImmutable($data['expires_at']) : null,
-        ), 'Role granted.');
+            fn () => $service->grantRole(
+                (int) $request->user()->id,
+                $user,
+                (int) $data['role_id'],
+                isset($data['expires_at']) ? new DateTimeImmutable($data['expires_at']) : null,
+            ),
+            'Role granted.',
+        );
     }
 
-    public function revokeRole(int $user, int $role, Request $request, ManageUsersService $service): RedirectResponse
-    {
+    public function revokeRole(
+        int $user,
+        int $role,
+        Request $request,
+        ManageUsersService $service,
+    ): RedirectResponse {
         return $this->run(
             $user,
             fn () => $service->revokeRole((int) $request->user()->id, $user, $role),
@@ -168,12 +197,16 @@ final class UserController extends Controller
             'effect' => ['required', 'in:GRANT,DENY'],
         ]);
 
-        return $this->run($user, fn () => $service->setPermissionOverride(
-            (int) $request->user()->id,
+        return $this->run(
             $user,
-            (int) $data['permission_id'],
-            $data['effect'],
-        ), 'User permission updated.');
+            fn () => $service->setPermissionOverride(
+                (int) $request->user()->id,
+                $user,
+                (int) $data['permission_id'],
+                $data['effect'],
+            ),
+            'User permission updated.',
+        );
     }
 
     public function auditLogs(Request $request, AdminUserRepository $users): View
@@ -193,7 +226,9 @@ final class UserController extends Controller
         try {
             $action();
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('admin.users.show', $user)->with('status', $message);

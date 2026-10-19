@@ -16,7 +16,10 @@ final class TemplateSlotConfigurationTest extends TestCase
 {
     public function test_starter_has_fixed_page_regions(): void
     {
-        $regions = array_map(fn (TemplateSectionConfig $slot) => $slot->region, TemplateStarters::blog()->sections);
+        $regions = array_map(
+            fn (TemplateSectionConfig $slot) => $slot->region,
+            TemplateStarters::blog()->sections,
+        );
 
         self::assertContains('header', $regions);
         self::assertContains('body', $regions);
@@ -64,11 +67,15 @@ final class TemplateSlotConfigurationTest extends TestCase
     public function test_blog_slot_content_is_serialized_separately_from_template_slots(): void
     {
         $template = TemplateStarters::blog();
-        $design = BlogDesignData::fromTemplate(1, 1, $template)
-            ->withSlotContent(['hero' => ['title' => 'A safe, fixed hero']]);
+        $design = BlogDesignData::fromTemplate(1, 1, $template)->withSlotContent([
+            'hero' => ['title' => 'A safe, fixed hero'],
+        ]);
 
         self::assertTrue($design->hasSlotContent());
-        self::assertSame('A safe, fixed hero', $design->jsonSerialize()['slotContent']['hero']['title']);
+        self::assertSame(
+            'A safe, fixed hero',
+            $design->jsonSerialize()['slotContent']['hero']['title'],
+        );
         self::assertSame('hero', $design->sections[1]->section);
         self::assertSame('default', $design->layout);
     }

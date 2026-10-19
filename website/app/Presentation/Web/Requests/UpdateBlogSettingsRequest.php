@@ -9,7 +9,15 @@ use Illuminate\Foundation\Http\FormRequest;
 final class UpdateBlogSettingsRequest extends FormRequest
 {
     /** Platforms shown in the settings form. */
-    public const SOCIAL_PLATFORMS = ['website', 'github', 'twitter', 'facebook', 'linkedin', 'instagram', 'youtube'];
+    public const SOCIAL_PLATFORMS = [
+        'website',
+        'github',
+        'twitter',
+        'facebook',
+        'linkedin',
+        'instagram',
+        'youtube',
+    ];
 
     public function authorize(): bool
     {

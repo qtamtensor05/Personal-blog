@@ -36,7 +36,8 @@ final class IdentityServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserRepository::class, QueryBuilderUserRepository::class);
 
-        $this->app->when(RegisterUserService::class)
+        $this->app
+            ->when(RegisterUserService::class)
             ->needs('$emailVerificationEnabled')
             ->give(fn (): bool => (bool) config('identity.email_verification_enabled'));
 
