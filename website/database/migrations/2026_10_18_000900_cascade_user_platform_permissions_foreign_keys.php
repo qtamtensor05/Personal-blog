@@ -13,12 +13,24 @@ return new class extends Migration
             $table->dropForeign('fk_1_user_platform_permissions');
             $table->dropForeign('fk_2_user_platform_permissions');
 
-            $table->foreign('user_id', 'fk_0_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
-            $table->foreign('permission_id', 'fk_1_user_platform_permissions')
-                ->references('id')->on('permissions')->onDelete('cascade')->onUpdate('restrict');
-            $table->foreign('granted_by', 'fk_2_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
+            $table
+                ->foreign('user_id', 'fk_0_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('permission_id', 'fk_1_user_platform_permissions')
+                ->references('id')
+                ->on('permissions')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('granted_by', 'fk_2_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
         });
     }
 
@@ -29,12 +41,24 @@ return new class extends Migration
             $table->dropForeign('fk_1_user_platform_permissions');
             $table->dropForeign('fk_2_user_platform_permissions');
 
-            $table->foreign('user_id', 'fk_0_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('permission_id', 'fk_1_user_platform_permissions')
-                ->references('id')->on('permissions')->onDelete('restrict')->onUpdate('restrict');
-            $table->foreign('granted_by', 'fk_2_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('restrict')->onUpdate('restrict');
+            $table
+                ->foreign('user_id', 'fk_0_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('permission_id', 'fk_1_user_platform_permissions')
+                ->references('id')
+                ->on('permissions')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('granted_by', 'fk_2_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
     }
 };

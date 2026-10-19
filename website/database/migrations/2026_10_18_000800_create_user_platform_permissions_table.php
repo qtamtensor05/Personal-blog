@@ -20,12 +20,24 @@ return new class extends Migration
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrent();
             $table->unique(['user_id', 'permission_id'], 'u_0');
-            $table->foreign('user_id', 'fk_0_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
-            $table->foreign('permission_id', 'fk_1_user_platform_permissions')
-                ->references('id')->on('permissions')->onDelete('cascade')->onUpdate('restrict');
-            $table->foreign('granted_by', 'fk_2_user_platform_permissions')
-                ->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
+            $table
+                ->foreign('user_id', 'fk_0_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('permission_id', 'fk_1_user_platform_permissions')
+                ->references('id')
+                ->on('permissions')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
+            $table
+                ->foreign('granted_by', 'fk_2_user_platform_permissions')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
         });
     }
 
