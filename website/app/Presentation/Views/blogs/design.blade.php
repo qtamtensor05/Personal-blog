@@ -20,13 +20,17 @@
         <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <a
+                    onclick="
+                        window.history.back();
+                        return false;
+                    "
                     href="{{ route('blogs.show', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
+                    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ $blog->name }}</a
                 >
-                    <i class="fa-solid fa-arrow-left"></i>
-                    {{ $blog->name }}
-                </a>
-                <p class="text-accent-primary mt-3 text-sm font-semibold tracking-wider uppercase">{{ __('template.studio') }}</p>
+                <p class="text-accent-primary mt-3 text-sm font-semibold tracking-wider uppercase">
+                    {{ __('template.studio') }}
+                </p>
                 <h1 class="text-hero mt-2">
                     {{
                         $current
@@ -35,11 +39,9 @@
                     }}
                 </h1>
                 @if ($hasUnpublished)
-                    <x-badge
-                        variant="highlight"
-                        class="mt-2"
-                        >{{ __('template.unpublished_changes') }}</x-badge
-                    >
+                    <x-badge variant="highlight" class="mt-2">
+                        {{ __('template.unpublished_changes') }}
+                    </x-badge>
                 @endif
             </div>
             @if ($current)
@@ -48,8 +50,9 @@
                     target="_blank"
                     rel="noopener"
                     class="btn-secondary"
-                    >{{ __('template.open_blog') }} ↗</a
                 >
+                    {{ __('template.open_blog') }} ↗
+                </a>
             @endif
         </div>
 
@@ -512,25 +515,25 @@
             if (target?.tagName === 'DETAILS') target.open = true;
             const csrf = document.querySelector('meta[name="csrf-token"]').content;
             const uploadUrl = {{
-            Illuminate\Support\Js::from(
-                route('media.store'),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    route('media.store'),
+                )
+            }};
             const blogId = {{
-            Illuminate\Support\Js::from(
-                $blog->id,
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    $blog->id,
+                )
+            }};
             const uploadText = {{
-            Illuminate\Support\Js::from(
-                __('template.uploading', ['file' => '__FILE__']),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    __('template.uploading', ['file' => '__FILE__']),
+                )
+            }};
             const uploadedText = {{
-            Illuminate\Support\Js::from(
-                __('template.uploaded_save'),
-            )
-        }};
+                Illuminate\Support\Js::from(
+                    __('template.uploaded_save'),
+                )
+            }};
 
             async function upload(file, status) {
                 const body = new FormData();

@@ -41,8 +41,13 @@ final class TiptapHtmlRenderer
             'text' => $this->text($node),
             'hardBreak' => '<br>',
             'horizontalRule' => '<hr>',
-            'paragraph' => '<p>'.$inner().'</p>',
-            'heading' => sprintf('<h%1$d>%2$s</h%1$d>', $node['attrs']['level'], $inner()),
+            'paragraph' => '<p'.$this->alignment($node).'>'.$inner().'</p>',
+            'heading' => sprintf(
+                '<h%1$d%2$s>%3$s</h%1$d>',
+                $node['attrs']['level'],
+                $this->alignment($node),
+                $inner(),
+            ),
             'bulletList' => '<ul>'.$inner().'</ul>',
             'orderedList' => sprintf('<ol start="%d">%s</ol>', $node['attrs']['start'], $inner()),
             'listItem' => '<li>'.$inner().'</li>',
@@ -69,6 +74,16 @@ final class TiptapHtmlRenderer
     private function safeColumns(array $node): int
     {
         return max(2, min(3, (int) ($node['attrs']['columns'] ?? 2)));
+    }
+
+    /** @param array<string, mixed> $node */
+    private function alignment(array $node): string
+    {
+        $alignment = $node['attrs']['textAlign'] ?? null;
+
+        return in_array($alignment, ['left', 'center', 'right', 'justify'], true)
+            ? ' style="text-align:'.$alignment.'"'
+            : '';
     }
 
     /**

@@ -97,6 +97,7 @@
                             {{ __('template.manage_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
+
                         <a
                             href="{{ route('public.blog.section', [$blog->slug, 'posts']) }}"
                             class="text-accent-primary inline-flex items-center gap-2 hover:underline"
@@ -201,36 +202,33 @@
                                 >{{ __('template.status') }}</label
                             >
                             <select id="blog-status" name="status" class="input">
-                                @foreach (['DRAFT', 'PRIVATE', 'PUBLIC'] as $status)
+                                @foreach (['DRAFT', 'PUBLISHED'] as $status)
                                     <option
                                         value="{{ $status }}"
-                                        @selected (old(
-                                                'status',
-                                                $blog->status->value === 'DRAFT'
-                                                    ? 'DRAFT'
-                                                    : ($blog->visibility->value === 'PRIVATE'
-                                                        ? 'PRIVATE'
-                                                        : 'PUBLIC')
-                                            ) === $status)
+                                        @selected (old('status', $blog->status->value) === $status)
                                     >
-                                        {{ __('template.status_' . $status) }}
+                                        {{ __('blog.status_' . $status) }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <input
                             type="hidden"
                             name="visibility"
-                            value="{{ old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}"
+                            value="{{ old('visibility', $blog->visibility->value) }}"
                         />
+
                         <input
                             type="hidden"
                             name="discoverable"
-                            value="{{ $blog->discoverable ? 1 : 0 }}"
+                            value="{{ old('discoverable', $blog->discoverable ? 1 : 0) }}"
                         />
+
                         @if ($errors->any())
                             <p class="text-sm text-red-500">{{ $errors->first() }}</p>
                         @endif
+
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
                             {{ __('template.save_changes') }}
                         </button>

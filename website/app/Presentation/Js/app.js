@@ -1,18 +1,111 @@
-import '@aejkatappaja/phantom-ui';
-import '@aejkatappaja/phantom-ui/ssr.css';
-
 const themeStorageKey = 'theme';
 
-function revealSkeletons() {
-    document.querySelectorAll('phantom-ui[loading]').forEach((skeleton) => {
-        skeleton.removeAttribute('loading');
+/**
+ * Server-rendered pages do not need a loading skeleton: their content is already
+ * present in the HTML. Use GSAP only for a short entrance transition, and leave
+ * content visible when the CDN is unavailable or motion is reduced.
+ */
+function initPageAnimations() {
+    const gsap = window.gsap;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!gsap || reduceMotion) return;
+
+    const pageTargets = document.querySelectorAll('[data-animate="page"]');
+    if (pageTargets.length) {
+        gsap.from(pageTargets, {
+            autoAlpha: 0,
+            y: 10,
+            duration: 0.42,
+            ease: 'power2.out',
+            clearProps: 'opacity,visibility,transform',
+        });
+    }
+
+    const cards = [...document.querySelectorAll('[data-animate="post-card"]')];
+    if (cards.length) {
+        gsap.from(cards, {
+            autoAlpha: 0,
+            y: 14,
+            duration: 0.38,
+            stagger: 0.055,
+            delay: pageTargets.length ? 0.08 : 0,
+            ease: 'power2.out',
+            clearProps: 'opacity,visibility,transform',
+        });
+    }
+
+    const sections = [...document.querySelectorAll('[data-animate="section"]')];
+    if (sections.length) {
+        gsap.from(sections, {
+            autoAlpha: 0,
+            y: 8,
+            duration: 0.35,
+            stagger: 0.06,
+            delay: 0.1,
+            ease: 'power1.out',
+            clearProps: 'opacity,visibility,transform',
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageAnimations, { once: true });
+} else {
+    initPageAnimations();
+}
+
+function initImageLoadingStates() {
+    document.querySelectorAll('[data-image-frame]').forEach((frame) => {
+        const image = frame.querySelector('[data-image-reveal]');
+        if (!image) return;
+
+        const reveal = () => {
+            frame.classList.remove('is-loading');
+            image.classList.remove('is-loading');
+            image.classList.add('is-loaded');
+        };
+        const fail = () => {
+            frame.classList.remove('is-loading');
+            image.classList.remove('is-loading');
+        };
+
+        if (image.complete) {
+            if (image.naturalWidth > 0) reveal();
+            else fail();
+            return;
+        }
+
+        frame.classList.add('is-loading');
+        image.classList.add('is-loading');
+        image.addEventListener('load', reveal, { once: true });
+        image.addEventListener('error', fail, { once: true });
+    });
+
+    // Images rendered from the sanitized Tiptap document do not have a wrapper,
+    // so use a subtle blur-to-sharp transition rather than a skeleton overlay.
+    document.querySelectorAll('.post-content img').forEach((image) => {
+        const reveal = () => {
+            image.classList.remove('is-loading');
+            image.classList.add('is-loaded');
+        };
+        const fail = () => image.classList.remove('is-loading');
+
+        if (image.complete) {
+            if (image.naturalWidth > 0) reveal();
+            return;
+        }
+
+        image.classList.add('is-loading');
+        image.addEventListener('load', reveal, { once: true });
+        image.addEventListener('error', fail, { once: true });
     });
 }
 
-if (document.readyState === 'complete') {
-    queueMicrotask(revealSkeletons);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initImageLoadingStates, { once: true });
 } else {
-    window.addEventListener('load', revealSkeletons, { once: true });
+    initImageLoadingStates();
 }
 
 function activeTheme() {
@@ -207,16 +300,43 @@ function initHeroCarousels() {
             });
             count.textContent = `${index + 1} / ${slides.length}`;
             const activeThumb = carousel.querySelector(`[data-hero-thumb="${index}"]`);
+            const thumbnailStrip = carousel.querySelector('[data-hero-thumbnails]');
             carousel.querySelectorAll('[data-hero-thumb]').forEach((thumb) => {
                 const active = thumb === activeThumb;
                 thumb.classList.toggle('is-active', active);
                 thumb.setAttribute('aria-current', active ? 'true' : 'false');
             });
-            activeThumb?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest',
-            });
+
+            if (activeThumb && thumbnailStrip) {
+                const thumbRect = activeThumb.getBoundingClientRect();
+                const stripRect = thumbnailStrip.getBoundingClientRect();
+
+                if (thumbnailStrip.scrollHeight > thumbnailStrip.clientHeight) {
+                    if (thumbRect.top < stripRect.top) {
+                        thumbnailStrip.scrollTo({
+                            top: thumbnailStrip.scrollTop - (stripRect.top - thumbRect.top),
+                            behavior: 'smooth',
+                        });
+                    } else if (thumbRect.bottom > stripRect.bottom) {
+                        thumbnailStrip.scrollTo({
+                            top: thumbnailStrip.scrollTop + (thumbRect.bottom - stripRect.bottom),
+                            behavior: 'smooth',
+                        });
+                    }
+                } else if (thumbnailStrip.scrollWidth > thumbnailStrip.clientWidth) {
+                    if (thumbRect.left < stripRect.left) {
+                        thumbnailStrip.scrollTo({
+                            left: thumbnailStrip.scrollLeft - (stripRect.left - thumbRect.left),
+                            behavior: 'smooth',
+                        });
+                    } else if (thumbRect.right > stripRect.right) {
+                        thumbnailStrip.scrollTo({
+                            left: thumbnailStrip.scrollLeft + (thumbRect.right - stripRect.right),
+                            behavior: 'smooth',
+                        });
+                    }
+                }
+            }
         };
         carousel
             .querySelector('[data-hero-prev]')

@@ -226,6 +226,13 @@ final readonly class TiptapDocument
             $result['attrs'] = ['level' => max(2, min(4, $level))];
         }
 
+        if (in_array($type, ['paragraph', 'heading'], true)) {
+            $textAlign = $node['attrs']['textAlign'] ?? null;
+            if (in_array($textAlign, ['left', 'center', 'right', 'justify'], true)) {
+                $result['attrs'] = [...$result['attrs'] ?? [], 'textAlign' => $textAlign];
+            }
+        }
+
         if ($type === 'orderedList') {
             $start = (int) ($node['attrs']['start'] ?? 1);
             $result['attrs'] = ['start' => max(1, $start)];

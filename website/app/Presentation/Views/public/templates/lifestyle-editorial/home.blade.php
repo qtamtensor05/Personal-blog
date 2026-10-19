@@ -17,14 +17,14 @@
     $contact = $slots->get('contact', []);
     $footer = $slots->get('site-footer', []);
     $images = asset('images/templates/lifestyle-editorial');
+    $aboutImage =
+        !empty($about['mediaId']) && isset($mediaUrls[$about['mediaId']])
+            ? $mediaUrls[$about['mediaId']]
+            : $images . '/card-field.svg';
     $heroImage =
         !empty($hero['mediaId']) && isset($mediaUrls[$hero['mediaId']])
             ? $mediaUrls[$hero['mediaId']]
             : $images . '/hero.svg';
-    $aboutImage =
-        !empty($about['mediaId']) && isset($mediaUrls[$about['mediaId']])
-            ? $mediaUrls[$about['mediaId']]
-            : $images . '/portrait.svg';
     $galleryMedia = collect($gallery['mediaIds'] ?? [])
         ->map(fn($id) => $mediaUrls[$id] ?? null)
         ->filter()
@@ -33,6 +33,7 @@
 
     $screen = $screen ?? 'home';
     $templatePreview = $templatePreview ?? false;
+    $search = $search ?? '';
     $homeUrl = $templatePreview
         ? route('templates.preview', $blog->slug)
         : route('public.blog', $blog->slug);
@@ -63,6 +64,10 @@
     @if ($page->isOwnerPreview)
         <div class="le-owner-preview">{{ __('public.owner_preview') }}</div>
     @endif
+
+    <div class="container-custom flex pt-3">
+        @include ('public.partials.platform-home-link', ['blog' => $blog])
+    </div>
 
     <header class="le-header">
         <a class="le-brand" href="{{ $homeUrl }}">
@@ -280,7 +285,6 @@
                             ></a>
                         </div>
                     </section>
-
                     <section class="le-gallery">
                         <h2>
                             {{

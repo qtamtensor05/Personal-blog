@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Contracts\BlogRepository;
+use App\Application\Blogs\Exceptions\BlogAlreadyExists;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\Exceptions\BlogSlugTaken;
 use App\Application\Blogs\UseCases\CreateBlog\CreateBlogUseCase;
@@ -24,15 +25,23 @@ use Illuminate\View\View;
 
 final class BlogController extends Controller
 {
-    public function index(Request $request, BlogRepository $blogs): View
+    public function index(Request $request, BlogRepository $blogs): View|RedirectResponse
     {
-        return view('blogs.index', [
-            'blogs' => $blogs->ownedBy((int) $request->user()->id),
-        ]);
+        $ownedBlogs = $blogs->ownedBy((int) $request->user()->id);
+
+        return $ownedBlogs !== []
+            ? redirect()->route('blogs.show', $ownedBlogs[0]->id)
+            : view('blogs.index', ['blogs' => []]);
     }
 
-    public function create(): View
+    public function create(Request $request, BlogRepository $blogs): View|RedirectResponse
     {
+        $ownedBlogs = $blogs->ownedBy((int) $request->user()->id);
+
+        if ($ownedBlogs !== []) {
+            return redirect()->route('blogs.show', $ownedBlogs[0]->id);
+        }
+
         return view('blogs.create');
     }
 
@@ -45,6 +54,8 @@ final class BlogController extends Controller
                 slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
             );
+        } catch (BlogAlreadyExists $exception) {
+            return redirect()->route('blogs.show', $exception->blogId);
         } catch (BlogSlugTaken $exception) {
             return back()
                 ->withErrors(['slug' => $exception->getMessage()])
@@ -96,15 +107,15 @@ final class BlogController extends Controller
         UpdateBlogUseCase $update,
     ): RedirectResponse {
         try {
+            $status = $request->validated('status');
+
             $update->execute(
                 actorId: (int) $request->user()->id,
                 blogId: $blog,
                 name: $request->validated('name'),
                 slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
-                status: $request->validated('status') === 'PRIVATE'
-                    ? BlogStatus::Published
-                    : BlogStatus::from($request->validated('status')),
+                status: $status === 'PRIVATE' ? BlogStatus::Published : BlogStatus::from($status),
                 visibility: BlogVisibility::from($request->validated('visibility') ?? 'PUBLIC'),
                 discoverable: (bool) $request->validated('discoverable'),
             );
