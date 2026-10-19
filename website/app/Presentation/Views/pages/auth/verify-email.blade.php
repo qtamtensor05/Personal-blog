@@ -10,7 +10,10 @@
                 <div
                     class="bg-accent-primary flex h-20 w-20 items-center justify-center rounded-full"
                 >
-                    <i class="fa-solid fa-envelope-circle-check text-surface h-10 w-10" aria-hidden="true"></i>
+                    <i
+                        class="fa-solid fa-envelope-circle-check text-surface h-10 w-10"
+                        aria-hidden="true"
+                    ></i>
                 </div>
             </div>
 
@@ -50,7 +53,10 @@
                     <form method="POST" action="{{ route('identity.email.resend') }}" class="pt-4">
                         @csrf
                         <x-button type="submit" variant="secondary" class="w-full justify-center">
-                            <i class="fa-solid fa-arrow-rotate-right mr-2 h-4 w-4" aria-hidden="true"></i>
+                            <i
+                                class="fa-solid fa-arrow-rotate-right mr-2 h-4 w-4"
+                                aria-hidden="true"
+                            ></i>
                             {{ __('auth.resend_verification') }}
                         </x-button>
                     </form>

@@ -20,7 +20,12 @@
                 <form id="templateForm" class="space-y-6">
                     @csrf
 
-                    <x-input name="name" :label="__('templates.old_name')" :placeholder="__('templates.old_modern')" required />
+                    <x-input
+                        name="name"
+                        :label="__('templates.old_name')"
+                        :placeholder="__('templates.old_modern')"
+                        required
+                    />
 
                     <x-input
                         name="slug"
@@ -45,7 +50,9 @@
                     />
 
                     <div class="border-default border-t pt-6">
-                        <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('templates.design_tokens') }}</h2>
+                        <h2 class="text-primary mb-4 text-lg font-semibold">
+                            {{ __('templates.design_tokens') }}
+                        </h2>
                         <div class="grid gap-4 md:grid-cols-2">
                             <x-input
                                 name="primaryColor"
@@ -103,7 +110,9 @@
                                 </select>
                             </div>
                             <div class="space-y-1">
-                                <label for="bodyFont" class="text-primary block text-sm font-medium"
+                                <label
+                                    for="bodyFont"
+                                    class="text-primary block text-sm font-medium"
                                     >{{ __('templates.body_font') }}</label
                                 >
                                 <select name="bodyFont" id="bodyFont" class="input" required>
@@ -124,7 +133,9 @@
                     </div>
 
                     <div class="border-default border-t pt-6">
-                        <h2 class="text-primary mb-1 text-lg font-semibold">{{ __('templates.sections') }}</h2>
+                        <h2 class="text-primary mb-1 text-lg font-semibold">
+                            {{ __('templates.sections') }}
+                        </h2>
                         <p class="text-secondary mb-4 text-sm">{{ __('templates.sections_help') }}</p>
                         <div id="sections" class="space-y-4"></div>
                         <button type="button" onclick="addSection()" class="btn-secondary mt-4">
@@ -136,7 +147,11 @@
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
                             {{ __('templates.save') }}
                         </button>
-                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">{{ __('templates.cancel') }}</a>
+                        <a
+                            href="{{ route('admin.templates.index') }}"
+                            class="btn-ghost"
+                            >{{ __('templates.cancel') }}</a
+                        >
                     </div>
                 </form>
             </div>
@@ -158,8 +173,14 @@
                         "
                     >
                         <p id="previewEyebrow" class="text-xs tracking-widest uppercase opacity-70">{{ __('templates.preview') }}</p>
-                        <h2 id="previewTitle" class="mt-2 text-3xl font-semibold">{{ __('templates.old_modern') }}</h2>
-                        <p id="previewDescription" class="mt-2 text-sm opacity-80">{{ __('templates.description_preview') }}</p>
+                        <h2 id="previewTitle" class="mt-2 text-3xl font-semibold">
+                            {{ __('templates.old_modern') }}
+                        </h2>
+                        <p id="previewDescription" class="mt-2 text-sm opacity-80">{{
+                            __(
+                                'templates.description_preview',
+                            )
+                        }}</p>
                     </div>
                     <div
                         id="previewSections"
@@ -175,14 +196,14 @@
         <script>
             let sectionCount = 0;
             const availableSections = [
-                ['hero', @js(__('templates.old_hero'))],
-                ['recent_posts', @js(__('templates.old_recent_posts'))],
-                ['featured_post', @js(__('templates.old_featured_post'))],
-                ['categories', @js(__('templates.old_categories'))],
-                ['about', @js(__('templates.old_about'))],
-                ['newsletter', @js(__('templates.old_newsletter'))],
-                ['image', @js(__('templates.old_image'))],
-                ['footer', @js(__('templates.old_footer'))],
+                ['hero', @js (__('templates.old_hero'))],
+                ['recent_posts', @js (__('templates.old_recent_posts'))],
+                ['featured_post', @js (__('templates.old_featured_post'))],
+                ['categories', @js (__('templates.old_categories'))],
+                ['about', @js (__('templates.old_about'))],
+                ['newsletter', @js (__('templates.old_newsletter'))],
+                ['image', @js (__('templates.old_image'))],
+                ['footer', @js (__('templates.old_footer'))],
             ];
 
             const slugify = (value) =>
@@ -226,24 +247,24 @@
                 div.innerHTML = `
                     <div class="flex items-start gap-4">
                         <div class="flex-1 space-y-3">
-                            <input type="text" name="sections[${id}][key]" placeholder="${@js(__('templates.section_key_hint'))}" class="input" required />
+                            <input type="text" name="sections[${id}][key]" placeholder="${@js (__('templates.section_key_hint'))}" class="input" required />
                             <select name="sections[${id}][section]" class="input" required>
-                                <option value="">${@js(__('templates.choose_section'))}</option>
+                                <option value="">${@js (__('templates.choose_section'))}</option>
                                 ${availableSections.map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
                             </select>
                             <div class="hidden space-y-3 rounded-md border border-default p-3" data-image-fields>
                                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-template-image class="input" />
                                 <input type="hidden" name="sections[${id}][props][mediaId]" data-template-media-id />
-                                <input type="text" name="sections[${id}][props][alt]" placeholder="${@js(__('templates.image_description'))}" class="input" />
+                                <input type="text" name="sections[${id}][props][alt]" placeholder="${@js (__('templates.image_description'))}" class="input" />
                                 <select name="sections[${id}][props][position]" class="input">
-                                    <option value="full">${@js(__('templates.full_width'))}</option>
-                                    <option value="left">${@js(__('templates.align_left'))}</option>
-                                    <option value="right">${@js(__('templates.align_right'))}</option>
+                                    <option value="full">${@js (__('templates.full_width'))}</option>
+                                    <option value="left">${@js (__('templates.align_left'))}</option>
+                                    <option value="right">${@js (__('templates.align_right'))}</option>
                                 </select>
-                                <p class="text-xs text-secondary" data-upload-status>${@js(__('templates.choose_image'))}</p>
+                                <p class="text-xs text-secondary" data-upload-status>${@js (__('templates.choose_image'))}</p>
                             </div>
                         </div>
-                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">${@js(__('templates.remove'))}</button>
+                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">${@js (__('templates.remove'))}</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -269,7 +290,7 @@
                 const form = new FormData();
                 form.append('file', file);
                 form.append('scope', 'PLATFORM');
-                status.textContent = @js(__('templates.uploading_image'));
+                status.textContent = @js (__('templates.uploading_image'));
                 try {
                     const response = await fetch('{{ route('media.store') }}', {
                         method: 'POST',
@@ -280,9 +301,9 @@
                         body: form,
                     });
                     const body = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(body.message || @js(__('templates.image_upload_failed')));
+                    if (!response.ok) throw new Error(body.message || @js (__('templates.image_upload_failed')));
                     section.querySelector('[data-template-media-id]').value = body.data.id;
-                    status.textContent = @js(__('templates.image_uploaded'));
+                    status.textContent = @js (__('templates.image_uploaded'));
                     updatePreview();
                 } catch (error) {
                     status.textContent = error.message;
@@ -294,9 +315,10 @@
                 const form = document.getElementById('templateForm');
                 const data = new FormData(form);
                 const preview = document.getElementById('templatePreview');
-                document.getElementById('previewTitle').textContent = data.get('name') || @js(__('templates.untitled'));
+                document.getElementById('previewTitle').textContent =
+                    data.get('name') || @js (__('templates.untitled'));
                 document.getElementById('previewDescription').textContent =
-                    data.get('description') || @js(__('templates.description_preview'));
+                    data.get('description') || @js (__('templates.description_preview'));
                 const header = document.getElementById('previewHeader');
                 header.style.background = data.get('backgroundColor') || '#F7F6F1';
                 header.style.color = data.get('textColor') || '#616B5E';
@@ -306,7 +328,7 @@
                 )
                     .map(
                         (field, index) =>
-                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js(__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js(__('templates.choose_section_type'))}</span></div>`,
+                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js (__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js (__('templates.choose_section_type'))}</span></div>`,
                     )
                     .join('');
             }

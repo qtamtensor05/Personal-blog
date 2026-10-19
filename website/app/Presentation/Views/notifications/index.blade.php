@@ -13,7 +13,9 @@
                 <form method="POST" action="{{ route('notifications.read-all') }}">
                     @csrf
                     @method ('PATCH')
-                    <button type="submit" class="btn-secondary">{{ __('notifications.mark_all') }}</button>
+                    <button type="submit" class="btn-secondary">
+                        {{ __('notifications.mark_all') }}
+                    </button>
                 </form>
             @endif
         </div>
@@ -94,9 +96,12 @@
                     @else
                         <span></span>
                     @endif
-                    <span class="text-secondary"
-                        >{{ __('notifications.page_of', ['page' => $notifications->page, 'total' => $notifications->lastPage()]) }}</span
-                    >
+                    <span class="text-secondary">{{
+                        __('notifications.page_of', [
+                            'page' => $notifications->page,
+                            'total' => $notifications->lastPage(),
+                        ])
+                    }}</span>
                     @if ($notifications->page < $notifications->lastPage())
                         <a
                             class="btn-ghost"

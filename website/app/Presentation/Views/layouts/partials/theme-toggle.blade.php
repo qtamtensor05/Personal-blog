@@ -36,15 +36,28 @@
         justify-content: center;
         font-size: 1.1rem;
         color: currentColor;
-        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+            transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    #theme-toggle .theme-icon-sun  { transform: translateY(0);    opacity: 1; }
-    #theme-toggle .theme-icon-moon { transform: translateY(100%); opacity: 0; }
+    #theme-toggle .theme-icon-sun {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    #theme-toggle .theme-icon-moon {
+        transform: translateY(100%);
+        opacity: 0;
+    }
 
-    html[data-theme="dark"] #theme-toggle .theme-icon-sun  { transform: translateY(-100%); opacity: 0; }
-    html[data-theme="dark"] #theme-toggle .theme-icon-moon { transform: translateY(0);     opacity: 1; }
+    html[data-theme='dark'] #theme-toggle .theme-icon-sun {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    html[data-theme='dark'] #theme-toggle .theme-icon-moon {
+        transform: translateY(0);
+        opacity: 1;
+    }
 </style>
 
 <script>
@@ -53,7 +66,8 @@
 
         const syncAria = () => {
             const btn = document.getElementById('theme-toggle');
-            if (btn) btn.setAttribute('aria-pressed', document.documentElement.dataset.theme === 'dark');
+            if (btn)
+                btn.setAttribute('aria-pressed', document.documentElement.dataset.theme === 'dark');
         };
         syncAria();
 
@@ -65,7 +79,9 @@
             const nextTheme = html.dataset.theme === 'dark' ? 'light' : 'dark';
 
             html.dataset.theme = nextTheme;
-            try { localStorage.setItem('theme', nextTheme); } catch {}
+            try {
+                localStorage.setItem('theme', nextTheme);
+            } catch {}
             syncAria();
         });
     }

@@ -5,16 +5,51 @@
 @section ('content')
     <div class="container-custom section-spacing max-w-4xl">
         <div class="mb-8">
-            <div class="mb-5 flex items-center gap-3"><a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost" aria-label="{{ __('blog.back_to_blog') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('blog.back_to_blog') }}</a><h1 class="text-hero">{{ __('blog.manage_title', ['name' => $blog->name]) }}</h1></div>
+            <div class="mb-5 flex items-center gap-3">
+                <a
+                    href="{{ route('blogs.show', $blog->id) }}"
+                    class="btn-ghost"
+                    aria-label="{{ __('blog.back_to_blog') }}"
+                    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    {{ __('blog.back_to_blog') }}</a
+                >
+                <h1 class="text-hero">
+                    {{
+                        __('blog.manage_title', [
+                            'name' => $blog->name,
+                        ])
+                    }}
+                </h1>
+            </div>
             <p class="text-secondary">{{ __('blog.manage_help') }}</p>
         </div>
 
         <nav class="mb-6 flex flex-wrap gap-2" aria-label="{{ __('blog.management') }}">
-            <span class="btn-primary"><i class="fa-solid fa-gear mr-2" aria-hidden="true"></i>{{ __('blog.information') }}</span>
-            <a class="btn-secondary" href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']) }}"><i class="fa-solid fa-palette mr-2" aria-hidden="true"></i>{{ __('blog.appearance') }}</a>
-            <a class="btn-secondary" href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']).'#slot-about' }}"><i class="fa-solid fa-user mr-2" aria-hidden="true"></i>{{ __('blog.about') }}</a>
-            <a class="btn-secondary" href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']).'#slot-contact' }}"><i class="fa-solid fa-address-card mr-2" aria-hidden="true"></i>{{ __('blog.contact') }}</a>
-            <a class="btn-secondary" href="{{ route('blogs.posts.index', $blog->id) }}"><i class="fa-solid fa-newspaper mr-2" aria-hidden="true"></i>{{ __('post.posts') }}</a>
+            <span class="btn-primary"
+                ><i class="fa-solid fa-gear mr-2" aria-hidden="true"></i
+                >{{ __('blog.information') }}</span
+            >
+            <a
+                class="btn-secondary"
+                href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']) }}"
+                ><i class="fa-solid fa-palette mr-2" aria-hidden="true"></i
+                >{{ __('blog.appearance') }}</a
+            >
+            <a
+                class="btn-secondary"
+                href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']).'#slot-about' }}"
+                ><i class="fa-solid fa-user mr-2" aria-hidden="true"></i>{{ __('blog.about') }}</a
+            >
+            <a
+                class="btn-secondary"
+                href="{{ route('blogs.design.edit', ['blog' => $blog->id, 'region' => 'body']).'#slot-contact' }}"
+                ><i class="fa-solid fa-address-card mr-2" aria-hidden="true"></i
+                >{{ __('blog.contact') }}</a
+            >
+            <a class="btn-secondary" href="{{ route('blogs.posts.index', $blog->id) }}"
+                ><i class="fa-solid fa-newspaper mr-2" aria-hidden="true"></i
+                >{{ __('post.posts') }}</a
+            >
         </nav>
         <div class="card">
             <form method="POST" action="{{ route('blogs.update', $blog->id) }}" class="space-y-5">
@@ -60,7 +95,8 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label class="text-primary mb-2 block text-sm font-medium"
+                            <label
+                                class="text-primary mb-2 block text-sm font-medium"
                                 >{{ __('blog.status') }}</label
                             >
                             <select name="status" class="input">
@@ -68,18 +104,29 @@
                                     <option
                                         value="{{ $status }}"
                                         {{
-                                            old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === $status
+                                            old(
+                                                'status',
+                                                $blog->status->value === 'DRAFT'
+                                                    ? 'DRAFT'
+                                                    : ($blog->visibility->value === 'PRIVATE'
+                                                        ? 'PRIVATE'
+                                                        : 'PUBLIC'),
+                                            ) === $status
                                                 ? 'selected'
                                                 : ''
                                         }}
                                     >
-                                        {{ __('template.status_'.$status) }}
+                                        {{ __('template.status_' . $status) }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <input type="hidden" name="visibility" value="{{ old('status', $blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC') === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}" />
+                        <input
+                            type="hidden"
+                            name="visibility"
+                            value="{{ old('status', $blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC') === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}"
+                        />
                         <p class="text-secondary text-xs">{{ __('blog.status_help') }}</p>
 
                         <div class="flex items-center gap-2">
@@ -107,7 +154,11 @@
                     <button type="submit" class="btn-primary rounded-md px-4 py-2">
                         {{ __('blog.save_changes') }}
                     </button>
-                    <a href="{{ route('blogs.show', $blog->id) }}" class="btn-secondary">{{ __('blog.back') }}</a>
+                    <a
+                        href="{{ route('blogs.show', $blog->id) }}"
+                        class="btn-secondary"
+                        >{{ __('blog.back') }}</a
+                    >
                 </div>
             </form>
         </div>

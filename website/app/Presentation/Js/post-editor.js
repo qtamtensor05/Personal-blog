@@ -195,11 +195,21 @@ function initPostEditor(root) {
         form.append('blog_id', config.blogId);
         coverStatus.textContent = 'Đang tải ảnh đại diện...';
         try {
-            const response = await fetch(config.mediaUrl, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: form });
+            const response = await fetch(config.mediaUrl, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: form,
+            });
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(body.message ?? Object.values(body.errors ?? {})[0]?.[0] ?? 'Không thể tải ảnh.');
+            if (!response.ok)
+                throw new Error(
+                    body.message ??
+                        Object.values(body.errors ?? {})[0]?.[0] ??
+                        'Không thể tải ảnh.',
+                );
             root.querySelector('[data-cover-media-id]').value = body.data.id;
-            root.querySelector('[data-cover-preview]').innerHTML = `<img src="${body.data.url}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">`;
+            root.querySelector('[data-cover-preview]').innerHTML =
+                `<img src="${body.data.url}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">`;
             coverStatus.textContent = 'Đã tải ảnh. Nhấn “Lưu thông tin” để áp dụng.';
         } catch (error) {
             coverStatus.textContent = error.message;

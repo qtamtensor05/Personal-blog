@@ -212,10 +212,18 @@ function initHeroCarousels() {
                 thumb.classList.toggle('is-active', active);
                 thumb.setAttribute('aria-current', active ? 'true' : 'false');
             });
-            activeThumb?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            activeThumb?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest',
+            });
         };
-        carousel.querySelector('[data-hero-prev]')?.addEventListener('click', () => show(index - 1));
-        carousel.querySelector('[data-hero-next]')?.addEventListener('click', () => show(index + 1));
+        carousel
+            .querySelector('[data-hero-prev]')
+            ?.addEventListener('click', () => show(index - 1));
+        carousel
+            .querySelector('[data-hero-next]')
+            ?.addEventListener('click', () => show(index + 1));
         carousel.querySelectorAll('[data-hero-thumb]').forEach((thumb) => {
             thumb.addEventListener('click', () => show(Number(thumb.dataset.heroThumb)));
         });

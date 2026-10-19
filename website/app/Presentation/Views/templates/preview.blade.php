@@ -23,9 +23,18 @@
         class="border-default border-b px-4 py-3 text-center text-sm"
         style="background: var(--d-accent); color: var(--d-text)"
     >
-        {{ __('ui.template_preview_banner', ['name' => $template->name]) }}
+        {{
+            __('ui.template_preview_banner', [
+                'name' => $template->name,
+            ])
+        }}
     </div>
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('ui.loading_template_preview') }}">
+    <phantom-ui
+        loading
+        animation="shimmer"
+        reveal="0.2"
+        aria-label="{{ __('ui.loading_template_preview') }}"
+    >
         @php ($regions = collect($data->sections) ->filter(fn($section) => $section->visible) ->groupBy('region'))
         <main class="container-custom max-w-6xl space-y-10 py-10">
             @foreach ($data->sections as $section)
@@ -50,10 +59,7 @@
                     @endif
                 >
                     @if ($layout->showBlogName)
-                        <p
-                            class="mb-5 text-sm"
-                            style="color: var(--d-primary)"
-                        >
+                        <p class="mb-5 text-sm" style="color: var(--d-primary)">
                             <i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
                         </p>
                     @endif

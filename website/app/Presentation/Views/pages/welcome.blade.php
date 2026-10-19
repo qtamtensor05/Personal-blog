@@ -108,7 +108,11 @@
                         pointer-events: auto;
                     "
                 >
-                    <x-button :href="route('posts.index')" size="lg">{{ __('home.explore') }}</x-button>
+                    <x-button
+                        :href="route('posts.index')"
+                        size="lg"
+                        >{{ __('home.explore') }}</x-button
+                    >
 
                     <a
                         href="{{ auth()->check() ? route('blogs.create') : route('register') }}"
@@ -379,14 +383,20 @@
                     class="mx-auto w-5 sm:w-72"
                 />
 
-                <h3 class="text-primary mt-6 text-xl font-semibold">{{ __('home.empty_title') }}</h3>
+                <h3 class="text-primary mt-6 text-xl font-semibold">
+                    {{ __('home.empty_title') }}
+                </h3>
                 <p class="text-secondary mx-auto mt-2 max-w-md">{{ __('home.empty_description') }}</p>
 
                 <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                     <x-button :href="auth()->check() ? route('blogs.create') : route('register')">
                         {{ __('home.write_article') }}
                     </x-button>
-                    <x-button class="!border !border-accent-primary" :href="route('posts.index')" variant="ghost">
+                    <x-button
+                        class="!border-accent-primary !border"
+                        :href="route('posts.index')"
+                        variant="ghost"
+                    >
                         {{ __('home.explore') }}
                     </x-button>
                 </div>
@@ -468,12 +478,18 @@
                         @if (auth()->check())
                             <x-button :href="route('blogs.create')" size="lg">
                                 {{ __('home.create_blog') }}
-                                <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
+                                <i
+                                    class="fa-solid fa-arrow-right ml-2 h-4 w-4"
+                                    aria-hidden="true"
+                                ></i>
                             </x-button>
                         @else
                             <x-button :href="route('register')" size="lg">
                                 {{ __('home.create_account') }}
-                                <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
+                                <i
+                                    class="fa-solid fa-arrow-right ml-2 h-4 w-4"
+                                    aria-hidden="true"
+                                ></i>
                             </x-button>
                         @endif
                     </div>

@@ -102,7 +102,9 @@ final class BlogController extends Controller
                 name: $request->validated('name'),
                 slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
-                status: $request->validated('status') === 'PRIVATE' ? BlogStatus::Published : BlogStatus::from($request->validated('status')),
+                status: $request->validated('status') === 'PRIVATE'
+                    ? BlogStatus::Published
+                    : BlogStatus::from($request->validated('status')),
                 visibility: BlogVisibility::from($request->validated('visibility') ?? 'PUBLIC'),
                 discoverable: (bool) $request->validated('discoverable'),
             );

@@ -8,7 +8,7 @@
     }}
 >
     <div
-        class="bg-surface-secondary border border-accent-primary mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full"
+        class="bg-surface-secondary border-accent-primary mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border"
     >
         <i class="fa-solid fa-bell-slash text-accent-primary" aria-hidden="true"></i>
     </div>

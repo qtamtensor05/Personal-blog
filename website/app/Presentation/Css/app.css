@@ -370,7 +370,9 @@ a:hover {
     line-height: 1.75;
     resize: vertical;
 }
-.post-editor-fallback[hidden] { display: none; }
+.post-editor-fallback[hidden] {
+    display: none;
+}
 
 .post-content h2 {
     font-size: 1.5rem;

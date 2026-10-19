@@ -42,10 +42,15 @@
         </div>
     @endif
     <div class="container-custom flex justify-end pt-3">
-        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_post') }}">
+    <phantom-ui
+        loading
+        animation="shimmer"
+        reveal="0.2"
+        aria-label="{{ __('public.loading_post') }}"
+    >
         <main class="container-custom {{ $contentWidthClass }} py-10">
             @if ($layout->showBlogName)
                 <a

@@ -93,7 +93,11 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <x-button type="submit" class="w-full justify-center">{{ __('auth.sign_in') }}</x-button>
+                    <x-button
+                        type="submit"
+                        class="w-full justify-center"
+                        >{{ __('auth.sign_in') }}</x-button
+                    >
                 </form>
 
                 <!-- Register Link -->

@@ -28,7 +28,7 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="btn-primary px-4 py-2 rounded-md">Filter</button>
+            <button type="submit" class="btn-primary rounded-md px-4 py-2">Filter</button>
         </form>
 
         @if (count($reports) === 0)

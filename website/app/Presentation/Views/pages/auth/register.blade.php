@@ -106,11 +106,15 @@
                         <div class="ml-3 text-sm">
                             <label for="terms" class="text-secondary">
                                 {{ __('auth.agree_to') }}
-                                <a href="#" class="text-accent-primary hover:underline"
+                                <a
+                                    href="#"
+                                    class="text-accent-primary hover:underline"
                                     >{{ __('auth.terms') }}</a
                                 >
                                 {{ __('auth.and') }}
-                                <a href="#" class="text-accent-primary hover:underline"
+                                <a
+                                    href="#"
+                                    class="text-accent-primary hover:underline"
                                     >{{ __('auth.privacy') }}</a
                                 >
                             </label>

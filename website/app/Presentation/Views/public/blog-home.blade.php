@@ -32,7 +32,7 @@
         </div>
     @endif
     <div class="container-custom flex justify-end pt-3">
-        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
     @if ($page->pages !== [])
@@ -50,7 +50,12 @@
         </nav>
     @endif
 
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_content') }}">
+    <phantom-ui
+        loading
+        animation="shimmer"
+        reveal="0.2"
+        aria-label="{{ __('public.loading_content') }}"
+    >
         @php ($regions = collect($page->sections) ->filter(fn($section) => $section->visible) ->groupBy('region'))
         <header class="container-custom max-w-6xl space-y-4 pt-6">
             @foreach ($regions->get('header', []) as $section)
@@ -100,7 +105,10 @@
             @include ('public.partials.report-form', ['blog' => $blog])
 
             @if ($settings->socialLinks !== [])
-                <nav aria-label="{{ __('public.social_links') }}" class="flex flex-wrap gap-4 text-sm">
+                <nav
+                    aria-label="{{ __('public.social_links') }}"
+                    class="flex flex-wrap gap-4 text-sm"
+                >
                     @foreach ($settings->socialLinks as $platform => $url)
                         <a
                             href="{{ $url }}"

@@ -254,30 +254,30 @@ final class TemplateController extends Controller
         }
 
         $layout = $request->validated('layout');
-        $layout = is_string($layout) ? $layout : ($base?->layout ?? TemplateStarters::blog()->layout);
+        $layout = is_string($layout) ? $layout : $base?->layout ?? TemplateStarters::blog()->layout;
         $slotProps = $request->validated('slot_props', []);
 
         if ($layout === 'lifestyle-editorial') {
-            $starter = $base?->layout === 'lifestyle-editorial'
-                ? $base
-                : TemplateStarters::lifestyleEditorial();
-            $sections = array_map(
-                function (TemplateSectionConfig $slot) use ($slotProps): TemplateSectionConfig {
-                    $submitted = is_array($slotProps[$slot->key] ?? null) ? $slotProps[$slot->key] : [];
-                    $allowed = array_flip(TemplateSlotCatalog::fields($slot->section));
-                    $props = array_replace($slot->props, array_intersect_key($submitted, $allowed));
+            $starter =
+                $base?->layout === 'lifestyle-editorial'
+                    ? $base
+                    : TemplateStarters::lifestyleEditorial();
+            $sections = array_map(function (TemplateSectionConfig $slot) use (
+                $slotProps,
+            ): TemplateSectionConfig {
+                $submitted = is_array($slotProps[$slot->key] ?? null) ? $slotProps[$slot->key] : [];
+                $allowed = array_flip(TemplateSlotCatalog::fields($slot->section));
+                $props = array_replace($slot->props, array_intersect_key($submitted, $allowed));
 
-                    return new TemplateSectionConfig(
-                        key: $slot->key,
-                        section: $slot->section,
-                        props: $props,
-                        region: $slot->region,
-                        label: $slot->label,
-                        visible: $slot->visible,
-                    );
-                },
-                $starter->sections,
-            );
+                return new TemplateSectionConfig(
+                    key: $slot->key,
+                    section: $slot->section,
+                    props: $props,
+                    region: $slot->region,
+                    label: $slot->label,
+                    visible: $slot->visible,
+                );
+            }, $starter->sections);
 
             return new TemplateData(
                 $sections,
@@ -326,12 +326,7 @@ final class TemplateController extends Controller
             throw new InvalidArgumentException('Select at least one supported component.');
         }
 
-        return new TemplateData(
-            $sections,
-            $starter->designTokens,
-            $starter->postLayout,
-            $layout,
-        );
+        return new TemplateData($sections, $starter->designTokens, $starter->postLayout, $layout);
     }
 
     private function error(string $message, int $status): JsonResponse

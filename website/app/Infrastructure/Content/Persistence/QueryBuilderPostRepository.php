@@ -256,19 +256,31 @@ final class QueryBuilderPostRepository implements PostRepository
 
     public function deletedForBlog(int $blogId): array
     {
-        return DB::table(self::TABLE)->where('blog_id', $blogId)->whereNotNull('deleted_at')
-            ->orderByDesc('deleted_at')->get()->map(fn ($row) => $this->toDomain($row))->all();
+        return DB::table(self::TABLE)
+            ->where('blog_id', $blogId)
+            ->whereNotNull('deleted_at')
+            ->orderByDesc('deleted_at')
+            ->get()
+            ->map(fn ($row) => $this->toDomain($row))
+            ->all();
     }
 
     public function restore(int $blogId, int $id): void
     {
-        DB::table(self::TABLE)->where('blog_id', $blogId)->where('id', $id)->whereNotNull('deleted_at')
+        DB::table(self::TABLE)
+            ->where('blog_id', $blogId)
+            ->where('id', $id)
+            ->whereNotNull('deleted_at')
             ->update(['deleted_at' => null, 'updated_at' => now()]);
     }
 
     public function permanentlyDelete(int $blogId, int $id): void
     {
-        DB::table(self::TABLE)->where('blog_id', $blogId)->where('id', $id)->whereNotNull('deleted_at')->delete();
+        DB::table(self::TABLE)
+            ->where('blog_id', $blogId)
+            ->where('id', $id)
+            ->whereNotNull('deleted_at')
+            ->delete();
     }
 
     private function base(int $blogId): Builder

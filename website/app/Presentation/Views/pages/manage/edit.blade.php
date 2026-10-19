@@ -15,7 +15,9 @@
 @section ('content')
     {{-- Reuses the post editor script; pages have no excerpt field. --}}
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
-        <script type="application/json" data-editor-config>{{ Illuminate\Support\Js::from($editorConfig) }}</script>
+        <script type="application/json" data-editor-config>
+            {{ Illuminate\Support\Js::from($editorConfig) }}
+        </script>
 
         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -57,7 +59,9 @@
                         @csrf
                         @method ('PATCH')
                         <input type="hidden" name="status" value="DRAFT" />
-                        <button type="submit" class="btn-secondary text-sm">{{ __('pages.unpublish') }}</button>
+                        <button type="submit" class="btn-secondary text-sm">
+                            {{ __('pages.unpublish') }}
+                        </button>
                     </form>
                 @endif
                 <form

@@ -289,7 +289,9 @@ Route::middleware('auth')->group(function () {
             Route::patch('/{post}/status', [PostController::class, 'changeStatus'])->name('status');
             Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
             Route::post('/{post}/restore', [PostController::class, 'restore'])->name('restore');
-            Route::delete('/{post}/permanent', [PostController::class, 'forceDestroy'])->name('force-destroy');
+            Route::delete('/{post}/permanent', [PostController::class, 'forceDestroy'])->name(
+                'force-destroy',
+            );
         });
 
     // Static pages (Tiptap editor)

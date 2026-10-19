@@ -135,7 +135,9 @@
         @if (count($deletedTemplates) > 0)
             <section class="mt-10">
                 <div class="mb-4">
-                    <h2 class="text-primary text-xl font-semibold">{{ __('templates.deleted') }}</h2>
+                    <h2 class="text-primary text-xl font-semibold">
+                        {{ __('templates.deleted') }}
+                    </h2>
                     <p class="text-secondary text-sm">{{ __('templates.deleted_help') }}</p>
                 </div>
                 <div class="overflow-x-auto">
@@ -210,8 +212,8 @@
 
             async function publishTemplate(id) {
                 const confirmed = await window.requestModalConfirmation(
-                    @js(__('templates.publish_confirm_title')),
-                    @js(__('templates.publish_confirm')),
+                    @js (__('templates.publish_confirm_title')),
+                    @js (__('templates.publish_confirm')),
                 );
                 if (!confirmed) return;
 
@@ -229,20 +231,18 @@
                             : r
                                   .json()
                                   .then((e) =>
-                                      showTemplateActionError(
-                                          e.message || @js(__('templates.publish_error')),
-                                      ),
+                                      showTemplateActionError(e.message || @js (__('templates.publish_error'))),
                                   ),
                     )
-                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
+                    .catch(() => showTemplateActionError(@js (__('ui.network_error'))));
             }
 
             async function deleteTemplate(id, name) {
-                const confirmMessage = @js(__('templates.delete_confirm', ['name' => ':name'])).replace(':name', name);
-    
+                const confirmMessage = @js (__('templates.delete_confirm', ['name' => ':name'])).replace(':name', name);
+
                 const confirmed = await window.requestModalConfirmation(
-                    @js(__('templates.delete')),
-                    confirmMessage
+                    @js (__('templates.delete')),
+                    confirmMessage,
                 );
                 if (!confirmed) return;
 
@@ -258,12 +258,10 @@
                             : r
                                   .json()
                                   .then((e) =>
-                                      showTemplateActionError(
-                                          e.message || @js(__('templates.delete_error')),
-                                      ),
+                                      showTemplateActionError(e.message || @js (__('templates.delete_error'))),
                                   ),
                     )
-                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
+                    .catch(() => showTemplateActionError(@js (__('ui.network_error'))));
             }
 
             function restoreTemplate(id) {
@@ -279,18 +277,16 @@
                             : r
                                   .json()
                                   .then((e) =>
-                                      showTemplateActionError(
-                                          e.message || @js(__('templates.restore_error')),
-                                      ),
+                                      showTemplateActionError(e.message || @js (__('templates.restore_error'))),
                                   ),
                     )
-                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
+                    .catch(() => showTemplateActionError(@js (__('ui.network_error'))));
             }
 
             async function permanentlyDeleteTemplate(id, name) {
                 const confirmed = await window.requestModalConfirmation(
-                    @js(__('templates.delete_forever')),
-                    @js(__('templates.delete_forever_confirm', ['name' => ':name'])).replace(':name', name),
+                    @js (__('templates.delete_forever')),
+                    @js (__('templates.delete_forever_confirm', ['name' => ':name'])).replace(':name', name),
                 );
                 if (!confirmed) return;
 
@@ -306,13 +302,10 @@
                             : r
                                   .json()
                                   .then((e) =>
-                                      showTemplateActionError(
-                                          e.message ||
-                                              @js(__('templates.delete_error')),
-                                      ),
+                                      showTemplateActionError(e.message || @js (__('templates.delete_error'))),
                                   ),
                     )
-                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
+                    .catch(() => showTemplateActionError(@js (__('ui.network_error'))));
             }
         </script>
     @endpush

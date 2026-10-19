@@ -85,10 +85,19 @@
                 <div class="flex items-center gap-3">
                     <form method="POST" action="{{ route('interface-locale.update') }}">
                         @csrf
-                        <label class="sr-only" for="interface-locale">{{ __('template.language') }}</label>
-                        <select id="interface-locale" name="locale" class="input w-auto appearance-none py-1 text-sm" onchange="this.form.submit()">
-                            <option value="vi" @selected(app()->getLocale() === 'vi')>VI</option>
-                            <option value="en" @selected(app()->getLocale() === 'en')>EN</option>
+                        <label
+                            class="sr-only"
+                            for="interface-locale"
+                            >{{ __('template.language') }}</label
+                        >
+                        <select
+                            id="interface-locale"
+                            name="locale"
+                            class="input w-auto appearance-none py-1 text-sm"
+                            onchange="this.form.submit()"
+                        >
+                            <option value="vi" @selected (app()->getLocale() === 'vi')>VI</option>
+                            <option value="en" @selected (app()->getLocale() === 'en')>EN</option>
                         </select>
                     </form>
                     @guest
@@ -318,7 +327,9 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-primary mb-3 text-sm font-semibold">{{ __('ui.quick_links') }}</h4>
+                    <h4 class="text-primary mb-3 text-sm font-semibold">
+                        {{ __('ui.quick_links') }}
+                    </h4>
                     <ul class="space-y-2 text-sm">
                         <li>
                             <a

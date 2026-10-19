@@ -45,7 +45,9 @@
                 </label>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="space-y-1">
-                        <label for="default_locale" class="text-primary block text-sm font-medium"
+                        <label
+                            for="default_locale"
+                            class="text-primary block text-sm font-medium"
                             >{{ __('admin.default_locale') }}</label
                         >
                         <select name="default_locale" id="default_locale" class="input">
@@ -93,7 +95,9 @@
             </section>
 
             <section class="card space-y-4">
-                <h2 class="text-primary text-lg font-semibold">{{ __('admin.maintenance_banner') }}</h2>
+                <h2 class="text-primary text-lg font-semibold">
+                    {{ __('admin.maintenance_banner') }}
+                </h2>
                 <label class="text-primary flex items-center gap-3 text-sm">
                     <input type="hidden" name="maintenance_banner_enabled" value="0" />
                     <input
@@ -102,7 +106,11 @@
                         value="1"
                         @checked (old('maintenance_banner_enabled', $data->maintenanceBannerEnabled))
                     />
-                    {{ __('admin.show_maintenance_banner') }}
+                    {{
+                        __(
+                            'admin.show_maintenance_banner',
+                        )
+                    }}
                 </label>
                 <x-textarea
                     name="maintenance_banner_message"
@@ -119,8 +127,14 @@
             </section>
 
             <div class="flex items-center justify-between gap-4">
-                <p class="text-secondary text-xs">{{ __('admin.revision_stale', ['revision' => $settings->revision]) }}</p>
-                <button type="submit" class="btn btn-primary">{{ __('admin.save_settings') }}</button>
+                <p class="text-secondary text-xs">{{
+                    __('admin.revision_stale', [
+                        'revision' => $settings->revision,
+                    ])
+                }}</p>
+                <button type="submit" class="btn btn-primary">
+                    {{ __('admin.save_settings') }}
+                </button>
             </div>
         </form>
     </div>
