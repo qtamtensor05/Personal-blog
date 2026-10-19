@@ -293,7 +293,7 @@
     </header>
 
     <!-- Main Content -->
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading page">
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('ui.loading_page') }}">
         <main>
             @yield ('content')
         </main>

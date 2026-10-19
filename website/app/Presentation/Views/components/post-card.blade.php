@@ -29,7 +29,7 @@
         <div class="text-secondary flex items-center gap-3 text-xs">
             @if ($date)
                 <time datetime="{{ date('Y-m-d', strtotime($date)) }}">
-                    {{ date('M j, Y', strtotime($date)) }}
+                    {{ \Illuminate\Support\Carbon::parse($date)->locale(app()->getLocale())->translatedFormat('M j, Y') }}
                 </time>
             @endif
 
@@ -39,7 +39,7 @@
             @endif
 
             <span class="text-border">•</span>
-            <span>{{ $readTime }} min read</span>
+            <span>{{ __('post.minutes_read', ['minutes' => $readTime]) }}</span>
         </div>
 
         <!-- Title -->
@@ -70,7 +70,7 @@
             @endif
 
             @if ($isFeatured)
-                <x-badge variant="highlight">Featured</x-badge>
+                <x-badge variant="highlight">{{ __('home.featured_badge') }}</x-badge>
             @endif
         </div>
     </div>

@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Home | Personal Blog')
+@section ('title', __('home.page_title'))
 
 @section ('content')
     <section
@@ -22,7 +22,7 @@
         <model-viewer
             id="hero-model"
             src="{{ asset('models/smoking-room-web.glb') }}"
-            alt="3D scene of an abandoned room reclaimed by nature"
+            alt="{{ __('home.hero_image_alt') }}"
             disable-zoom
             interaction-prompt="none"
             interpolation-decay="120"
@@ -313,9 +313,9 @@
                             id="featured-heading"
                             class="text-primary text-3xl font-bold tracking-tight sm:text-4xl"
                         >
-                            Featured articles
+                            {{ __('home.featured_title') }}
                         </h2>
-                        <p class="text-secondary mt-2">Hand-picked stories worth your time.</p>
+                        <p class="text-secondary mt-2">{{ __('home.featured_description') }}</p>
                     </div>
                 </div>
 
@@ -346,13 +346,13 @@
                     id="recent-heading"
                     class="text-primary text-2xl font-bold tracking-tight sm:text-4xl"
                 >
-                    Latest articles
+                    {{ __('home.latest_title') }}
                 </h2>
-                <p class="text-secondary mt-2">The newest stories published across the platform.</p>
+                <p class="text-secondary mt-2">{{ __('home.latest_description') }}</p>
             </div>
 
             <x-button :href="route('posts.index')" variant="outline">
-                View all articles
+                {{ __('home.view_all') }}
                 <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
             </x-button>
         </div>
@@ -379,15 +379,15 @@
                     class="mx-auto w-10 sm:w-72"
                 />
 
-                <h3 class="text-primary mt-6 text-xl font-semibold">No articles yet</h3>
-                <p class="text-secondary mx-auto mt-2 max-w-md">No public articles to show right now. Be the first to publish one.</p>
+                <h3 class="text-primary mt-6 text-xl font-semibold">{{ __('home.empty_title') }}</h3>
+                <p class="text-secondary mx-auto mt-2 max-w-md">{{ __('home.empty_description') }}</p>
 
                 <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                     <x-button :href="auth()->check() ? route('blogs.create') : route('register')">
-                        Write an article
+                        {{ __('home.write_article') }}
                     </x-button>
                     <x-button :href="route('posts.index')" variant="outline">
-                        Explore articles
+                        {{ __('home.explore') }}
                     </x-button>
                 </div>
             </div>
@@ -404,9 +404,9 @@
                     id="steps-heading"
                     class="text-primary text-3xl font-bold tracking-tight sm:text-4xl"
                 >
-                    From idea to published in three steps
+                    {{ __('home.steps_title') }}
                 </h2>
-                <p class="text-secondary mt-3">No setup. Create an account and start writing.</p>
+                <p class="text-secondary mt-3">{{ __('home.steps_description') }}</p>
             </div>
 
             <ol class="mt-12 grid gap-6 md:grid-cols-3">
@@ -414,18 +414,18 @@
                     $steps = [
                         [
                             'name' => 'step-write',
-                            'title' => 'Write',
-                            'text' => 'Draft your article in a clean editor and add a cover image.',
+                            'title' => __('home.step_write_title'),
+                            'text' => __('home.step_write_text'),
                         ],
                         [
                             'name' => 'step-publish',
-                            'title' => 'Publish',
-                            'text' => 'Review your draft, then publish it to your blog when it is ready.',
+                            'title' => __('home.step_publish_title'),
+                            'text' => __('home.step_publish_text'),
                         ],
                         [
                             'name' => 'step-share',
-                            'title' => 'Share',
-                            'text' => 'Send the link to readers and see your article in the community feed.',
+                            'title' => __('home.step_share_title'),
+                            'text' => __('home.step_share_text'),
                         ],
                     ];
                 @endphp
@@ -459,20 +459,20 @@
             <div class="grid items-center gap-8 px-6 sm:px-12 sm:py-16 lg:grid-cols-5 lg:gap-12">
                 <div class="text-center lg:col-span-3 lg:text-left">
                     <h2 class="text-primary text-3xl font-bold tracking-tight sm:text-4xl">
-                        Have something worth sharing?
+                        {{ __('home.cta_title') }}
                     </h2>
 
-                    <p class="text-secondary mx-auto mt-4 max-w-xl leading-7 lg:mx-0">Create a free account and publish your knowledge, experiences, and ideas for the community.</p>
+                    <p class="text-secondary mx-auto mt-4 max-w-xl leading-7 lg:mx-0">{{ __('home.cta_description') }}</p>
 
                     <div class="mt-8">
                         @if (auth()->check())
                             <x-button :href="route('blogs.create')" size="lg">
-                                Create a blog
+                                {{ __('home.create_blog') }}
                                 <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
                             </x-button>
                         @else
                             <x-button :href="route('register')" size="lg">
-                                Create an account
+                                {{ __('home.create_account') }}
                                 <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
                             </x-button>
                         @endif
