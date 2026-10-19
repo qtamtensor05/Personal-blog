@@ -89,7 +89,8 @@
             @if($current)
                 @php
                     $studioRegions = collect($current->sections)->filter(fn ($section) => $section->visible)->groupBy('region');
-                    $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'archiveTitle' => 'Tiêu đề trang bài viết', 'archiveDescription' => 'Mô tả trang bài viết', 'mediaId' => 'Media ID', 'mediaIds' => 'Media IDs (phân cách dấu phẩy)', 'alt' => 'Mô tả ảnh', 'ctaLabel' => 'Nhãn CTA', 'ctaUrl' => 'Liên kết CTA', 'categoryId' => 'Category ID lọc bài mới', 'categoryIds' => 'Category IDs ghim', 'limit' => 'Số lượng bài mới nhất', 'copyright' => 'Copyright'];
+                    $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'archiveTitle' => 'Tiêu đề trang bài viết', 'archiveDescription' => 'Mô tả trang bài viết', 'mediaId' => 'Media ID', 'mediaIds' => 'Media IDs (phân cách dấu phẩy)', 'alt' => 'Mô tả ảnh', 'ctaLabel' => 'Nhãn nút liên hệ', 'ctaUrl' => 'Liên kết CTA dự phòng', 'email' => 'Email', 'phone' => 'Số điện thoại', 'facebookUrl' => 'Facebook', 'youtubeUrl' => 'YouTube', 'tiktokUrl' => 'TikTok', 'zaloUrl' => 'Zalo', 'categoryId' => 'Category ID lọc bài mới', 'categoryIds' => 'Category IDs ghim', 'limit' => 'Số lượng bài mới nhất', 'copyright' => 'Copyright'];
+                    $sectionLabels = ['hero' => 'Hero slide', 'recent_posts' => 'Khu vực bài viết', 'about' => 'Giới thiệu', 'gallery' => 'Khu vực ảnh', 'cta' => 'Liên hệ / CTA', 'header' => 'Nhận diện và menu', 'navigation' => 'Menu điều hướng', 'profile' => 'Thông tin blogger', 'sidebar_posts' => 'Bài viết ở sidebar', 'newsletter' => 'Newsletter', 'footer' => 'Nội dung footer', 'image' => 'Hình ảnh', 'image_text' => 'Hình ảnh và nội dung', 'categories' => 'Chuyên mục', 'featured_post' => 'Bài viết nổi bật'];
                 @endphp
                 <section class="card">
                     <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -106,18 +107,25 @@
                         <input type="hidden" name="region" value="{{ $activeRegion }}">
                         @foreach(['body' => 'Trang chủ', 'header' => 'Header dùng chung', 'sidebar' => 'Sidebar', 'footer' => 'Footer dùng chung'] as $region => $regionLabel)
                             @if($region === $activeRegion && $studioRegions->get($region, collect())->isNotEmpty())
-                                <details class="rounded-md border border-default p-4" open>
-                                    <summary class="cursor-pointer font-semibold text-primary">{{ $regionLabel }}</summary>
-                                    <div class="mt-4 space-y-5">
-                                        @foreach($studioRegions->get($region) as $section)
-                                            @php
-                                                $values = array_replace($section->props, $current->slotContent[$section->key] ?? []);
-                                                $fields = \App\Domain\Templates\TemplateSlotCatalog::fields($section->section);
-                                            @endphp
-                                            @if($fields !== [])
-                                                <fieldset id="slot-{{ $section->key }}" class="scroll-mt-6 border-l-2 pl-4" style="border-color: var(--d-accent);">
-                                                    <legend class="font-medium text-primary">{{ $section->label ?? $section->key }}</legend>
-                                                    <div class="grid gap-3 mt-3">
+                                <div class="space-y-3">
+                                    @foreach($studioRegions->get($region) as $section)
+                                        @php
+                                            $values = array_replace($section->props, $current->slotContent[$section->key] ?? []);
+                                            $fields = \App\Domain\Templates\TemplateSlotCatalog::fields($section->section);
+                                            $sectionTitle = $sectionLabels[$section->section] ?? $section->label ?? $section->key;
+                                        @endphp
+                                        @if($fields !== [])
+                                            <details id="slot-{{ $section->key }}" class="group scroll-mt-6 rounded-md border border-default bg-surface-secondary">
+                                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-semibold text-primary">
+                                                    <span>
+                                                        <span class="block">{{ $sectionTitle }}</span>
+                                                        @if($section->label && $section->label !== $sectionTitle)
+                                                            <span class="mt-1 block text-xs font-normal text-secondary">{{ $section->label }}</span>
+                                                        @endif
+                                                    </span>
+                                                    <span class="text-xl font-normal text-accent-primary transition group-open:rotate-45" aria-hidden="true">+</span>
+                                                </summary>
+                                                <fieldset class="grid gap-3 border-t border-default p-4">
                                                         @foreach($fields as $field)
                                                             @php
                                                                 $value = $values[$field] ?? '';
@@ -146,12 +154,11 @@
                                                                 <x-input :name="$inputName" :label="$fieldLabels[$field]" :value="$value" />
                                                             @endif
                                                         @endforeach
-                                                    </div>
                                                 </fieldset>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </details>
+                                            </details>
+                                        @endif
+                                    @endforeach
+                                </div>
                             @elseif($region === $activeRegion)
                                 <x-empty-state message="Template chưa có {{ $regionLabel }}">
                                     Admin cần thêm component vào vùng này trong template trước khi blogger có thể nhập nội dung.
@@ -169,3 +176,12 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const target = window.location.hash ? document.querySelector(window.location.hash) : null;
+    if (target?.tagName === 'DETAILS') target.open = true;
+})();
+</script>
+@endpush

@@ -135,6 +135,13 @@
 .le-contact-page h1 { margin: 1rem 0 1.5rem; color: #fff; font-family: 'Times New Roman', Georgia, serif; font-size: clamp(3.5rem, 7vw, 7rem); font-style: italic; font-weight: 400; line-height: .92; letter-spacing: -.04em; }
 .le-contact-page > div > p:not(.le-kicker):not(.le-mark) { max-width: 560px; margin: 0 auto; color: rgba(255, 255, 255, .88); }
 .le-contact-page a { display: inline-flex; min-height: 46px; margin-top: 2rem; padding: .75rem 1.35rem; align-items: center; background: #f4f2ec; color: #172019; font-size: .875rem; font-weight: 700; text-decoration: none; }
+.le-contact-links { width: min(680px, 100%); margin: 2.5rem auto 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; text-align: left; }
+.le-contact-page .le-contact-links a { min-width: 0; min-height: 76px; margin: 0; gap: .85rem; border: 1px solid rgba(255, 255, 255, .2); border-radius: .5rem; background: rgba(255, 255, 255, .09); color: #fff; transition: background .2s ease, transform .2s ease; }
+.le-contact-page .le-contact-links a:hover { background: rgba(255, 255, 255, .16); transform: translateY(-2px); }
+.le-contact-icon { width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; display: grid; place-items: center; border-radius: 50%; background: #f4f2ec; color: #104c2f; font-family: Arial, sans-serif; font-size: 1.05rem; font-weight: 800; }
+.le-contact-links strong, .le-contact-links small { display: block; overflow: hidden; text-overflow: ellipsis; }
+.le-contact-links small { margin-top: .2rem; color: rgba(255, 255, 255, .72); font-weight: 400; white-space: nowrap; }
+@media (max-width: 640px) { .le-contact-links { grid-template-columns: 1fr; } }
 
 @media (max-width: 1100px) {
     .le-content-grid { grid-template-columns: minmax(0, 1fr) 260px; gap: 3rem; }

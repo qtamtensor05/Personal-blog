@@ -61,6 +61,14 @@ final class TemplateSlotConfigurationTest extends TestCase
         );
     }
 
+    public function test_contact_cta_supports_optional_contact_channels(): void
+    {
+        self::assertSame(
+            ['title', 'description', 'ctaLabel', 'ctaUrl', 'email', 'phone', 'facebookUrl', 'youtubeUrl', 'tiktokUrl', 'zaloUrl'],
+            TemplateSlotCatalog::fields('cta'),
+        );
+    }
+
     public function test_blog_slot_content_is_serialized_separately_from_template_slots(): void
     {
         $template = TemplateStarters::blog();

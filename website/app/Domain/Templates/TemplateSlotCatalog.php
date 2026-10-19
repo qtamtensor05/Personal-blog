@@ -44,7 +44,7 @@ final class TemplateSlotCatalog
             TemplateSection::Image, TemplateSection::ImageText => ['title', 'description', 'mediaId', 'alt', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Gallery => ['title', 'mediaIds'],
             TemplateSection::About, TemplateSection::Profile => ['title', 'description', 'mediaId'],
-            TemplateSection::Cta => ['title', 'description', 'ctaLabel', 'ctaUrl'],
+            TemplateSection::Cta => ['title', 'description', 'ctaLabel', 'ctaUrl', 'email', 'phone', 'facebookUrl', 'youtubeUrl', 'tiktokUrl', 'zaloUrl'],
             TemplateSection::Newsletter => ['title', 'description', 'ctaLabel'],
             TemplateSection::RecentPosts => ['title', 'archiveTitle', 'archiveDescription', 'categoryId', 'limit'],
             TemplateSection::Categories => ['title', 'categoryIds', 'limit'],
