@@ -22,8 +22,10 @@
                 <a
                     href="{{ route('blogs.pages.index', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
-                    >← Pages</a
                 >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Pages
+                </a>
                 <div class="mt-2 flex items-center gap-2">
                     <x-badge
                         :variant="$page->status->value === 'PUBLISHED' ? 'primary' : 'default'"

@@ -8,8 +8,10 @@
             <a
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← {{ $blog->name }}</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ $blog->name }}
+            </a>
             <h1 class="text-hero mt-2">{{ __('pages.title') }}</h1>
             <p class="text-secondary">{{ __('pages.help') }}</p>
         </div>

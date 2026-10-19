@@ -51,9 +51,9 @@
                 <!-- Logo/Brand -->
                 <a
                     href="{{ url('/') }}"
-                    class="text-primary hover:text-accent-primary flex items-center gap-2 text-lg font-semibold transition-colors"
+                    class="hover:text-accent-primary flex items-center justify-center gap-2 text-lg font-semibold transition-colors"
                 >
-                    <i class="fa-solid fa-book-open h-8 w-8" aria-hidden="true"></i>
+                    <i class="fa-sharp-duotone fa-solid fa-blog"></i>
                     <span>{{ config('app.name', 'Blog') }}</span>
                 </a>
 

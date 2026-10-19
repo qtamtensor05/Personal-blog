@@ -25,7 +25,7 @@
                 {{ __('templates.admin_empty_help') }}
             </x-empty-state>
         @else
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" data-shimmer-no-children>
                 <table class="w-full">
                     <thead class="bg-surface-secondary border-default border-b">
                         <tr>
@@ -238,9 +238,11 @@
             }
 
             async function deleteTemplate(id, name) {
+                const confirmMessage = @js(__('templates.delete_confirm', ['name' => ':name'])).replace(':name', name);
+    
                 const confirmed = await window.requestModalConfirmation(
                     @js(__('templates.delete')),
-                    @js(__('templates.delete_confirm', ['name' => '${name}'])),
+                    confirmMessage
                 );
                 if (!confirmed) return;
 

@@ -53,7 +53,9 @@
                         <p
                             class="mb-5 text-sm"
                             style="color: var(--d-primary)"
-                        >&larr; {{ $blog->name }}</p>
+                        >
+                            <i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
+                        </p>
                     @endif
                     <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
                         <h1
@@ -68,7 +70,7 @@
                     </header>
                     @if ($layout->showCover)
                         <div
-                            class="mb-8 aspect-[16/9] w-full rounded-md opacity-25"
+                            class="mb-8 aspect-video w-full rounded-md opacity-25"
                             style="background: var(--d-secondary)"
                         ></div>
                     @endif

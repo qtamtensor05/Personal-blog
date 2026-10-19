@@ -74,8 +74,10 @@
                         <a
                             href="{{ route('admin.audit-logs', ['page' => $page - 1]) }}"
                             class="btn-ghost"
-                            >← Newer</a
                         >
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Newer
+                        </a>
                     @else
                         <span></span>
                     @endif

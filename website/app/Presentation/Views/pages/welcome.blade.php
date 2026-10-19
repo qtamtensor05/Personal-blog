@@ -376,7 +376,7 @@
                     name="empty"
                     alt=""
                     ratio="aspect-[2/3]"
-                    class="mx-auto w-10 sm:w-72"
+                    class="mx-auto w-5 sm:w-72"
                 />
 
                 <h3 class="text-primary mt-6 text-xl font-semibold">{{ __('home.empty_title') }}</h3>
@@ -386,7 +386,7 @@
                     <x-button :href="auth()->check() ? route('blogs.create') : route('register')">
                         {{ __('home.write_article') }}
                     </x-button>
-                    <x-button :href="route('posts.index')" variant="outline">
+                    <x-button class="!border !border-accent-primary" :href="route('posts.index')" variant="ghost">
                         {{ __('home.explore') }}
                     </x-button>
                 </div>

@@ -17,8 +17,10 @@
             <a
                 href="{{ route('admin.reports.index') }}"
                 class="text-secondary hover:text-accent-primary text-sm"
-                >← Reports</a
             >
+                <i class="fa-solid fa-arrow-left"></i>
+                Reports
+            </a>
             <div class="mt-2 flex items-center gap-3">
                 <h1 class="text-hero">Report #{{ $report->id }}</h1>
                 <x-badge

@@ -19,7 +19,9 @@
             <form method="POST" action="{{ route('blogs.posts.store', $blog->id) }}" class="mt-4">
                 @csrf
                 <input type="hidden" name="title" value="{{ __('post.untitled') }}">
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-plus mr-2" aria-hidden="true"></i>{{ __('post.open_editor') }}</button>
+                <button type="submit" class="btn-primary px-4 py-2 rounded-md">
+                    <i class="fa-solid fa-plus mr-2" aria-hidden="true"></i>{{ __('post.open_editor') }}
+                </button>
             </form>
         </section>
 

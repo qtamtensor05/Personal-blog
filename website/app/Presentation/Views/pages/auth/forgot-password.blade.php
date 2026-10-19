@@ -71,7 +71,8 @@
                             href="{{ route('login') }}"
                             class="text-accent-primary text-sm hover:underline"
                         >
-                            ← Back to Sign In
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Back to Sign In
                         </a>
                     </div>
                 </div>
