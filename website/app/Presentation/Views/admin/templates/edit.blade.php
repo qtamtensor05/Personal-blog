@@ -3,15 +3,15 @@
 @section('title', 'Edit Template — Admin Console')
 
 @section('content')
-<div class="container-custom section-spacing max-w-6xl">
-    <div class="mb-8">
+<div class="container-custom section-spacing max-w-5xl">
+    <div class="mb-8 px-4">
         <h1 class="text-hero mb-2">Edit Template: {{ $template->name }}</h1>
         <p class="text-secondary">Modify the draft. Changes won't affect published version until you publish again.</p>
     </div>
 
     @include('admin.templates._editor')
 
-    <div class="hidden grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)] gap-8 items-start" style="display:none">
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)] gap-8 items-start" style="display:none">
     <div class="card">
         <div id="templateFormError" class="hidden mb-6" role="alert"></div>
         <form id="templateForm" class="space-y-6">
