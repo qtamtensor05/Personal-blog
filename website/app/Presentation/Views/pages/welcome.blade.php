@@ -111,7 +111,7 @@
                     <x-button :href="route('posts.index')" size="lg">{{ __('home.explore') }}</x-button>
 
                     <a
-                        href="{{ auth()->check() ? route('blogs.create') : route('register') }}"
+                        href="{{ auth()->check() ? route('blogs.index') : route('register') }}"
                         style="
                             display: inline-flex;
                             align-items: center;
@@ -383,7 +383,7 @@
                 <p class="text-secondary mx-auto mt-2 max-w-md">{{ __('home.empty_description') }}</p>
 
                 <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                    <x-button :href="auth()->check() ? route('blogs.create') : route('register')">
+                    <x-button :href="auth()->check() ? route('blogs.index') : route('register')">
                         {{ __('home.write_article') }}
                     </x-button>
                     <x-button :href="route('posts.index')" variant="outline">
@@ -466,7 +466,7 @@
 
                     <div class="mt-8">
                         @if (auth()->check())
-                            <x-button :href="route('blogs.create')" size="lg">
+                            <x-button :href="route('blogs.index')" size="lg">
                                 {{ __('home.create_blog') }}
                                 <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
                             </x-button>

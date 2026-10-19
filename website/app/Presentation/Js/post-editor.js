@@ -32,13 +32,19 @@ function initPostEditor(root) {
     const config = JSON.parse(root.querySelector('[data-editor-config]').textContent);
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
     const status = root.querySelector('[data-save-status]');
-    const titleInput = root.querySelector('[name="title"]');
+    const titleInput = root.querySelector('[data-publish-title-source]');
     const excerptInput = root.querySelector('[name="excerpt"]');
     const fileInput = root.querySelector('[data-image-input]');
     const coverInput = root.querySelector('[data-cover-image-input]');
+    const publishForm = root.querySelector('[data-publish-form]');
+    const contentInput = root.querySelector('[data-post-content]');
+    const previewToggle = root.querySelector('[data-preview-toggle]');
+    const toolbar = root.querySelector('[role="toolbar"]');
 
+    const editorElement = root.querySelector('[data-editor]');
     const editor = new Editor({
-        element: root.querySelector('[data-editor]'),
+        element: editorElement,
+        editable: true,
         extensions: [
             StarterKit.configure({
                 heading: { levels: [2, 3, 4] },
@@ -54,7 +60,50 @@ function initPostEditor(root) {
             },
         },
     });
-    root.querySelector('[data-editor-fallback]').hidden = true;
+    editor.setEditable(true);
+    editor.view.dom.setAttribute('contenteditable', 'true');
+    editor.view.dom.setAttribute('tabindex', '0');
+    status.textContent = 'Trình soạn thảo đã sẵn sàng.';
+    if (contentInput) {
+        contentInput.value = JSON.stringify(editor.getJSON());
+        publishForm?.addEventListener('submit', () => {
+            contentInput.value = JSON.stringify(editor.getJSON());
+            root.querySelector('[data-publish-title]').value = titleInput.value;
+            root.querySelector('[data-publish-excerpt]').value = excerptInput?.value ?? '';
+            root.querySelector('[data-publish-slug]').value = root.querySelector('[data-publish-slug-source]')?.value ?? '';
+            root.querySelector('[data-publish-cover]').value = root.querySelector('[data-cover-media-id]')?.value ?? '';
+            root.querySelector('[data-publish-featured]').value = root.querySelector('[data-publish-featured-source]')?.checked ? '1' : '0';
+            root.querySelectorAll('[data-publish-category-source]').forEach((input) => {
+                const hidden = root.querySelector(`[data-publish-category="${input.value}"]`);
+                if (input.checked && !hidden) {
+                    const field = document.createElement('input'); field.type = 'hidden'; field.name = 'category_ids[]'; field.value = input.value; field.dataset.publishCategory = input.value; publishForm.append(field);
+                } else if (!input.checked) hidden?.remove();
+            });
+            root.querySelectorAll('[data-publish-tag-source]').forEach((input) => {
+                const hidden = root.querySelector(`[data-publish-tag="${input.value}"]`);
+                if (input.checked && !hidden) {
+                    const field = document.createElement('input'); field.type = 'hidden'; field.name = 'tag_ids[]'; field.value = input.value; field.dataset.publishTag = input.value; publishForm.append(field);
+                } else if (!input.checked) hidden?.remove();
+            });
+            const seoTitle = root.querySelector('[name="seo_title_editor"]')?.value ?? '';
+            const seoDescription = root.querySelector('[name="seo_description_editor"]')?.value ?? '';
+            publishForm.querySelector('[name="seo_title"]').value = seoTitle;
+            publishForm.querySelector('[name="seo_description"]').value = seoDescription;
+        });
+    }
+    editorElement.addEventListener('click', () => {
+        if (editor.isEditable) editor.commands.focus();
+    });
+
+    previewToggle?.addEventListener('click', () => {
+        const previewing = previewToggle.getAttribute('aria-pressed') !== 'true';
+        previewToggle.setAttribute('aria-pressed', String(previewing));
+        previewToggle.textContent = previewing ? previewToggle.dataset.editLabel : previewToggle.dataset.previewLabel;
+        editor.setEditable(!previewing);
+        if (toolbar) toolbar.hidden = previewing;
+        editor.view.dom.classList.toggle('post-content', previewing);
+        status.textContent = previewing ? 'Đang xem trước nội dung bài viết.' : 'Đang chỉnh sửa bài viết.';
+    });
 
     let timer = null;
     let dirty = false;
@@ -208,15 +257,20 @@ function initPostEditor(root) {
     });
 
     // Save pending changes before publishing.
-    root.querySelector('[data-publish-form]')?.addEventListener('submit', async (event) => {
-        if (!dirty) return;
-        event.preventDefault();
-        if (await save()) event.target.submit();
-    });
-
     window.addEventListener('beforeunload', (event) => {
         if (dirty) event.preventDefault();
     });
 }
 
-document.querySelectorAll('[data-post-editor]').forEach(initPostEditor);
+document.querySelectorAll('[data-post-editor]').forEach((root) => {
+    try {
+        initPostEditor(root);
+    } catch (error) {
+        console.error('Post editor failed to initialize.', error);
+        const status = root.querySelector('[data-save-status]');
+        if (status) {
+            status.textContent = 'Trình soạn thảo chưa tải được. Hãy tải lại trang; nếu lỗi vẫn còn, báo quản trị viên.';
+            status.classList.add('text-red-500');
+        }
+    }
+});

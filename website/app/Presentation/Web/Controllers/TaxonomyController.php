@@ -182,7 +182,12 @@ final class TaxonomyController extends Controller
     private function validationMessages(): array
     {
         return [
-            'slug.regex' => 'Slug chỉ được chứa chữ thường không dấu, số và dấu gạch ngang.',
+            'name.required' => 'Nhập tên để người đọc nhận biết chuyên mục hoặc thẻ này.',
+            'name.max' => 'Tên tối đa 160 ký tự. Hãy rút gọn tên rồi thử lại.',
+            'slug.required' => 'Slug là phần cuối của đường dẫn. Hãy nhập slug hoặc dùng slug tự tạo từ tên.',
+            'slug.regex' => 'Slug chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: mon-chay.',
+            'slug.max' => 'Slug tối đa 160 ký tự. Hãy rút gọn slug rồi thử lại.',
+            'parent_id.integer' => 'Chuyên mục cha không hợp lệ. Hãy chọn lại từ danh sách.',
         ];
     }
 

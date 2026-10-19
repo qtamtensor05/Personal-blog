@@ -24,6 +24,12 @@
                 @if ($errors->has('general'))
                     <x-alert type="error" dismissible>{{ $errors->first('general') }}</x-alert>
                 @endif
+                @if ($errors->has('status') || $errors->has('visibility') || $errors->has('discoverable'))
+                    <x-alert type="error" dismissible>
+                        {{ $errors->first('status') ?: ($errors->first('visibility') ?: $errors->first('discoverable')) }}
+                        Hãy chọn trạng thái DRAFT hoặc PUBLISHED; quyền hiển thị được thiết lập riêng.
+                    </x-alert>
+                @endif
 
                 <x-input
                     name="name"
@@ -64,11 +70,11 @@
                                 >{{ __('blog.status') }}</label
                             >
                             <select name="status" class="input">
-                                @foreach (['DRAFT', 'PRIVATE', 'PUBLIC'] as $status)
+                                @foreach (['DRAFT', 'PUBLISHED'] as $status)
                                     <option
                                         value="{{ $status }}"
                                         {{
-                                            old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === $status
+                                            old('status', $blog->status->value) === $status
                                                 ? 'selected'
                                                 : ''
                                         }}
@@ -79,7 +85,7 @@
                             </select>
                         </div>
 
-                        <input type="hidden" name="visibility" value="{{ old('status', $blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC') === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}" />
+                        <input type="hidden" name="visibility" value="{{ old('visibility', $blog->visibility->value) }}" />
                         <p class="text-secondary text-xs">{{ __('blog.status_help') }}</p>
 
                         <div class="flex items-center gap-2">

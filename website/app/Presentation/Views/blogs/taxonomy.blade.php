@@ -18,8 +18,10 @@
             <x-alert type="success" dismissible class="mb-6">{{ session('status') }}</x-alert>
         @endif
 
-        @if ($errors->any())
-            <x-alert type="error" dismissible class="mb-6">{{ $errors->first() }}</x-alert>
+        @if ($errors->has('general'))
+            <x-alert type="error" dismissible class="mb-6">
+                {{ $errors->first('general') }} Kiểm tra slug bị trùng hoặc quan hệ chuyên mục cha rồi thử lại.
+            </x-alert>
         @endif
 
         <div class="grid gap-8 lg:grid-cols-2">
@@ -34,12 +36,13 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name"  :label="__('taxonomy.name')" required data-slug-source />
+                        <x-input name="name" :label="__('taxonomy.name')" :error="$errors->first('name')" required data-slug-source />
                         <x-input
                             name="slug"
                              :label="__('taxonomy.slug')"
                             required
                              :hint="__('taxonomy.slug_hint')"
+                            :error="$errors->first('slug')"
                             data-slug-target
                         />
                     </div>
@@ -53,6 +56,7 @@
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
+                        @if ($errors->has('parent_id')) <p class="text-sm text-red-500">{{ $errors->first('parent_id') }} Chọn chuyên mục cha thuộc blog này.</p> @endif
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
                         {{ __('taxonomy.add_category') }}
@@ -111,8 +115,8 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name"  :label="__('taxonomy.name')" required data-slug-source />
-                        <x-input name="slug"  :label="__('taxonomy.slug')" required data-slug-target />
+                        <x-input name="name" :label="__('taxonomy.name')" :error="$errors->first('name')" required data-slug-source />
+                        <x-input name="slug" :label="__('taxonomy.slug')" :hint="__('taxonomy.slug_hint')" :error="$errors->first('slug')" required data-slug-target />
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
                         {{ __('taxonomy.add_tag') }}
