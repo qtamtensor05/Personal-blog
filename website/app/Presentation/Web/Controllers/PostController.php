@@ -51,11 +51,13 @@ final class PostController extends Controller
             'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
         ]);
 
+        $slug = $data['slug'] ?? null;
+
         try {
             $id = $service->create(
                 (int) $request->user()->id,
                 $blog,
-                $data['slug'] ?: Str::slug($data['title']),
+                $slug ?: Str::slug($data['title']),
                 new PostDraft($data['title'], null, TiptapDocument::empty()),
             );
         } catch (BlogNotFound) {
