@@ -60,13 +60,7 @@
                             @endif
                         </div>
 
-                        <div class="border-default flex items-center justify-between border-t pt-4">
-                            <a
-                                href="{{ route('blogs.edit', $blog->id) }}"
-                                class="text-accent-primary text-sm hover:underline"
-                            >
-                                {{ __('blog.edit') }}
-                            </a>
+                        <div class="border-default border-t pt-4">
                             <span class="text-secondary font-mono text-xs">{{ $blog->slug }}</span>
                         </div>
                     </div>

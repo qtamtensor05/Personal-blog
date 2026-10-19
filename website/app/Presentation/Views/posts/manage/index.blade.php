@@ -39,7 +39,7 @@
                             <tr>
                                 <td class="px-4 py-3"><a href="{{ route('blogs.posts.edit', [$blog->id, $post->id]) }}" class="text-primary hover:text-accent-primary font-medium">{{ $post->editable()->title }}</a></td>
                                 <td class="text-secondary px-4 py-3">{{ __('post.status_'.$post->status->value) }}</td>
-                                <td class="text-secondary px-4 py-3">{{ $post->updatedAt->format('Y-m-d H:i') }}</td>
+                                <td class="text-secondary px-4 py-3">{{ \Illuminate\Support\Carbon::parse($post->updatedAt)->format('Y-m-d H:i') }}</td>
                                 <td class="px-4 py-3 text-right"><a href="{{ route('blogs.posts.edit', [$blog->id, $post->id]) }}" class="text-accent-primary hover:underline">{{ __('blog.edit') }}</a></td>
                             </tr>
                         @endforeach
