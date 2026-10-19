@@ -28,8 +28,12 @@ final readonly class ModerateContentService
         private NotificationPublisher $notifications,
     ) {}
 
-    public function report(int $reporterId, string $blogSlug, ?string $postSlug, string $reason): void
-    {
+    public function report(
+        int $reporterId,
+        string $blogSlug,
+        ?string $postSlug,
+        string $reason,
+    ): void {
         // Only content the reporter can actually see may be reported.
         $blog = $this->blogs->execute($blogSlug, $reporterId)->blog;
 
@@ -40,8 +44,9 @@ final readonly class ModerateContentService
         $postId = null;
 
         if ($postSlug !== null) {
-            $postId = $this->posts->findPublishedBySlug($blog->id, $postSlug)?->id
-                ?? throw new DomainException('Post not found.');
+            $postId =
+                $this->posts->findPublishedBySlug($blog->id, $postSlug)?->id ??
+                throw new DomainException('Post not found.');
         }
 
         if ($this->reports->hasPendingReport($reporterId, $blog->id, $postId)) {
@@ -57,16 +62,25 @@ final readonly class ModerateContentService
         $this->reports->startReview($reportId, $adminId);
 
         if ($report->reporter_user_id !== null) {
-            $this->notifications->publish((int) $report->reporter_user_id, 'moderation.review_started', [
-                'title' => 'Report under review',
-                'message' => "Your report #{$reportId} is now being reviewed.",
-                'report_id' => $reportId,
-            ]);
+            $this->notifications->publish(
+                (int) $report->reporter_user_id,
+                'moderation.review_started',
+                [
+                    'title' => 'Report under review',
+                    'message' => "Your report #{$reportId} is now being reviewed.",
+                    'report_id' => $reportId,
+                ],
+            );
         }
     }
 
-    public function close(int $adminId, int $reportId, ReportStatus $status, string $action, ?string $note): void
-    {
+    public function close(
+        int $adminId,
+        int $reportId,
+        ReportStatus $status,
+        string $action,
+        ?string $note,
+    ): void {
         $report = $this->pending($reportId);
 
         if (! in_array($status, [ReportStatus::Resolved, ReportStatus::Dismissed], true)) {
@@ -88,19 +102,31 @@ final readonly class ModerateContentService
 
         $this->reports->close($reportId, $status, $adminId, $note);
 
-        $this->audit->log($adminId, 'content_report.closed', 'content_report', (string) $reportId,
-            ['status' => $report->status, 'blog_status' => $report->blog_status, 'post_status' => $report->post_status],
+        $this->audit->log(
+            $adminId,
+            'content_report.closed',
+            'content_report',
+            (string) $reportId,
+            [
+                'status' => $report->status,
+                'blog_status' => $report->blog_status,
+                'post_status' => $report->post_status,
+            ],
             ['status' => $status->value, 'action' => $action, 'note' => $note],
             (int) $report->blog_id,
         );
 
         if ($report->reporter_user_id !== null) {
-            $this->notifications->publish((int) $report->reporter_user_id, 'moderation.report_closed', [
-                'title' => 'Report closed',
-                'message' => "Your report #{$reportId} was {$status->value}.",
-                'report_id' => $reportId,
-                'status' => $status->value,
-            ]);
+            $this->notifications->publish(
+                (int) $report->reporter_user_id,
+                'moderation.report_closed',
+                [
+                    'title' => 'Report closed',
+                    'message' => "Your report #{$reportId} was {$status->value}.",
+                    'report_id' => $reportId,
+                    'status' => $status->value,
+                ],
+            );
         }
 
         if ($action !== 'none') {
@@ -123,15 +149,25 @@ final readonly class ModerateContentService
 
         $status = $this->reports->liftBlogSuspension((int) $report->blog_id);
 
-        $this->audit->log($adminId, 'blog.suspension_lifted', 'blog', (string) $report->blog_id,
-            ['status' => 'SUSPENDED'], ['status' => $status, 'report_id' => $reportId], (int) $report->blog_id,
+        $this->audit->log(
+            $adminId,
+            'blog.suspension_lifted',
+            'blog',
+            (string) $report->blog_id,
+            ['status' => 'SUSPENDED'],
+            ['status' => $status, 'report_id' => $reportId],
+            (int) $report->blog_id,
         );
 
-        $this->notifications->publish((int) $report->owner_user_id, 'moderation.suspension_lifted', [
-            'title' => 'Blog suspension lifted',
-            'message' => "The suspension on {$report->blog_name} was lifted.",
-            'report_id' => $reportId,
-        ]);
+        $this->notifications->publish(
+            (int) $report->owner_user_id,
+            'moderation.suspension_lifted',
+            [
+                'title' => 'Blog suspension lifted',
+                'message' => "The suspension on {$report->blog_name} was lifted.",
+                'report_id' => $reportId,
+            ],
+        );
     }
 
     private function pending(int $reportId): object

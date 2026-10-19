@@ -10,10 +10,11 @@ use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Domain\BlogDesign\ValueObjects\BlogDesignData;
 use App\Domain\Templates\Enums\TemplateStatus;
+use DomainException;
 
 /**
- * Puts a snapshot of a published template into the blog's design draft.
- * The live design is untouched until the owner publishes.
+ * Puts the first published template into the blog draft. The owner can preview
+ * this draft at the blog URL while visitors continue to see published data.
  */
 final readonly class ApplyTemplateService
 {
@@ -26,6 +27,13 @@ final readonly class ApplyTemplateService
     public function execute(int $actorId, int $blogId, int $templateId): void
     {
         $this->guard->ensure($actorId, $blogId);
+
+        $existing = $this->designs->find($blogId);
+        if ($existing?->draftData !== null || $existing?->publishedData !== null) {
+            throw new DomainException(
+                'This blog already has a template. Its fixed layout cannot be changed.',
+            );
+        }
 
         $template = $this->templates->find($templateId);
 
@@ -40,7 +48,11 @@ final readonly class ApplyTemplateService
 
         $this->designs->saveDraft(
             $blogId,
-            BlogDesignData::fromTemplate($template->id, $template->versionNumber, $template->publishedData),
+            BlogDesignData::fromTemplate(
+                $template->id,
+                $template->versionNumber,
+                $template->publishedData,
+            ),
             $actorId,
         );
     }

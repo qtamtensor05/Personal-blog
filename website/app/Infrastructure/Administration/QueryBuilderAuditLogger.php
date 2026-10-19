@@ -35,8 +35,8 @@ final readonly class QueryBuilderAuditLogger implements AuditLogger
             'after_data' => $after === null ? null : json_encode($after),
             'ip_address' => $this->request->ip(),
             'request_id' => is_string($requestId) && $requestId !== ''
-                ? mb_substr($requestId, 0, 64)
-                : (string) Str::uuid(),
+                    ? mb_substr($requestId, 0, 64)
+                    : (string) Str::uuid(),
             'created_at' => $now,
             'updated_at' => $now,
         ]);

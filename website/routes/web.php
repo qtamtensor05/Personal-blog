@@ -13,6 +13,7 @@ use App\Presentation\Web\Controllers\BlogSettingsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\HomeController;
+use App\Presentation\Web\Controllers\InterfaceLocaleController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\NotificationController;
@@ -33,6 +34,7 @@ use App\Presentation\Web\Controllers\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::post('/interface-locale', InterfaceLocaleController::class)->name('interface-locale.update');
 
 Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
 
@@ -114,8 +116,7 @@ final class User
         ],
     ];
 
-    return view('pages.posts.show', compact('mockPost', 'relatedPosts'))
-        ->with('post', $mockPost);
+    return view('pages.posts.show', compact('mockPost', 'relatedPosts'))->with('post', $mockPost);
 })->name('posts.show');
 
 Route::get('/template-preview/{slug}', TemplatePreviewController::class)
@@ -126,6 +127,13 @@ Route::get('/template-preview/{slug}', TemplatePreviewController::class)
 Route::get('/b/{slug}', PublicBlogController::class)
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
     ->name('public.blog');
+
+Route::get('/b/{slug}/section/{screen}', PublicBlogController::class)
+    ->where([
+        'slug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+        'screen' => 'posts|about|contact',
+    ])
+    ->name('public.blog.section');
 
 // Static pages live under /p/ so their slugs never collide with post slugs.
 Route::get('/b/{slug}/p/{page}', PublicPageController::class)
@@ -143,8 +151,7 @@ Route::middleware('guest')->group(function () {
         return view('pages.auth.register');
     })->name('register');
 
-    Route::post('/register', RegisterUserController::class)
-        ->name('register.store');
+    Route::post('/register', RegisterUserController::class)->name('register.store');
 
     Route::get('/login', function () {
         return view('pages.auth.login');
@@ -173,7 +180,9 @@ Route::middleware('guest')->group(function () {
 // Email Verification
 Route::get('/email/verify', function () {
     return view('pages.auth.verify-email');
-})->middleware('auth')->name('verification.notice');
+})
+    ->middleware('auth')
+    ->name('verification.notice');
 
 Route::get('/email/verified', function () {
     return view('pages.auth.email-verified');
@@ -184,8 +193,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name(
+        'notifications.index',
+    );
+    Route::patch('/notifications/read-all', [NotificationController::class, 'readAll'])->name(
+        'notifications.read-all',
+    );
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])
         ->whereUuid('notification')
         ->name('notifications.read');
@@ -209,6 +222,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/media/{media}', [MediaController::class, 'destroy'])
         ->whereNumber('media')
         ->name('media.destroy');
+
+    Route::get('/blogs/{blog}/media', [MediaController::class, 'index'])
+        ->whereNumber('blog')
+        ->name('blogs.media.index');
 
     // Report a blog or post (signed-in users; login already requires an active, verified account)
     Route::post('/b/{slug}/report', ContentReportController::class)
@@ -236,12 +253,24 @@ Route::middleware('auth')->group(function () {
         ->whereNumber(['blog', 'category', 'tag'])
         ->group(function () {
             Route::get('/taxonomy', [TaxonomyController::class, 'index'])->name('blogs.taxonomy');
-            Route::post('/categories', [TaxonomyController::class, 'storeCategory'])->name('blogs.categories.store');
-            Route::put('/categories/{category}', [TaxonomyController::class, 'updateCategory'])->name('blogs.categories.update');
-            Route::delete('/categories/{category}', [TaxonomyController::class, 'destroyCategory'])->name('blogs.categories.destroy');
+            Route::post('/categories', [TaxonomyController::class, 'storeCategory'])->name(
+                'blogs.categories.store',
+            );
+            Route::put('/categories/{category}', [
+                TaxonomyController::class,
+                'updateCategory',
+            ])->name('blogs.categories.update');
+            Route::delete('/categories/{category}', [
+                TaxonomyController::class,
+                'destroyCategory',
+            ])->name('blogs.categories.destroy');
             Route::post('/tags', [TaxonomyController::class, 'storeTag'])->name('blogs.tags.store');
-            Route::put('/tags/{tag}', [TaxonomyController::class, 'updateTag'])->name('blogs.tags.update');
-            Route::delete('/tags/{tag}', [TaxonomyController::class, 'destroyTag'])->name('blogs.tags.destroy');
+            Route::put('/tags/{tag}', [TaxonomyController::class, 'updateTag'])->name(
+                'blogs.tags.update',
+            );
+            Route::delete('/tags/{tag}', [TaxonomyController::class, 'destroyTag'])->name(
+                'blogs.tags.destroy',
+            );
         });
 
     // Posts (Tiptap editor)
@@ -252,11 +281,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [PostController::class, 'index'])->name('index');
             Route::post('/', [PostController::class, 'store'])->name('store');
             Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
-            Route::put('/{post}/draft', [PostController::class, 'saveDraft'])->middleware('throttle:60,1')->name('draft');
+            Route::put('/{post}/draft', [PostController::class, 'saveDraft'])
+                ->middleware('throttle:60,1')
+                ->name('draft');
             Route::put('/{post}/meta', [PostController::class, 'updateMeta'])->name('meta');
             Route::post('/{post}/publish', [PostController::class, 'publish'])->name('publish');
             Route::patch('/{post}/status', [PostController::class, 'changeStatus'])->name('status');
             Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+            Route::post('/{post}/restore', [PostController::class, 'restore'])->name('restore');
+            Route::delete('/{post}/permanent', [PostController::class, 'forceDestroy'])->name('force-destroy');
         });
 
     // Static pages (Tiptap editor)
@@ -267,7 +300,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [PageController::class, 'index'])->name('index');
             Route::post('/', [PageController::class, 'store'])->name('store');
             Route::get('/{page}/edit', [PageController::class, 'edit'])->name('edit');
-            Route::put('/{page}/draft', [PageController::class, 'saveDraft'])->middleware('throttle:60,1')->name('draft');
+            Route::put('/{page}/draft', [PageController::class, 'saveDraft'])
+                ->middleware('throttle:60,1')
+                ->name('draft');
             Route::put('/{page}/meta', [PageController::class, 'updateMeta'])->name('meta');
             Route::post('/{page}/publish', [PageController::class, 'publish'])->name('publish');
             Route::patch('/{page}/status', [PageController::class, 'changeStatus'])->name('status');
@@ -281,9 +316,15 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/', [BlogDomainController::class, 'index'])->name('index');
             Route::post('/', [BlogDomainController::class, 'store'])->name('store');
-            Route::post('/{domain}/verify', [BlogDomainController::class, 'verify'])->middleware('throttle:10,1')->name('verify');
-            Route::post('/{domain}/activate', [BlogDomainController::class, 'activate'])->name('activate');
-            Route::post('/{domain}/disable', [BlogDomainController::class, 'disable'])->name('disable');
+            Route::post('/{domain}/verify', [BlogDomainController::class, 'verify'])
+                ->middleware('throttle:10,1')
+                ->name('verify');
+            Route::post('/{domain}/activate', [BlogDomainController::class, 'activate'])->name(
+                'activate',
+            );
+            Route::post('/{domain}/disable', [BlogDomainController::class, 'disable'])->name(
+                'disable',
+            );
             Route::delete('/{domain}', [BlogDomainController::class, 'destroy'])->name('destroy');
         });
 
@@ -293,9 +334,15 @@ Route::middleware('auth')->group(function () {
         ->name('blogs.design.')
         ->group(function () {
             Route::get('/', [BlogDesignController::class, 'edit'])->name('edit');
-            Route::post('/template', [BlogDesignController::class, 'applyTemplate'])->name('template');
-            Route::put('/', [BlogDesignController::class, 'saveDraft'])->name('draft');
-            Route::post('/publish', [BlogDesignController::class, 'publish'])->name('publish');
+            Route::post('/template', [BlogDesignController::class, 'applyTemplate'])->name(
+                'template',
+            );
+            Route::put('/content', [BlogDesignController::class, 'saveSlotContent'])->name(
+                'content',
+            );
+            Route::post('/publish/{region}', [BlogDesignController::class, 'publishRegion'])
+                ->whereIn('region', ['header', 'body', 'sidebar', 'footer'])
+                ->name('publish-region');
         });
 });
 
@@ -315,64 +362,127 @@ Route::middleware(['auth', 'permission:'.PlatformPermission::AccessAdminConsole-
             ->whereNumber(['user', 'role'])
             ->group(function () {
                 Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-                Route::post('/users', [AdminUserController::class, 'createAdmin'])->name('users.store');
-                Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
-                Route::post('/users/{user}/restrictions', [AdminUserController::class, 'restrict'])->name('users.restrict');
-                Route::delete('/users/{user}/restrictions', [AdminUserController::class, 'lift'])->name('users.lift');
+                Route::post('/users', [AdminUserController::class, 'createAdmin'])->name(
+                    'users.store',
+                );
+                Route::get('/users/{user}', [AdminUserController::class, 'show'])->name(
+                    'users.show',
+                );
+                Route::post('/users/{user}/restrictions', [
+                    AdminUserController::class,
+                    'restrict',
+                ])->name('users.restrict');
+                Route::delete('/users/{user}/restrictions', [
+                    AdminUserController::class,
+                    'lift',
+                ])->name('users.lift');
 
                 // Role changes need roles.manage on top of users.manage.
-                Route::middleware(['permission:'.PlatformPermission::ManageRoles->value])->group(function () {
-                    Route::post('/users/{user}/roles', [AdminUserController::class, 'grantRole'])->name('users.roles.grant');
-                    Route::delete('/users/{user}/roles/{role}', [AdminUserController::class, 'revokeRole'])->name('users.roles.revoke');
-                    Route::post('/users/{user}/permissions', [AdminUserController::class, 'setPermission'])->name('users.permissions.set');
-                });
+                Route::middleware(['permission:'.PlatformPermission::ManageRoles->value])->group(
+                    function () {
+                        Route::post('/users/{user}/roles', [
+                            AdminUserController::class,
+                            'grantRole',
+                        ])->name('users.roles.grant');
+                        Route::delete('/users/{user}/roles/{role}', [
+                            AdminUserController::class,
+                            'revokeRole',
+                        ])->name('users.roles.revoke');
+                        Route::post('/users/{user}/permissions', [
+                            AdminUserController::class,
+                            'setPermission',
+                        ])->name('users.permissions.set');
+                    },
+                );
             });
 
         // Content reports
         Route::middleware(['permission:'.PlatformPermission::ModerateContent->value])
             ->whereNumber('report')
             ->group(function () {
-                Route::get('/reports', [AdminContentReportController::class, 'index'])->name('reports.index');
-                Route::get('/reports/{report}', [AdminContentReportController::class, 'show'])->name('reports.show');
-                Route::post('/reports/{report}/review', [AdminContentReportController::class, 'review'])->name('reports.review');
-                Route::post('/reports/{report}/close', [AdminContentReportController::class, 'close'])->name('reports.close');
-                Route::post('/reports/{report}/lift-suspension', [AdminContentReportController::class, 'liftSuspension'])->name('reports.lift');
+                Route::get('/reports', [AdminContentReportController::class, 'index'])->name(
+                    'reports.index',
+                );
+                Route::get('/reports/{report}', [
+                    AdminContentReportController::class,
+                    'show',
+                ])->name('reports.show');
+                Route::post('/reports/{report}/review', [
+                    AdminContentReportController::class,
+                    'review',
+                ])->name('reports.review');
+                Route::post('/reports/{report}/close', [
+                    AdminContentReportController::class,
+                    'close',
+                ])->name('reports.close');
+                Route::post('/reports/{report}/lift-suspension', [
+                    AdminContentReportController::class,
+                    'liftSuspension',
+                ])->name('reports.lift');
             });
 
         Route::get('/audit-logs', [AdminUserController::class, 'auditLogs'])
             ->middleware(['permission:'.PlatformPermission::ViewAuditLogs->value])
             ->name('audit-logs');
 
-        Route::middleware(['permission:'.PlatformPermission::ManagePlatformSettings->value])->group(function () {
-            Route::get('/settings', [AdminPlatformSettingsController::class, 'edit'])->name('settings.edit');
-            Route::put('/settings', [AdminPlatformSettingsController::class, 'update'])->name('settings.update');
+        Route::middleware([
+            'permission:'.PlatformPermission::ManagePlatformSettings->value,
+        ])->group(function () {
+            Route::get('/settings', [AdminPlatformSettingsController::class, 'edit'])->name(
+                'settings.edit',
+            );
+            Route::put('/settings', [AdminPlatformSettingsController::class, 'update'])->name(
+                'settings.update',
+            );
         });
 
         // Templates
-        Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(function () {
-            Route::get('/templates', [AdminTemplateController::class, 'index'])->name('templates.index');
-            Route::get('/templates/create', [AdminTemplateController::class, 'create'])->name('templates.create');
-            Route::post('/templates', [AdminTemplateController::class, 'store'])->name('templates.store');
-            Route::post('/templates/{template}/restore', [AdminTemplateController::class, 'restore'])
-                ->whereNumber('template')->name('templates.restore');
-            Route::delete('/templates/{template}/permanent', [AdminTemplateController::class, 'forceDestroy'])
-                ->whereNumber('template')->name('templates.force-destroy');
-            Route::get('/templates/{template}/edit', [AdminTemplateController::class, 'edit'])
-                ->whereNumber('template')
-                ->name('templates.edit');
-            Route::put('/templates/{template}', [AdminTemplateController::class, 'update'])
-                ->whereNumber('template')
-                ->name('templates.update');
-            Route::post('/templates/{template}/publish', [AdminTemplateController::class, 'publish'])
-                ->whereNumber('template')
-                ->name('templates.publish');
-            Route::patch('/templates/{template}/status', [AdminTemplateController::class, 'changeStatus'])
-                ->whereNumber('template')
-                ->name('templates.status');
-            Route::delete('/templates/{template}', [AdminTemplateController::class, 'destroy'])
-                ->whereNumber('template')
-                ->name('templates.destroy');
-        });
+        Route::middleware(['permission:'.PlatformPermission::ManageTemplates->value])->group(
+            function () {
+                Route::get('/templates', [AdminTemplateController::class, 'index'])->name(
+                    'templates.index',
+                );
+                Route::get('/templates/create', [AdminTemplateController::class, 'create'])->name(
+                    'templates.create',
+                );
+                Route::post('/templates', [AdminTemplateController::class, 'store'])->name(
+                    'templates.store',
+                );
+                Route::post('/templates/{template}/restore', [
+                    AdminTemplateController::class,
+                    'restore',
+                ])
+                    ->whereNumber('template')
+                    ->name('templates.restore');
+                Route::delete('/templates/{template}/permanent', [
+                    AdminTemplateController::class,
+                    'forceDestroy',
+                ])
+                    ->whereNumber('template')
+                    ->name('templates.force-destroy');
+                Route::get('/templates/{template}/edit', [AdminTemplateController::class, 'edit'])
+                    ->whereNumber('template')
+                    ->name('templates.edit');
+                Route::put('/templates/{template}', [AdminTemplateController::class, 'update'])
+                    ->whereNumber('template')
+                    ->name('templates.update');
+                Route::post('/templates/{template}/publish', [
+                    AdminTemplateController::class,
+                    'publish',
+                ])
+                    ->whereNumber('template')
+                    ->name('templates.publish');
+                Route::patch('/templates/{template}/status', [
+                    AdminTemplateController::class,
+                    'changeStatus',
+                ])
+                    ->whereNumber('template')
+                    ->name('templates.status');
+                Route::delete('/templates/{template}', [AdminTemplateController::class, 'destroy'])
+                    ->whereNumber('template')
+                    ->name('templates.destroy');
+            },
+        );
     });
 
 Route::post('/email/verification-notification', ResendVerificationEmailController::class)

@@ -13,25 +13,17 @@ final readonly class GetHomeContentService implements GetHomeContentUseCase
 
     private const RECENT_LIMIT = 6;
 
-    public function __construct(
-        private PublicPostCatalog $posts,
-    ) {}
+    public function __construct(private PublicPostCatalog $posts) {}
 
     public function execute(): HomeContent
     {
         $featured = $this->posts->featured(self::FEATURED_LIMIT);
 
-        $featuredIds = array_map(
-            static fn ($post): int => $post->id,
-            $featured,
-        );
+        $featuredIds = array_map(static fn ($post): int => $post->id, $featured);
 
         return new HomeContent(
             featuredPosts: $featured,
-            recentPosts: $this->posts->recent(
-                self::RECENT_LIMIT,
-                $featuredIds,
-            ),
+            recentPosts: $this->posts->recent(self::RECENT_LIMIT, $featuredIds),
         );
     }
 }

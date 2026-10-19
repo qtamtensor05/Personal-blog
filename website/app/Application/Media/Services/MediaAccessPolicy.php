@@ -23,12 +23,19 @@ final readonly class MediaAccessPolicy
         private PermissionResolver $permissions,
     ) {}
 
-    public function authorize(int $actorId, MediaScope $scope, ?int $blogId, ?int $uploadedBy = null): void
-    {
+    public function authorize(
+        int $actorId,
+        MediaScope $scope,
+        ?int $blogId,
+        ?int $uploadedBy = null,
+    ): void {
         $allowed = match ($scope) {
             MediaScope::User => $uploadedBy === null || $uploadedBy === $actorId,
             MediaScope::Blog => $blogId !== null && $this->blogs->ownerOf($blogId) === $actorId,
-            MediaScope::Platform => $this->permissions->has($actorId, PlatformPermission::ManageTemplates),
+            MediaScope::Platform => $this->permissions->has(
+                $actorId,
+                PlatformPermission::ManageTemplates,
+            ),
         };
 
         if (! $allowed) {

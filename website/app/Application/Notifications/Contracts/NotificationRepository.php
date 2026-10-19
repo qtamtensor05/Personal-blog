@@ -11,7 +11,11 @@ interface NotificationRepository
     /** @param array<string, mixed> $data */
     public function create(int $recipientUserId, string $type, array $data): string;
 
-    public function paginateForRecipient(int $recipientUserId, int $page, int $perPage): NotificationPage;
+    public function paginateForRecipient(
+        int $recipientUserId,
+        int $page,
+        int $perPage,
+    ): NotificationPage;
 
     public function unreadCount(int $recipientUserId): int;
 

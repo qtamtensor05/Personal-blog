@@ -19,13 +19,16 @@ final class DomainServiceProvider extends ServiceProvider
         $this->app->bind(BlogDomainRepository::class, QueryBuilderBlogDomainRepository::class);
         $this->app->bind(DnsTxtResolver::class, PhpDnsTxtResolver::class);
 
-        $this->app->bind(ManageDomainsService::class, fn ($app) => new ManageDomainsService(
-            guard: $app->make(OwnedBlogGuard::class),
-            domains: $app->make(BlogDomainRepository::class),
-            dns: $app->make(DnsTxtResolver::class),
-            secret: (string) config('app.key'),
-            platformHost: self::platformHost(),
-        ));
+        $this->app->bind(
+            ManageDomainsService::class,
+            fn ($app) => new ManageDomainsService(
+                guard: $app->make(OwnedBlogGuard::class),
+                domains: $app->make(BlogDomainRepository::class),
+                dns: $app->make(DnsTxtResolver::class),
+                secret: (string) config('app.key'),
+                platformHost: self::platformHost(),
+            ),
+        );
     }
 
     public static function platformHost(): string

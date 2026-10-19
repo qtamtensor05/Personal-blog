@@ -24,7 +24,9 @@ final class QueryBuilderBlogDesignRepository implements BlogDesignRepository
         return new BlogDesignRecord(
             blogId: (int) $row->blog_id,
             templateId: $row->template_id !== null ? (int) $row->template_id : null,
-            draftTemplateId: $row->draft_template_id !== null ? (int) $row->draft_template_id : null,
+            draftTemplateId: $row->draft_template_id !== null
+                ? (int) $row->draft_template_id
+                : null,
             publishedData: $row->published_data !== null
                 ? BlogDesignData::fromArray(json_decode($row->published_data, true))
                 : null,
@@ -53,15 +55,37 @@ final class QueryBuilderBlogDesignRepository implements BlogDesignRepository
         );
     }
 
-    public function publishDraft(int $blogId, int $updatedBy): void
+    public function publishRegion(int $blogId, string $region, int $updatedBy): void
     {
-        // The draft is kept so the owner can keep editing from the published state.
+        $record = $this->find($blogId);
+        $draft = $record?->draftData;
+
+        if ($draft === null) {
+            return;
+        }
+
+        $published = $record?->publishedData ?? $draft->withSlotContent([]);
+        $content = $published->slotContent;
+
+        foreach ($draft->sections as $slot) {
+            if ($slot->region !== $region) {
+                continue;
+            }
+
+            if (array_key_exists($slot->key, $draft->slotContent)) {
+                $content[$slot->key] = $draft->slotContent[$slot->key];
+            } else {
+                unset($content[$slot->key]);
+            }
+        }
+
+        $published = $published->withSlotContent($content);
+
         DB::table(self::TABLE)
             ->where('blog_id', $blogId)
-            ->whereNotNull('draft_data')
             ->update([
-                'template_id' => DB::raw('draft_template_id'),
-                'published_data' => DB::raw('draft_data'),
+                'template_id' => $draft->templateId,
+                'published_data' => json_encode($published),
                 'published_at' => now(),
                 'updated_by' => $updatedBy,
                 'updated_at' => now(),

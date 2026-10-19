@@ -45,7 +45,10 @@ final readonly class ViewPublicPostService
             'page' => $page,
             'post' => $post,
             // Only READY media of this blog is resolved; anything else is not rendered.
-            'media' => $this->media->readyAssetsForBlog($page->blog->id, array_values(array_unique($ids))),
+            'media' => $this->media->readyAssetsForBlog(
+                $page->blog->id,
+                array_values(array_unique($ids)),
+            ),
         ];
     }
 }

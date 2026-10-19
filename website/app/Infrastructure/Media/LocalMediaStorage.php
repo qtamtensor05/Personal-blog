@@ -13,27 +13,32 @@ final readonly class LocalMediaStorage implements MediaStorage
 {
     public function __construct(private string $disk = 'public') {}
 
-    public function upload(string $localPath, string $folder, string $publicId): StoredMedia
-    {
+    public function upload(
+        string $localPath,
+        string $folder,
+        string $publicId,
+        ?string $mimeType = null,
+    ): StoredMedia {
         $contents = file_get_contents($localPath);
 
         if ($contents === false) {
             throw new MediaStorageFailed('Uploaded file could not be read.');
         }
 
-        $image = @getimagesize($localPath);
-        $extension = $this->extension($image['mime'] ?? null);
+        $isVideo = str_starts_with((string) $mimeType, 'video/');
+        $image = $isVideo ? false : @getimagesize($localPath);
+        $extension = $this->extension($mimeType ?? ($image['mime'] ?? null));
         $path = trim($folder, '/').'/'.$publicId.'.'.$extension;
 
         if (! Storage::disk($this->disk)->put($path, $contents)) {
-            throw new MediaStorageFailed('The image could not be written to local storage.');
+            throw new MediaStorageFailed('The media could not be written to local storage.');
         }
 
         return new StoredMedia(
             assetId: hash('sha256', $path),
             publicId: $path,
             version: time(),
-            resourceType: 'image',
+            resourceType: $isVideo ? 'video' : 'image',
             deliveryType: 'upload',
             secureUrl: Storage::disk($this->disk)->url($path),
             format: $extension,
@@ -43,10 +48,13 @@ final readonly class LocalMediaStorage implements MediaStorage
         );
     }
 
-    public function destroy(string $publicId): void
+    public function destroy(string $publicId, string $resourceType = 'image'): void
     {
-        if (Storage::disk($this->disk)->exists($publicId) && ! Storage::disk($this->disk)->delete($publicId)) {
-            throw new MediaStorageFailed('The local image could not be deleted.');
+        if (
+            Storage::disk($this->disk)->exists($publicId) &&
+            ! Storage::disk($this->disk)->delete($publicId)
+        ) {
+            throw new MediaStorageFailed('The local media could not be deleted.');
         }
     }
 
@@ -62,7 +70,10 @@ final readonly class LocalMediaStorage implements MediaStorage
             'image/png' => 'png',
             'image/webp' => 'webp',
             'image/gif' => 'gif',
-            default => throw new MediaStorageFailed('The uploaded image format is not supported.'),
+            'video/mp4' => 'mp4',
+            'video/webm' => 'webm',
+            'video/quicktime' => 'mov',
+            default => throw new MediaStorageFailed('The uploaded media format is not supported.'),
         };
     }
 }

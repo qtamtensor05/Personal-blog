@@ -1,11 +1,12 @@
 <?php
 
 use App\Presentation\Web\Middleware\ServeCustomDomain;
+use App\Presentation\Web\Middleware\SetInterfaceLocale;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Before routing: answers requests for ACTIVE custom blog domains.
         $middleware->prepend(ServeCustomDomain::class);
+        $middleware->web(append: [SetInterfaceLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

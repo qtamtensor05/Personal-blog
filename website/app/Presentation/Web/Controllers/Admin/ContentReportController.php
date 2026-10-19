@@ -47,31 +47,52 @@ final class ContentReportController extends Controller
         ]);
     }
 
-    public function review(int $report, Request $request, ModerateContentService $service): RedirectResponse
-    {
-        return $this->run($report, fn () => $service->startReview((int) $request->user()->id, $report), 'Report assigned to you.');
+    public function review(
+        int $report,
+        Request $request,
+        ModerateContentService $service,
+    ): RedirectResponse {
+        return $this->run(
+            $report,
+            fn () => $service->startReview((int) $request->user()->id, $report),
+            'Report assigned to you.',
+        );
     }
 
-    public function close(int $report, Request $request, ModerateContentService $service): RedirectResponse
-    {
+    public function close(
+        int $report,
+        Request $request,
+        ModerateContentService $service,
+    ): RedirectResponse {
         $data = $request->validate([
             'status' => ['required', 'in:RESOLVED,DISMISSED'],
             'action' => ['required', 'in:'.implode(',', ModerateContentService::ACTIONS)],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        return $this->run($report, fn () => $service->close(
-            (int) $request->user()->id,
+        return $this->run(
             $report,
-            ReportStatus::from($data['status']),
-            $data['action'],
-            $data['note'] ?? null,
-        ), 'Report closed.');
+            fn () => $service->close(
+                (int) $request->user()->id,
+                $report,
+                ReportStatus::from($data['status']),
+                $data['action'],
+                $data['note'] ?? null,
+            ),
+            'Report closed.',
+        );
     }
 
-    public function liftSuspension(int $report, Request $request, ModerateContentService $service): RedirectResponse
-    {
-        return $this->run($report, fn () => $service->liftBlogSuspension((int) $request->user()->id, $report), 'Blog suspension lifted.');
+    public function liftSuspension(
+        int $report,
+        Request $request,
+        ModerateContentService $service,
+    ): RedirectResponse {
+        return $this->run(
+            $report,
+            fn () => $service->liftBlogSuspension((int) $request->user()->id, $report),
+            'Blog suspension lifted.',
+        );
     }
 
     private function run(int $report, callable $action, string $message): RedirectResponse
@@ -79,7 +100,9 @@ final class ContentReportController extends Controller
         try {
             $action();
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
         return redirect()->route('admin.reports.show', $report)->with('status', $message);

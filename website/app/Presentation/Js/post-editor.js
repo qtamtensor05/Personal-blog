@@ -35,6 +35,7 @@ function initPostEditor(root) {
     const titleInput = root.querySelector('[name="title"]');
     const excerptInput = root.querySelector('[name="excerpt"]');
     const fileInput = root.querySelector('[data-image-input]');
+    const coverInput = root.querySelector('[data-cover-image-input]');
 
     const editor = new Editor({
         element: root.querySelector('[data-editor]'),
@@ -47,9 +48,13 @@ function initPostEditor(root) {
         ],
         content: withImageSources(config.content, config.mediaUrls),
         editorProps: {
-            attributes: { class: 'post-content min-h-[24rem] focus:outline-none', 'aria-label': 'Post content' },
+            attributes: {
+                class: 'post-content min-h-[24rem] focus:outline-none',
+                'aria-label': 'Post content',
+            },
         },
     });
+    root.querySelector('[data-editor-fallback]').hidden = true;
 
     let timer = null;
     let dirty = false;
@@ -68,7 +73,11 @@ function initPostEditor(root) {
         try {
             const response = await fetch(config.draftUrl, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
                 body: JSON.stringify({
                     title: titleInput.value,
                     // Pages have no excerpt field.
@@ -115,7 +124,11 @@ function initPostEditor(root) {
         blockquote: () => editor.chain().focus().toggleBlockquote().run(),
         codeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
         link: async () => {
-            const href = await window.requestModalInput('Add link', 'Link URL (https://…)', editor.getAttributes('link').href ?? '');
+            const href = await window.requestModalInput(
+                'Add link',
+                'Link URL (https://…)',
+                editor.getAttributes('link').href ?? '',
+            );
             if (href === null) return;
             if (href === '') {
                 editor.chain().focus().unsetLink().run();
@@ -155,11 +168,42 @@ function initPostEditor(root) {
                 return;
             }
 
-            const alt = await window.requestModalInput('Image description', 'Describe the image (alt text)', '');
+            const alt = await window.requestModalInput(
+                'Image description',
+                'Describe the image (alt text)',
+                '',
+            );
             // setImage passes all attributes through to the inserted node.
-            editor.chain().focus().setImage({ src: body.data.url, alt, mediaId: body.data.id }).run();
+            editor
+                .chain()
+                .focus()
+                .setImage({ src: body.data.url, alt, mediaId: body.data.id })
+                .run();
         } catch {
             setStatus('Image upload failed.', true);
+        }
+    });
+
+    coverInput?.addEventListener('change', async () => {
+        const file = coverInput.files[0];
+        coverInput.value = '';
+        if (!file) return;
+        const coverStatus = root.querySelector('[data-cover-status]');
+        const form = new FormData();
+        form.append('file', file);
+        form.append('scope', 'BLOG');
+        form.append('blog_id', config.blogId);
+        coverStatus.textContent = 'Đang tải ảnh đại diện...';
+        try {
+            const response = await fetch(config.mediaUrl, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: form });
+            const body = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(body.message ?? Object.values(body.errors ?? {})[0]?.[0] ?? 'Không thể tải ảnh.');
+            root.querySelector('[data-cover-media-id]').value = body.data.id;
+            root.querySelector('[data-cover-preview]').innerHTML = `<img src="${body.data.url}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">`;
+            coverStatus.textContent = 'Đã tải ảnh. Nhấn “Lưu thông tin” để áp dụng.';
+        } catch (error) {
+            coverStatus.textContent = error.message;
+            coverStatus.classList.add('text-red-500');
         }
     });
 

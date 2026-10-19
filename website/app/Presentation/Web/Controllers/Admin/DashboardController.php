@@ -20,7 +20,10 @@ final class DashboardController extends Controller
             'canManageUsers' => $permissions->has($userId, PlatformPermission::ManageUsers),
             'canModerateContent' => $permissions->has($userId, PlatformPermission::ModerateContent),
             'canManageTemplates' => $permissions->has($userId, PlatformPermission::ManageTemplates),
-            'canManageSettings' => $permissions->has($userId, PlatformPermission::ManagePlatformSettings),
+            'canManageSettings' => $permissions->has(
+                $userId,
+                PlatformPermission::ManagePlatformSettings,
+            ),
             'canViewAuditLogs' => $permissions->has($userId, PlatformPermission::ViewAuditLogs),
         ]);
     }

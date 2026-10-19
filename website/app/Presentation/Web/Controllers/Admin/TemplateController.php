@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Controllers\Admin;
 
+use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Application\Templates\Exceptions\TemplateSlugTaken;
@@ -12,13 +13,16 @@ use App\Application\Templates\UseCases\CreateTemplate\CreateTemplateUseCase;
 use App\Application\Templates\UseCases\DeleteTemplate\DeleteTemplateUseCase;
 use App\Application\Templates\UseCases\PublishTemplate\PublishTemplateUseCase;
 use App\Application\Templates\UseCases\UpdateTemplateDraft\UpdateTemplateDraftUseCase;
-use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Templates\Enums\TemplateStatus;
+use App\Domain\Templates\TemplateSlotCatalog;
+use App\Domain\Templates\TemplateStarters;
 use App\Domain\Templates\ValueObjects\TemplateData;
+use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
 use App\Presentation\Web\Requests\Admin\CreateTemplateRequest;
 use App\Presentation\Web\Requests\Admin\UpdateTemplateRequest;
 use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
@@ -40,8 +44,10 @@ final class TemplateController extends Controller
         return view('admin.templates.create');
     }
 
-    public function store(CreateTemplateRequest $request, CreateTemplateUseCase $create): JsonResponse
-    {
+    public function store(
+        CreateTemplateRequest $request,
+        CreateTemplateUseCase $create,
+    ): JsonResponse|RedirectResponse {
         try {
             $id = $create->execute(
                 actorId: (int) $request->user()->id,
@@ -52,17 +58,28 @@ final class TemplateController extends Controller
                     ? (int) $request->validated('preview_media_id')
                     : null,
                 demoUrl: $request->validated('demo_url'),
-                draftData: $this->parseTemplateData($request->validated('draft_data')),
+                draftData: $this->templateData($request),
             );
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
-            return $this->error($exception->getMessage(), 422);
+            return $request->expectsJson()
+                ? $this->error($exception->getMessage(), 422)
+                : back()
+                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withInput();
         }
 
-        return new JsonResponse(['data' => ['id' => $id]], 201);
+        return $request->expectsJson()
+            ? new JsonResponse(['data' => ['id' => $id]], 201)
+            : redirect()
+                ->route('admin.templates.edit', $id)
+                ->with('status', 'Template draft created.');
     }
 
-    public function edit(int $template, TemplateRepository $templates, MediaAssetRepository $media): View
-    {
+    public function edit(
+        int $template,
+        TemplateRepository $templates,
+        MediaAssetRepository $media,
+    ): View {
         $record = $templates->find($template);
 
         if ($record === null) {
@@ -70,7 +87,7 @@ final class TemplateController extends Controller
         }
 
         $mediaUrls = [];
-        $sections = $record->draftData?->sections ?? $record->publishedData?->sections ?? [];
+        $sections = $record->draftData?->sections ?? ($record->publishedData?->sections ?? []);
         foreach ($sections as $section) {
             $content = $section->props['content'] ?? null;
             if (! is_array($content)) {
@@ -99,7 +116,8 @@ final class TemplateController extends Controller
         int $template,
         UpdateTemplateRequest $request,
         UpdateTemplateDraftUseCase $update,
-    ): JsonResponse {
+        TemplateRepository $templates,
+    ): JsonResponse|RedirectResponse {
         try {
             $update->execute(
                 actorId: (int) $request->user()->id,
@@ -111,19 +129,34 @@ final class TemplateController extends Controller
                     ? (int) $request->validated('preview_media_id')
                     : null,
                 demoUrl: $request->validated('demo_url'),
-                draftData: $this->parseTemplateData($request->validated('draft_data')),
+                draftData: $this->templateData(
+                    $request,
+                    $templates->find($template)?->draftData ??
+                        $templates->find($template)?->publishedData,
+                ),
             );
         } catch (TemplateNotFound) {
-            return $this->error('Template not found.', 404);
+            return $request->expectsJson() ? $this->error('Template not found.', 404) : abort(404);
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
-            return $this->error($exception->getMessage(), 422);
+            return $request->expectsJson()
+                ? $this->error($exception->getMessage(), 422)
+                : back()
+                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withInput();
         }
 
-        return new JsonResponse(null, 204);
+        return $request->expectsJson()
+            ? new JsonResponse(null, 204)
+            : redirect()
+                ->route('admin.templates.edit', $template)
+                ->with('status', 'Template draft saved.');
     }
 
-    public function publish(int $template, PublishTemplateUseCase $publish, Request $request): JsonResponse
-    {
+    public function publish(
+        int $template,
+        PublishTemplateUseCase $publish,
+        Request $request,
+    ): JsonResponse {
         $statusValue = $request->input('status', TemplateStatus::Published->value);
 
         try {
@@ -167,8 +200,11 @@ final class TemplateController extends Controller
         return new JsonResponse(null, 204);
     }
 
-    public function destroy(int $template, DeleteTemplateUseCase $delete, Request $request): JsonResponse
-    {
+    public function destroy(
+        int $template,
+        DeleteTemplateUseCase $delete,
+        Request $request,
+    ): JsonResponse {
         try {
             $delete->execute((int) $request->user()->id, $template);
         } catch (TemplateNotFound) {
@@ -208,6 +244,94 @@ final class TemplateController extends Controller
     private function parseTemplateData(array $data): TemplateData
     {
         return TemplateData::fromArray($data);
+    }
+
+    private function templateData(Request $request, ?TemplateData $base = null): TemplateData
+    {
+        $raw = $request->validated('draft_data');
+        if (is_array($raw)) {
+            return $this->parseTemplateData($raw);
+        }
+
+        $layout = $request->validated('layout');
+        $layout = is_string($layout) ? $layout : ($base?->layout ?? TemplateStarters::blog()->layout);
+        $slotProps = $request->validated('slot_props', []);
+
+        if ($layout === 'lifestyle-editorial') {
+            $starter = $base?->layout === 'lifestyle-editorial'
+                ? $base
+                : TemplateStarters::lifestyleEditorial();
+            $sections = array_map(
+                function (TemplateSectionConfig $slot) use ($slotProps): TemplateSectionConfig {
+                    $submitted = is_array($slotProps[$slot->key] ?? null) ? $slotProps[$slot->key] : [];
+                    $allowed = array_flip(TemplateSlotCatalog::fields($slot->section));
+                    $props = array_replace($slot->props, array_intersect_key($submitted, $allowed));
+
+                    return new TemplateSectionConfig(
+                        key: $slot->key,
+                        section: $slot->section,
+                        props: $props,
+                        region: $slot->region,
+                        label: $slot->label,
+                        visible: $slot->visible,
+                    );
+                },
+                $starter->sections,
+            );
+
+            return new TemplateData(
+                $sections,
+                $starter->designTokens,
+                $starter->postLayout,
+                $layout,
+            );
+        }
+
+        $starter = $base ?? TemplateStarters::blog();
+        $requested = array_values(
+            array_unique(array_filter($request->validated('sections', []), 'is_string')),
+        );
+        $visibility = $request->validated('slot_visibility', []);
+        $order = $request->validated('slot_order', []);
+        usort(
+            $requested,
+            fn (string $left, string $right) => ((int) ($order[$left] ?? 99)) <=>
+                ((int) ($order[$right] ?? 99)),
+        );
+        $labels = [
+            'header' => 'Header',
+            'hero' => 'Banner chính',
+            'image_text' => 'Ảnh và nội dung',
+            'gallery' => 'Gallery ảnh',
+            'recent_posts' => 'Bài viết mới',
+            'categories' => 'Chuyên mục',
+            'cta' => 'CTA',
+            'profile' => 'Giới thiệu blogger',
+            'sidebar_posts' => 'Bài viết sidebar',
+            'newsletter' => 'Newsletter',
+            'footer' => 'Footer',
+        ];
+        $sections = array_map(
+            fn (string $section) => new TemplateSectionConfig(
+                key: str_replace('_', '-', $section),
+                section: $section,
+                region: TemplateSlotCatalog::defaultRegion($section)->value,
+                label: $labels[$section] ?? ucfirst($section),
+                visible: (bool) ($visibility[$section] ?? false),
+            ),
+            $requested,
+        );
+
+        if ($sections === []) {
+            throw new InvalidArgumentException('Select at least one supported component.');
+        }
+
+        return new TemplateData(
+            $sections,
+            $starter->designTokens,
+            $starter->postLayout,
+            $layout,
+        );
     }
 
     private function error(string $message, int $status): JsonResponse

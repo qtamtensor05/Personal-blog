@@ -35,6 +35,9 @@ interface MediaAssetRepository
      */
     public function isUsableForBlog(int $id, int $blogId): bool;
 
+    /** @return list<MediaAssetRecord> */
+    public function readyForBlog(int $blogId): array;
+
     /**
      * Delivery data of the READY media of a blog among the given IDs.
      *

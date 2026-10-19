@@ -71,7 +71,9 @@ final readonly class ManagePostsService
         $this->requirePost($actorId, $blogId, $postId);
         $this->ensureSlugFree($blogId, $slug, $postId);
 
-        foreach (['cover image' => $coverMediaId, 'social share image' => $ogMediaId] as $label => $id) {
+        foreach (
+            ['cover image' => $coverMediaId, 'social share image' => $ogMediaId] as $label => $id
+        ) {
             if ($id !== null && ! $this->media->isUsableForBlog($id, $blogId)) {
                 throw new DomainException("The selected {$label} is not an image of this blog.");
             }
@@ -93,8 +95,17 @@ final readonly class ManagePostsService
         }
 
         $this->posts->updateMeta(
-            $blogId, $postId, $slug, $coverMediaId, $ogMediaId, $seoTitle, $seoDescription,
-            $isFeatured, $categoryIds, $tagIds, $actorId,
+            $blogId,
+            $postId,
+            $slug,
+            $coverMediaId,
+            $ogMediaId,
+            $seoTitle,
+            $seoDescription,
+            $isFeatured,
+            $categoryIds,
+            $tagIds,
+            $actorId,
         );
     }
 
@@ -156,7 +167,9 @@ final readonly class ManagePostsService
         $found = $this->media->readyAssetsForBlog($blogId, $ids);
 
         if (count($found) !== count($ids)) {
-            throw new DomainException('The content contains an image that is not available in this blog.');
+            throw new DomainException(
+                'The content contains an image that is not available in this blog.',
+            );
         }
     }
 }

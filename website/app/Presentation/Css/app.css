@@ -1,26 +1,31 @@
 @import 'tailwindcss';
 
+phantom-ui {
+    display: block;
+}
+
 @source '../Views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../../storage/framework/views/*.php';
 
 @theme {
     /* Typography */
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        'Noto Sans', 'Arial', 'Tahoma', 'Segoe UI', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* Brand Palette - Personal Blog */
-    --color-accent-primary: #90B250;      /* Fresh green - CTA, active states */
-    --color-accent-warm: #BD927D;         /* Warm terracotta - secondary accent */
-    --color-accent-highlight: #E0BE75;    /* Golden highlight - badges, labels */
+    --color-accent-primary: #90b250; /* Fresh green - CTA, active states */
+    --color-accent-warm: #bd927d; /* Warm terracotta - secondary accent */
+    --color-accent-highlight: #e0be75; /* Golden highlight - badges, labels */
 
-    --color-text-primary: #616B5E;        /* Deep sage - headings, strong text */
-    --color-text-secondary: #6B858F;      /* Muted blue-grey - body, links */
+    --color-text-primary: #616b5e; /* Deep sage - headings, strong text */
+    --color-text-secondary: #6b858f; /* Muted blue-grey - body, links */
 
-    --color-border: #DCDFE0;              /* Subtle borders */
-    --color-surface: #FFFFFF;             /* Cards, content areas */
-    --color-surface-secondary: #ECECEB;   /* Secondary backgrounds */
-    --color-background: #F7F6F1;          /* Page background */
+    --color-border: #dcdfe0; /* Subtle borders */
+    --color-surface: #ffffff; /* Cards, content areas */
+    --color-surface-secondary: #ececeb; /* Secondary backgrounds */
+    --color-background: #f7f6f1; /* Page background */
 }
 
 html {
@@ -43,7 +48,9 @@ body {
     background-color: var(--color-background);
     color: var(--color-text-secondary);
     line-height: 1.6;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 html[data-theme='dark'] .card:hover {
@@ -62,7 +69,12 @@ html[data-theme='dark'] .textarea::placeholder {
     border-radius: 999px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     color: var(--color-text-primary);
     font-weight: 600;
     line-height: 1.3;
@@ -150,13 +162,21 @@ a:hover {
     margin: 1rem 0;
 }
 
-.template-layout-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.template-layout-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.template-layout-cell { min-width: 0; }
+.template-layout-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.template-layout-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.template-layout-cell {
+    min-width: 0;
+}
 
 @media (max-width: 640px) {
     .template-layout-2,
-    .template-layout-3 { grid-template-columns: 1fr; }
+    .template-layout-3 {
+        grid-template-columns: 1fr;
+    }
 }
 
 .card {
@@ -293,7 +313,12 @@ a:hover {
 
 /* Loading State */
 .skeleton {
-    background: linear-gradient(90deg, var(--color-surface-secondary) 25%, #e8e8e7 50%, var(--color-surface-secondary) 75%);
+    background: linear-gradient(
+        90deg,
+        var(--color-surface-secondary) 25%,
+        #e8e8e7 50%,
+        var(--color-surface-secondary) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s ease-in-out infinite;
 }
@@ -311,6 +336,39 @@ a:hover {
 .post-content > * + * {
     margin-top: 1em;
 }
+
+[data-editor] .ProseMirror {
+    min-height: 24rem;
+    padding: 1rem;
+    outline: none;
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.75;
+}
+
+[data-editor] {
+    overflow: hidden;
+    min-height: 26rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.post-editor-fallback {
+    display: block;
+    width: 100%;
+    min-height: 24rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font: inherit;
+    line-height: 1.75;
+    resize: vertical;
+}
+.post-editor-fallback[hidden] { display: none; }
 
 .post-content h2 {
     font-size: 1.5rem;
@@ -381,3 +439,4 @@ a:hover {
         transition-duration: 0.01ms !important;
     }
 }
+@import './templates/lifestyle-editorial.css';

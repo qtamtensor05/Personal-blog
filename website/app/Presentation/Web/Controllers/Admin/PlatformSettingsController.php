@@ -37,14 +37,20 @@ final class PlatformSettingsController extends Controller
                     defaultBlogPostLimit: (int) $data['default_blog_post_limit'],
                     defaultMediaQuotaMb: (int) $data['default_media_quota_mb'],
                     maintenanceBannerEnabled: (bool) $data['maintenance_banner_enabled'],
-                    maintenanceBannerMessage: trim((string) ($data['maintenance_banner_message'] ?? '')),
+                    maintenanceBannerMessage: trim(
+                        (string) ($data['maintenance_banner_message'] ?? ''),
+                    ),
                 ),
                 expectedRevision: (int) $data['revision'],
             );
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()])->withInput();
+            return back()
+                ->withErrors(['general' => $exception->getMessage()])
+                ->withInput();
         }
 
-        return redirect()->route('admin.settings.edit')->with('status', 'Platform settings updated.');
+        return redirect()
+            ->route('admin.settings.edit')
+            ->with('status', 'Platform settings updated.');
     }
 }

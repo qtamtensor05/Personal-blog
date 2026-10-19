@@ -92,7 +92,9 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
 
     public function publish(int $id, int $publishedBy, TemplateStatus $status): void
     {
-        $row = DB::table(self::TABLE)->where('id', $id)->first(['draft_data', 'version_number']);
+        $row = DB::table(self::TABLE)
+            ->where('id', $id)
+            ->first(['draft_data', 'version_number']);
 
         DB::table(self::TABLE)
             ->where('id', $id)

@@ -19,7 +19,12 @@ it('requires authentication to view notifications', function (): void {
 });
 
 it('prevents IDOR when marking a notification as read', function (): void {
-    $ids = DB::table('users')->whereNull('deleted_at')->orderBy('id')->limit(2)->pluck('id')->map(fn ($id) => (int) $id);
+    $ids = DB::table('users')
+        ->whereNull('deleted_at')
+        ->orderBy('id')
+        ->limit(2)
+        ->pluck('id')
+        ->map(fn ($id) => (int) $id);
     expect($ids)->toHaveCount(2);
 
     $notificationId = (string) Str::uuid();
@@ -41,7 +46,12 @@ it('prevents IDOR when marking a notification as read', function (): void {
 });
 
 it('paginates only the signed-in users notifications', function (): void {
-    $ids = DB::table('users')->whereNull('deleted_at')->orderBy('id')->limit(2)->pluck('id')->map(fn ($id) => (int) $id);
+    $ids = DB::table('users')
+        ->whereNull('deleted_at')
+        ->orderBy('id')
+        ->limit(2)
+        ->pluck('id')
+        ->map(fn ($id) => (int) $id);
     expect($ids)->toHaveCount(2);
 
     $rows = [];

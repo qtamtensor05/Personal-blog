@@ -28,8 +28,11 @@ final class NotificationController extends Controller
         return view('notifications.index', compact('notifications', 'notificationUnreadCount'));
     }
 
-    public function read(string $notification, Request $request, MarkNotificationReadService $service): RedirectResponse
-    {
+    public function read(
+        string $notification,
+        Request $request,
+        MarkNotificationReadService $service,
+    ): RedirectResponse {
         try {
             $service->one((int) $request->user()->id, $notification);
         } catch (DomainException) {
@@ -39,15 +42,20 @@ final class NotificationController extends Controller
         return back();
     }
 
-    public function readAll(Request $request, MarkNotificationReadService $service): RedirectResponse
-    {
+    public function readAll(
+        Request $request,
+        MarkNotificationReadService $service,
+    ): RedirectResponse {
         $service->all((int) $request->user()->id);
 
         return back()->with('status', 'All notifications marked as read.');
     }
 
-    public function destroy(string $notification, Request $request, NotificationRepository $repository): RedirectResponse
-    {
+    public function destroy(
+        string $notification,
+        Request $request,
+        NotificationRepository $repository,
+    ): RedirectResponse {
         abort_unless(
             $repository->deleteForRecipient($notification, (int) $request->user()->id),
             404,

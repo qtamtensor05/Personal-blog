@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\DB;
 uses(DatabaseTransactions::class);
 
 it('redirects a newly created blog to the admin template picker', function (): void {
-    $userId = (int) DB::table('users')->where('status', 'ACTIVE')->whereNull('deleted_at')->value('id');
+    $userId = (int) DB::table('users')
+        ->where('status', 'ACTIVE')
+        ->whereNull('deleted_at')
+        ->value('id');
     expect($userId)->toBeGreaterThan(0);
     $user = new GenericUser((array) DB::table('users')->where('id', $userId)->first());
     $slug = 'design-flow-'.strtolower(bin2hex(random_bytes(4)));
@@ -20,10 +23,10 @@ it('redirects a newly created blog to the admin template picker', function (): v
 
     $blogId = (int) DB::table('blogs')->where('slug', $slug)->value('id');
     expect($blogId)->toBeGreaterThan(0);
-    $response->assertRedirect(route('blogs.design.edit', $blogId));
+    $response->assertRedirect(route('blogs.show', $blogId));
 
     $this->actingAs($user)
-        ->get(route('blogs.design.edit', $blogId))
+        ->get(route('blogs.show', $blogId))
         ->assertOk()
         ->assertSee('Choose an admin template')
         ->assertSee('Tạp chí tối giản');

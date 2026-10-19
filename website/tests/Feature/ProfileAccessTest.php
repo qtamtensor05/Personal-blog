@@ -33,7 +33,12 @@ it('shows the signed-in users profile', function (): void {
 });
 
 it('updates only the signed-in users display name', function (): void {
-    $ids = DB::table('users')->whereNull('deleted_at')->orderBy('id')->limit(2)->pluck('id')->map(fn ($id) => (int) $id);
+    $ids = DB::table('users')
+        ->whereNull('deleted_at')
+        ->orderBy('id')
+        ->limit(2)
+        ->pluck('id')
+        ->map(fn ($id) => (int) $id);
     expect($ids)->toHaveCount(2);
     $otherName = (string) DB::table('users')->where('id', $ids[1])->value('name');
 
@@ -41,8 +46,10 @@ it('updates only the signed-in users display name', function (): void {
         ->put(route('profile.update'), ['name' => 'Updated Profile Name', 'remove_avatar' => '0'])
         ->assertRedirect();
 
-    expect(DB::table('users')->where('id', $ids[0])->value('name'))->toBe('Updated Profile Name')
-        ->and(DB::table('users')->where('id', $ids[1])->value('name'))->toBe($otherName);
+    expect(DB::table('users')->where('id', $ids[0])->value('name'))
+        ->toBe('Updated Profile Name')
+        ->and(DB::table('users')->where('id', $ids[1])->value('name'))
+        ->toBe($otherName);
 });
 
 it('uploads a profile image to local storage', function (): void {
@@ -50,10 +57,13 @@ it('uploads a profile image to local storage', function (): void {
     config(['media.driver' => 'local', 'media.local_disk' => 'public']);
     $userId = (int) DB::table('users')->whereNull('deleted_at')->value('id');
     $source = tempnam(sys_get_temp_dir(), 'profile-avatar-');
-    file_put_contents($source, base64_decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-        true,
-    ));
+    file_put_contents(
+        $source,
+        base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+            true,
+        ),
+    );
 
     try {
         $this->actingAs(profileTestUser($userId))
@@ -71,9 +81,12 @@ it('uploads a profile image to local storage', function (): void {
     expect($mediaId)->not->toBeNull();
 
     $asset = DB::table('media_assets')->where('id', $mediaId)->first();
-    expect($asset->scope)->toBe('USER')
-        ->and((int) $asset->uploaded_by)->toBe($userId)
-        ->and($asset->status)->toBe('READY');
+    expect($asset->scope)
+        ->toBe('USER')
+        ->and((int) $asset->uploaded_by)
+        ->toBe($userId)
+        ->and($asset->status)
+        ->toBe('READY');
     Storage::disk('public')->assertExists($asset->cloudinary_public_id);
 });
 
@@ -91,10 +104,13 @@ it('saves name avatar and password in one request', function (): void {
         'updated_at' => $now,
     ]);
     $source = tempnam(sys_get_temp_dir(), 'profile-combined-');
-    file_put_contents($source, base64_decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-        true,
-    ));
+    file_put_contents(
+        $source,
+        base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+            true,
+        ),
+    );
 
     try {
         $this->actingAs(profileTestUser($userId))
@@ -112,7 +128,10 @@ it('saves name avatar and password in one request', function (): void {
     }
 
     $user = DB::table('users')->where('id', $userId)->first();
-    expect($user->name)->toBe('Everything Updated')
-        ->and($user->avatar_media_id)->not->toBeNull()
-        ->and(Hash::check('new-password', $user->password))->toBeTrue();
+    expect($user->name)
+        ->toBe('Everything Updated')
+        ->and($user->avatar_media_id)
+        ->not->toBeNull()
+        ->and(Hash::check('new-password', $user->password))
+        ->toBeTrue();
 });

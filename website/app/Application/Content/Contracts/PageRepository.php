@@ -28,11 +28,24 @@ interface PageRepository
 
     public function pageKeyExists(int $blogId, string $pageKey): bool;
 
-    public function create(int $blogId, int $actorId, string $slug, string $pageKey, PostDraft $draft): int;
+    public function create(
+        int $blogId,
+        int $actorId,
+        string $slug,
+        string $pageKey,
+        PostDraft $draft,
+    ): int;
 
     public function saveDraft(int $blogId, int $id, PostDraft $draft, int $updatedBy): void;
 
-    public function updateMeta(int $blogId, int $id, string $slug, ?string $seoTitle, ?string $seoDescription, int $updatedBy): void;
+    public function updateMeta(
+        int $blogId,
+        int $id,
+        string $slug,
+        ?string $seoTitle,
+        ?string $seoDescription,
+        int $updatedBy,
+    ): void;
 
     public function publish(int $blogId, int $id, int $updatedBy): void;
 

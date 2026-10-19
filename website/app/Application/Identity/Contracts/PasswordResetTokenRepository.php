@@ -12,7 +12,11 @@ interface PasswordResetTokenRepository
     /**
      * Store the token hash for the email, replacing any previous token.
      */
-    public function save(EmailAddress $email, string $tokenHash, DateTimeImmutable $createdAt): void;
+    public function save(
+        EmailAddress $email,
+        string $tokenHash,
+        DateTimeImmutable $createdAt,
+    ): void;
 
     /**
      * @return array{token_hash: string, created_at: DateTimeImmutable}|null

@@ -19,7 +19,11 @@ function userIdWithAdminAccess(): int
         ->join('permissions as p', 'p.id', '=', 'prp.permission_id')
         ->where('u.status', 'ACTIVE')
         ->where('p.code', 'admin.access')
-        ->where(fn ($query) => $query->whereNull('upr.expires_at')->orWhere('upr.expires_at', '>', now()))
+        ->where(
+            fn ($query) => $query
+                ->whereNull('upr.expires_at')
+                ->orWhere('upr.expires_at', '>', now()),
+        )
         ->value('u.id');
 }
 
@@ -47,13 +51,18 @@ it('hides and forbids the admin console for a normal user', function (): void {
     $userId = (int) DB::table('users as u')
         ->where('u.status', 'ACTIVE')
         ->whereNotExists(function ($query): void {
-            $query->selectRaw('1')
+            $query
+                ->selectRaw('1')
                 ->from('user_platform_roles as upr')
                 ->join('platform_role_permissions as prp', 'prp.role_id', '=', 'upr.role_id')
                 ->join('permissions as p', 'p.id', '=', 'prp.permission_id')
                 ->whereColumn('upr.user_id', 'u.id')
                 ->where('p.code', 'admin.access')
-                ->where(fn ($roles) => $roles->whereNull('upr.expires_at')->orWhere('upr.expires_at', '>', now()));
+                ->where(
+                    fn ($roles) => $roles
+                        ->whereNull('upr.expires_at')
+                        ->orWhere('upr.expires_at', '>', now()),
+                );
         })
         ->value('u.id');
     expect($userId)->toBeGreaterThan(0);

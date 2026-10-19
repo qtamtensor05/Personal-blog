@@ -49,7 +49,7 @@ final class RegisterUserController extends Controller
             ->route('login')
             ->with(
                 'status',
-                'Your account has been created. We have sent a verification email to your email address. Please check your inbox and spam folder before signing in.'
+                'Your account has been created. We have sent a verification email to your email address. Please check your inbox and spam folder before signing in.',
             );
     }
 }

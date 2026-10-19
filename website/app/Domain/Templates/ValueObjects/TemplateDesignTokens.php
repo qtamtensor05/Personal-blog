@@ -29,7 +29,9 @@ final readonly class TemplateDesignTokens implements JsonSerializable
         public string $headingFont,
         public string $bodyFont,
     ) {
-        foreach ([$primaryColor, $secondaryColor, $accentColor, $textColor, $backgroundColor] as $color) {
+        foreach (
+            [$primaryColor, $secondaryColor, $accentColor, $textColor, $backgroundColor] as $color
+        ) {
             if (! preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) {
                 throw new InvalidArgumentException("Invalid hex color: {$color}");
             }

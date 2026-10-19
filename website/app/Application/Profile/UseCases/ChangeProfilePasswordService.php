@@ -30,7 +30,10 @@ final readonly class ChangeProfilePasswordService
     {
         $currentHash = $this->profiles->passwordHash($userId);
 
-        if ($currentHash === null || ! $this->passwordHasher->verify($currentPassword, $currentHash)) {
+        if (
+            $currentHash === null ||
+            ! $this->passwordHasher->verify($currentPassword, $currentHash)
+        ) {
             throw new DomainException('The current password is incorrect.');
         }
     }

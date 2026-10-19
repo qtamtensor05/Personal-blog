@@ -19,8 +19,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
         if ($search !== null) {
             $term = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
             $query->where(function (Builder $builder) use ($term): void {
-                $builder->where('p.title', 'like', $term)
-                    ->orWhere('p.excerpt', 'like', $term);
+                $builder->where('p.title', 'like', $term)->orWhere('p.excerpt', 'like', $term);
             });
         }
 
@@ -44,17 +43,19 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->orderByDesc('p.id')
             ->forPage($page, $perPage)
             ->get()
-            ->map(fn (object $row) => new PublicPostSummary(
-                id: (int) $row->id,
-                title: $row->title,
-                slug: $row->slug,
-                blogSlug: $row->blog_slug,
-                excerpt: $row->excerpt,
-                coverUrl: $row->cover_url,
-                publishedAt: $row->published_at,
-                authorName: $row->author_name,
-                isFeatured: (bool) $row->is_featured,
-            ))
+            ->map(
+                fn (object $row) => new PublicPostSummary(
+                    id: (int) $row->id,
+                    title: $row->title,
+                    slug: $row->slug,
+                    blogSlug: $row->blog_slug,
+                    excerpt: $row->excerpt,
+                    coverUrl: $row->cover_url,
+                    publishedAt: $row->published_at,
+                    authorName: $row->author_name,
+                    isFeatured: (bool) $row->is_featured,
+                ),
+            )
             ->all();
 
         return new PublicPostPage($items, $total, $page, $perPage);
@@ -66,7 +67,8 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->join('blogs as b', 'b.id', '=', 'p.blog_id')
             ->join('users as u', 'u.id', '=', 'p.author_user_id')
             ->leftJoin('media_assets as m', function ($join): void {
-                $join->on('m.id', '=', 'p.cover_media_id')
+                $join
+                    ->on('m.id', '=', 'p.cover_media_id')
                     ->where('m.status', '=', 'READY')
                     ->whereNull('m.deleted_at');
             })

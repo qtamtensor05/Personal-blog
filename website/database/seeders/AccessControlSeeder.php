@@ -47,12 +47,14 @@ class AccessControlSeeder extends Seeder
 
             $rows = DB::table('permissions')
                 ->pluck('id')
-                ->map(fn ($permissionId) => [
-                    'role_id' => $roleId,
-                    'permission_id' => $permissionId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ])
+                ->map(
+                    fn ($permissionId) => [
+                        'role_id' => $roleId,
+                        'permission_id' => $permissionId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                )
                 ->all();
 
             DB::table('platform_role_permissions')->insertOrIgnore($rows);

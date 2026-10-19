@@ -12,6 +12,9 @@ final class ModerationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(ContentReportRepository::class, QueryBuilderContentReportRepository::class);
+        $this->app->bind(
+            ContentReportRepository::class,
+            QueryBuilderContentReportRepository::class,
+        );
     }
 }

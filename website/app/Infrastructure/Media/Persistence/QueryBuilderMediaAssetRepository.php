@@ -100,6 +100,9 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             height: $row->height !== null ? (int) $row->height : null,
             bytes: $row->bytes !== null ? (int) $row->bytes : null,
             altText: $row->alt_text,
+            originalName: $row->original_name,
+            mimeType: $row->mime_type,
+            resourceType: $row->resource_type,
             status: MediaStatus::from($row->status),
         );
     }
@@ -113,6 +116,36 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             ->where('status', MediaStatus::Ready->value)
             ->whereNull('deleted_at')
             ->exists();
+    }
+
+    public function readyForBlog(int $blogId): array
+    {
+        return DB::table(self::TABLE)
+            ->where('scope', MediaScope::Blog->value)
+            ->where('blog_id', $blogId)
+            ->where('status', MediaStatus::Ready->value)
+            ->whereNull('deleted_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(
+                fn ($row) => new MediaAssetRecord(
+                    id: (int) $row->id,
+                    scope: MediaScope::from($row->scope),
+                    blogId: (int) $row->blog_id,
+                    uploadedBy: (int) $row->uploaded_by,
+                    publicId: $row->cloudinary_public_id,
+                    secureUrl: $row->secure_url,
+                    width: $row->width !== null ? (int) $row->width : null,
+                    height: $row->height !== null ? (int) $row->height : null,
+                    bytes: $row->bytes !== null ? (int) $row->bytes : null,
+                    altText: $row->alt_text,
+                    originalName: $row->original_name,
+                    mimeType: $row->mime_type,
+                    resourceType: $row->resource_type,
+                    status: MediaStatus::from($row->status),
+                ),
+            )
+            ->all();
     }
 
     public function readyAssetsForBlog(int $blogId, array $ids): array
@@ -129,11 +162,15 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             ->whereNull('deleted_at')
             ->whereNotNull('secure_url')
             ->get(['id', 'secure_url', 'width', 'height'])
-            ->mapWithKeys(fn ($row) => [(int) $row->id => [
-                'url' => (string) $row->secure_url,
-                'width' => $row->width !== null ? (int) $row->width : null,
-                'height' => $row->height !== null ? (int) $row->height : null,
-            ]])
+            ->mapWithKeys(
+                fn ($row) => [
+                    (int) $row->id => [
+                        'url' => (string) $row->secure_url,
+                        'width' => $row->width !== null ? (int) $row->width : null,
+                        'height' => $row->height !== null ? (int) $row->height : null,
+                    ],
+                ],
+            )
             ->all();
     }
 
@@ -172,7 +209,9 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
 
     public function quotaBytesForBlog(int $blogId): ?int
     {
-        $quota = DB::table('blog_settings')->where('blog_id', $blogId)->value('storage_quota_bytes');
+        $quota = DB::table('blog_settings')
+            ->where('blog_id', $blogId)
+            ->value('storage_quota_bytes');
 
         return $quota === null ? null : (int) $quota;
     }
@@ -192,9 +231,11 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
         foreach (['posts', 'pages'] as $table) {
             $used = DB::table($table)
                 ->whereNull('deleted_at')
-                ->where(fn ($q) => $q
-                    ->whereRaw(sprintf($contains, 'content_json'), [(string) $id])
-                    ->orWhereRaw(sprintf($contains, 'draft_data'), [(string) $id]))
+                ->where(
+                    fn ($q) => $q
+                        ->whereRaw(sprintf($contains, 'content_json'), [(string) $id])
+                        ->orWhereRaw(sprintf($contains, 'draft_data'), [(string) $id]),
+                )
                 ->exists();
 
             if ($used) {

@@ -29,11 +29,20 @@ final readonly class ManagePagesService
     {
         $this->guard->ensure($actorId, $blogId);
 
-        if ($this->pages->slugExists($blogId, $slug) || $this->pages->pageKeyExists($blogId, $slug)) {
+        if (
+            $this->pages->slugExists($blogId, $slug) ||
+            $this->pages->pageKeyExists($blogId, $slug)
+        ) {
             throw new DomainException('A page with this slug already exists in this blog.');
         }
 
-        return $this->pages->create($blogId, $actorId, $slug, $slug, new PostDraft($title, null, TiptapDocument::empty()));
+        return $this->pages->create(
+            $blogId,
+            $actorId,
+            $slug,
+            $slug,
+            new PostDraft($title, null, TiptapDocument::empty()),
+        );
     }
 
     public function saveDraft(int $actorId, int $blogId, int $pageId, PostDraft $draft): void
@@ -43,8 +52,14 @@ final readonly class ManagePagesService
         $this->pages->saveDraft($blogId, $pageId, $draft, $actorId);
     }
 
-    public function updateMeta(int $actorId, int $blogId, int $pageId, string $slug, ?string $seoTitle, ?string $seoDescription): void
-    {
+    public function updateMeta(
+        int $actorId,
+        int $blogId,
+        int $pageId,
+        string $slug,
+        ?string $seoTitle,
+        ?string $seoDescription,
+    ): void {
         $this->requirePage($actorId, $blogId, $pageId);
 
         if ($this->pages->slugExists($blogId, $slug, $pageId)) {
@@ -90,7 +105,9 @@ final readonly class ManagePagesService
         $ids = $draft->content->mediaIds();
 
         if (count($this->media->readyAssetsForBlog($blogId, $ids)) !== count($ids)) {
-            throw new DomainException('The content contains an image that is not available in this blog.');
+            throw new DomainException(
+                'The content contains an image that is not available in this blog.',
+            );
         }
     }
 }

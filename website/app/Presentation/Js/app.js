@@ -1,4 +1,19 @@
+import '@aejkatappaja/phantom-ui';
+import '@aejkatappaja/phantom-ui/ssr.css';
+
 const themeStorageKey = 'theme';
+
+function revealSkeletons() {
+    document.querySelectorAll('phantom-ui[loading]').forEach((skeleton) => {
+        skeleton.removeAttribute('loading');
+    });
+}
+
+if (document.readyState === 'complete') {
+    queueMicrotask(revealSkeletons);
+} else {
+    window.addEventListener('load', revealSkeletons, { once: true });
+}
 
 function activeTheme() {
     return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
@@ -11,8 +26,12 @@ function renderThemeToggle() {
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
         button.setAttribute('aria-label', `Switch to ${nextTheme} theme`);
         button.setAttribute('title', `Switch to ${nextTheme} theme`);
-        button.querySelector('[data-theme-icon="dark"]')?.classList.toggle('hidden', theme === 'dark');
-        button.querySelector('[data-theme-icon="light"]')?.classList.toggle('hidden', theme !== 'dark');
+        button
+            .querySelector('[data-theme-icon="dark"]')
+            ?.classList.toggle('hidden', theme === 'dark');
+        button
+            .querySelector('[data-theme-icon="light"]')
+            ?.classList.toggle('hidden', theme !== 'dark');
     });
 }
 
@@ -39,7 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('storage', (event) => {
-    if (event.key === themeStorageKey && (event.newValue === 'light' || event.newValue === 'dark')) {
+    if (
+        event.key === themeStorageKey &&
+        (event.newValue === 'light' || event.newValue === 'dark')
+    ) {
         document.documentElement.dataset.theme = event.newValue;
         renderThemeToggle();
     }
@@ -68,10 +90,7 @@ function initPasswordToggles() {
             input.type = showPassword ? 'text' : 'password';
 
             button.setAttribute('aria-pressed', String(showPassword));
-            button.setAttribute(
-                'aria-label',
-                `${showPassword ? 'Hide' : 'Show'} password`,
-            );
+            button.setAttribute('aria-label', `${showPassword ? 'Hide' : 'Show'} password`);
 
             showIcon.hidden = showPassword;
             hideIcon.hidden = !showPassword;
@@ -104,10 +123,16 @@ function initErrorModal() {
     };
 
     modal.dataset.initialized = 'true';
-    modal.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', () => close()));
+    modal
+        .querySelectorAll('[data-modal-close]')
+        .forEach((button) => button.addEventListener('click', () => close()));
     cancel.addEventListener('click', () => close());
-    confirm.addEventListener('click', () => close(input.classList.contains('hidden') ? null : input.value));
-    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+    confirm.addEventListener('click', () =>
+        close(input.classList.contains('hidden') ? true : input.value),
+    );
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
         if (event.key === 'Enter' && !input.classList.contains('hidden')) close(input.value);
@@ -122,33 +147,35 @@ function initErrorModal() {
         panel.focus();
     };
 
-    window.requestModalInput = (modalTitle, prompt, initialValue = '') => new Promise((resolve) => {
-        pending = resolve;
-        title.textContent = modalTitle;
-        message.textContent = prompt;
-        input.value = initialValue;
-        input.classList.remove('hidden');
-        cancel.classList.remove('hidden');
-        confirm.textContent = 'Confirm';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modal.setAttribute('aria-hidden', 'false');
-        input.focus();
-        input.select();
-    });
+    window.requestModalInput = (modalTitle, prompt, initialValue = '') =>
+        new Promise((resolve) => {
+            pending = resolve;
+            title.textContent = modalTitle;
+            message.textContent = prompt;
+            input.value = initialValue;
+            input.classList.remove('hidden');
+            cancel.classList.remove('hidden');
+            confirm.textContent = 'Confirm';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+            input.focus();
+            input.select();
+        });
 
-    window.requestModalConfirmation = (modalTitle, prompt) => new Promise((resolve) => {
-        pending = (value) => resolve(value !== null);
-        title.textContent = modalTitle;
-        message.textContent = prompt;
-        input.classList.add('hidden');
-        cancel.classList.remove('hidden');
-        confirm.textContent = 'Confirm';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modal.setAttribute('aria-hidden', 'false');
-        confirm.focus();
-    });
+    window.requestModalConfirmation = (modalTitle, prompt) =>
+        new Promise((resolve) => {
+            pending = (value) => resolve(value === true);
+            title.textContent = modalTitle;
+            message.textContent = prompt;
+            input.classList.add('hidden');
+            cancel.classList.remove('hidden');
+            confirm.textContent = 'Confirm';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+            confirm.focus();
+        });
 
     document.querySelectorAll('[data-modal-confirm-form]').forEach((form) => {
         form.addEventListener('submit', async (event) => {
@@ -166,12 +193,44 @@ function initErrorModal() {
     });
 }
 
+function initHeroCarousels() {
+    document.querySelectorAll('[data-hero-carousel]').forEach((carousel) => {
+        const slides = [...carousel.querySelectorAll('[data-hero-slide]')];
+        if (slides.length < 2) return;
+        let index = 0;
+        const count = carousel.querySelector('[data-hero-count]');
+        const show = (next) => {
+            index = (next + slides.length) % slides.length;
+            slides.forEach((slide, slideIndex) => {
+                slide.classList.toggle('is-active', slideIndex === index);
+                slide.setAttribute('aria-hidden', slideIndex !== index ? 'true' : 'false');
+            });
+            count.textContent = `${index + 1} / ${slides.length}`;
+            const activeThumb = carousel.querySelector(`[data-hero-thumb="${index}"]`);
+            carousel.querySelectorAll('[data-hero-thumb]').forEach((thumb) => {
+                const active = thumb === activeThumb;
+                thumb.classList.toggle('is-active', active);
+                thumb.setAttribute('aria-current', active ? 'true' : 'false');
+            });
+            activeThumb?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        };
+        carousel.querySelector('[data-hero-prev]')?.addEventListener('click', () => show(index - 1));
+        carousel.querySelector('[data-hero-next]')?.addEventListener('click', () => show(index + 1));
+        carousel.querySelectorAll('[data-hero-thumb]').forEach((thumb) => {
+            thumb.addEventListener('click', () => show(Number(thumb.dataset.heroThumb)));
+        });
+        window.setInterval(() => show(index + 1), 7000);
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initPasswordToggles();
         initErrorModal();
+        initHeroCarousels();
     });
 } else {
     initPasswordToggles();
     initErrorModal();
+    initHeroCarousels();
 }

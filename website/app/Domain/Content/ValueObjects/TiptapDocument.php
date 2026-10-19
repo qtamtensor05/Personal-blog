@@ -14,8 +14,17 @@ use InvalidArgumentException;
 final readonly class TiptapDocument
 {
     private const BLOCK_NODES = [
-        'paragraph', 'heading', 'bulletList', 'orderedList', 'listItem',
-        'blockquote', 'codeBlock', 'horizontalRule', 'image', 'layout', 'layoutCell',
+        'paragraph',
+        'heading',
+        'bulletList',
+        'orderedList',
+        'listItem',
+        'blockquote',
+        'codeBlock',
+        'horizontalRule',
+        'image',
+        'layout',
+        'layoutCell',
     ];
 
     private const INLINE_NODES = ['text', 'hardBreak'];
@@ -48,7 +57,10 @@ final readonly class TiptapDocument
         $count = 0;
         $content = self::normalizeChildren($raw['content'] ?? [], 1, $count);
 
-        return new self(['type' => 'doc', 'content' => $content === [] ? [['type' => 'paragraph']] : $content]);
+        return new self([
+            'type' => 'doc',
+            'content' => $content === [] ? [['type' => 'paragraph']] : $content,
+        ]);
     }
 
     /**
@@ -173,8 +185,13 @@ final readonly class TiptapDocument
             return [
                 'type' => $type,
                 'attrs' => $type === 'layout'
-                    ? ['columns' => max(2, min(3, (int) ($node['attrs']['columns'] ?? count($children))))]
-                    : [],
+                        ? [
+                            'columns' => max(
+                                2,
+                                min(3, (int) ($node['attrs']['columns'] ?? count($children))),
+                            ),
+                        ]
+                        : [],
                 'content' => $children,
             ];
         }
@@ -218,8 +235,8 @@ final readonly class TiptapDocument
             $language = $node['attrs']['language'] ?? null;
             $result['attrs'] = [
                 'language' => is_string($language) && preg_match('/^[a-z0-9+#-]{1,30}$/i', $language)
-                    ? $language
-                    : null,
+                        ? $language
+                        : null,
             ];
         }
 
@@ -244,7 +261,7 @@ final readonly class TiptapDocument
         $result = [];
 
         foreach ($marks as $mark) {
-            $type = is_array($mark) ? ($mark['type'] ?? null) : null;
+            $type = is_array($mark) ? $mark['type'] ?? null : null;
 
             if (! in_array($type, self::MARKS, true)) {
                 continue;
@@ -254,7 +271,11 @@ final readonly class TiptapDocument
                 $href = $mark['attrs']['href'] ?? null;
 
                 // Only http(s) and mailto links; blocks javascript: and data: URLs.
-                if (! is_string($href) || ! preg_match('#^(https?://|mailto:)#i', $href) || mb_strlen($href) > 2048) {
+                if (
+                    ! is_string($href) ||
+                    ! preg_match('#^(https?://|mailto:)#i', $href) ||
+                    mb_strlen($href) > 2048
+                ) {
                     continue;
                 }
 

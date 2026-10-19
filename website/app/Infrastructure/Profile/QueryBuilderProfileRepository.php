@@ -15,27 +15,39 @@ final class QueryBuilderProfileRepository implements ProfileRepository
     {
         $row = DB::table('users as u')
             ->leftJoin('media_assets as m', function ($join): void {
-                $join->on('m.id', '=', 'u.avatar_media_id')
+                $join
+                    ->on('m.id', '=', 'u.avatar_media_id')
                     ->where('m.scope', 'USER')
                     ->where('m.status', 'READY')
                     ->whereNull('m.deleted_at');
             })
             ->where('u.id', $userId)
             ->whereNull('u.deleted_at')
-            ->first(['u.id', 'u.name', 'u.email', 'u.avatar_media_id', 'm.secure_url as avatar_url']);
+            ->first([
+                'u.id',
+                'u.name',
+                'u.email',
+                'u.avatar_media_id',
+                'm.secure_url as avatar_url',
+            ]);
 
-        return $row === null ? null : new ProfileRecord(
-            id: (int) $row->id,
-            name: (string) $row->name,
-            email: (string) $row->email,
-            avatarMediaId: $row->avatar_media_id !== null ? (int) $row->avatar_media_id : null,
-            avatarUrl: $row->avatar_url !== null ? (string) $row->avatar_url : null,
-        );
+        return $row === null
+            ? null
+            : new ProfileRecord(
+                id: (int) $row->id,
+                name: (string) $row->name,
+                email: (string) $row->email,
+                avatarMediaId: $row->avatar_media_id !== null ? (int) $row->avatar_media_id : null,
+                avatarUrl: $row->avatar_url !== null ? (string) $row->avatar_url : null,
+            );
     }
 
     public function passwordHash(int $userId): ?string
     {
-        $hash = DB::table('users')->where('id', $userId)->whereNull('deleted_at')->value('password');
+        $hash = DB::table('users')
+            ->where('id', $userId)
+            ->whereNull('deleted_at')
+            ->value('password');
 
         return $hash !== null ? (string) $hash : null;
     }
@@ -66,9 +78,15 @@ final class QueryBuilderProfileRepository implements ProfileRepository
     /** @param array<string, mixed> $values */
     private function updateUser(int $userId, array $values): void
     {
-        $updated = DB::table('users')->where('id', $userId)->whereNull('deleted_at')->update($values);
+        $updated = DB::table('users')
+            ->where('id', $userId)
+            ->whereNull('deleted_at')
+            ->update($values);
 
-        if ($updated === 0 && ! DB::table('users')->where('id', $userId)->whereNull('deleted_at')->exists()) {
+        if (
+            $updated === 0 &&
+            ! DB::table('users')->where('id', $userId)->whereNull('deleted_at')->exists()
+        ) {
             throw new RuntimeException('Profile not found.');
         }
     }

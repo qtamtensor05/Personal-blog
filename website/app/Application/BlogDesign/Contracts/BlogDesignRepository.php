@@ -16,8 +16,6 @@ interface BlogDesignRepository
      */
     public function saveDraft(int $blogId, BlogDesignData $draft, int $updatedBy): void;
 
-    /**
-     * Copy the draft to template_id + published_data together (ck_blog_designs_1).
-     */
-    public function publishDraft(int $blogId, int $updatedBy): void;
+    /** Publish only the slot content that belongs to one fixed template region. */
+    public function publishRegion(int $blogId, string $region, int $updatedBy): void;
 }

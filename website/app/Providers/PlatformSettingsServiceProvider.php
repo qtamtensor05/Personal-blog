@@ -12,6 +12,9 @@ final class PlatformSettingsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(PlatformSettingsRepository::class, QueryBuilderPlatformSettingsRepository::class);
+        $this->app->bind(
+            PlatformSettingsRepository::class,
+            QueryBuilderPlatformSettingsRepository::class,
+        );
     }
 }

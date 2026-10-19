@@ -13,6 +13,10 @@ final readonly class ListNotificationsService
 
     public function execute(int $recipientUserId, int $page, int $perPage = 15): NotificationPage
     {
-        return $this->notifications->paginateForRecipient($recipientUserId, max(1, $page), $perPage);
+        return $this->notifications->paginateForRecipient(
+            $recipientUserId,
+            max(1, $page),
+            $perPage,
+        );
     }
 }

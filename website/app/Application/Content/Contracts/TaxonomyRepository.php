@@ -20,7 +20,13 @@ interface TaxonomyRepository
 
     public function categorySlugExists(int $blogId, string $slug, ?int $exceptId = null): bool;
 
-    public function createCategory(int $blogId, string $name, string $slug, ?string $description, ?int $parentId): int;
+    public function createCategory(
+        int $blogId,
+        string $name,
+        string $slug,
+        ?string $description,
+        ?int $parentId,
+    ): int;
 
     public function updateCategory(
         int $blogId,

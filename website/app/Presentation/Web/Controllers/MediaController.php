@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Controllers;
 
+use App\Application\BlogDesign\Services\OwnedBlogGuard;
+use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Application\Media\DTOs\MediaAssetRecord;
 use App\Application\Media\Exceptions\MediaAccessDenied;
 use App\Application\Media\Exceptions\MediaInUse;
@@ -18,12 +21,31 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 /**
  * JSON endpoints used by the editors (session + CSRF, no separate API auth).
  */
 final class MediaController extends Controller
 {
+    public function index(
+        int $blog,
+        Request $request,
+        OwnedBlogGuard $guard,
+        MediaAssetRepository $media,
+    ): View {
+        try {
+            $record = $guard->ensure((int) $request->user()->id, $blog);
+        } catch (BlogNotFound) {
+            abort(404);
+        }
+
+        return view('media.index', [
+            'blog' => $record,
+            'assets' => $media->readyForBlog($blog),
+        ]);
+    }
+
     public function store(UploadMediaRequest $request, UploadMediaUseCase $upload): JsonResponse
     {
         $file = $request->file('file');
@@ -32,7 +54,9 @@ final class MediaController extends Controller
             $asset = $upload->execute(
                 actorId: (int) $request->user()->id,
                 scope: MediaScope::from($request->validated('scope')),
-                blogId: $request->validated('blog_id') !== null ? (int) $request->validated('blog_id') : null,
+                blogId: $request->validated('blog_id') !== null
+                    ? (int) $request->validated('blog_id')
+                    : null,
                 localPath: $file->getRealPath(),
                 originalName: $file->getClientOriginalName(),
                 mimeType: $file->getMimeType(),
@@ -46,7 +70,7 @@ final class MediaController extends Controller
         } catch (MediaStorageFailed $exception) {
             Log::error('Media upload failed.', ['exception' => $exception]);
 
-            return $this->error('The image could not be uploaded. Please try again.', 502);
+            return $this->error('Không thể tải Media lên. Vui lòng thử lại.', 502);
         }
 
         return new JsonResponse(['data' => $this->present($asset)], 201);
@@ -63,7 +87,7 @@ final class MediaController extends Controller
         } catch (MediaStorageFailed $exception) {
             Log::error('Media delete failed.', ['exception' => $exception]);
 
-            return $this->error('The image could not be deleted. Please try again.', 502);
+            return $this->error('Không thể xóa Media. Vui lòng thử lại.', 502);
         } catch (DomainException $exception) {
             return $this->error($exception->getMessage(), 409);
         }
@@ -85,6 +109,8 @@ final class MediaController extends Controller
             'height' => $asset->height,
             'bytes' => $asset->bytes,
             'alt_text' => $asset->altText,
+            'mime_type' => $asset->mimeType,
+            'resource_type' => $asset->resourceType,
             'status' => $asset->status->value,
         ];
     }

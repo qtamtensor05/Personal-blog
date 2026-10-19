@@ -35,10 +35,14 @@ it('normalizes pagination input before querying the public catalog', function ()
 
     $result = (new ListPublicPostsService($catalog))->execute('  Laravel  ', -5);
 
-    expect($catalog->search)->toBe('Laravel')
-        ->and($catalog->page)->toBe(1)
-        ->and($catalog->perPage)->toBe(9)
-        ->and($result->currentPage)->toBe(1);
+    expect($catalog->search)
+        ->toBe('Laravel')
+        ->and($catalog->page)
+        ->toBe(1)
+        ->and($catalog->perPage)
+        ->toBe(9)
+        ->and($result->currentPage)
+        ->toBe(1);
 });
 
 it('calculates the final page from the real total', function (): void {

@@ -89,7 +89,9 @@ final class QueryBuilderBlogRepository implements BlogRepository
         BlogVisibility $visibility,
         bool $discoverable,
     ): void {
-        $existing = DB::table(self::TABLE)->where('id', $id)->first(['status', 'published_at']);
+        $existing = DB::table(self::TABLE)
+            ->where('id', $id)
+            ->first(['status', 'published_at']);
 
         DB::table(self::TABLE)
             ->where('id', $id)
@@ -97,12 +99,12 @@ final class QueryBuilderBlogRepository implements BlogRepository
                 'name' => $name,
                 'slug' => $slug,
                 'description' => $description,
-                'status' => $status->value,
+                'status' => $status === BlogStatus::Draft ? BlogStatus::Draft->value : BlogStatus::Published->value,
                 'visibility' => $visibility->value,
                 'discoverable' => $discoverable,
                 'published_at' => $status === BlogStatus::Published && $existing->published_at === null
-                    ? now()
-                    : $existing->published_at,
+                        ? now()
+                        : $existing->published_at,
                 'updated_at' => now(),
             ]);
     }

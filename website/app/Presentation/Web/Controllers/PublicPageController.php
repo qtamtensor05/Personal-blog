@@ -26,7 +26,10 @@ final class PublicPageController extends Controller
     ): View {
         try {
             // Same blog visibility rules as the blog home.
-            $blogView = $viewBlog->execute($slug, $request->user() ? (int) $request->user()->id : null);
+            $blogView = $viewBlog->execute(
+                $slug,
+                $request->user() ? (int) $request->user()->id : null,
+            );
         } catch (BlogNotFound) {
             abort(404);
         }

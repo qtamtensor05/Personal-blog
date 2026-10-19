@@ -9,11 +9,16 @@ namespace App\Domain\Templates\Enums;
  */
 enum TemplateSection: string
 {
+    case Header = 'header';
+    case Navigation = 'navigation';
     // Top of the blog: title, subtitle, hero image or illustration.
     case Hero = 'hero';
 
     // Standalone image block with a configurable placement.
     case Image = 'image';
+    case ImageText = 'image_text';
+    case Gallery = 'gallery';
+    case Cta = 'cta';
 
     // Full-page Tiptap document for flexible template composition.
     case Document = 'document';
@@ -29,6 +34,8 @@ enum TemplateSection: string
 
     // About text and author info (name, bio, avatar).
     case About = 'about';
+    case Profile = 'profile';
+    case SidebarPosts = 'sidebar_posts';
 
     // Newsletter signup form.
     case Newsletter = 'newsletter';

@@ -17,7 +17,9 @@ Artisan::command('admin:grant {email}', function (string $email) {
     $roleId = DB::table('platform_roles')->where('code', 'SUPER_ADMIN')->value('id');
 
     if ($roleId === null) {
-        $this->error('SUPER_ADMIN role missing. Run: php artisan db:seed --class=AccessControlSeeder');
+        $this->error(
+            'SUPER_ADMIN role missing. Run: php artisan db:seed --class=AccessControlSeeder',
+        );
 
         return 1;
     }
@@ -76,10 +78,11 @@ Artisan::command('account:expire-restrictions', function () {
                 return;
             }
 
-            $expectedStatus = [
-                'LOCK' => 'LOCKED',
-                'SUSPEND' => 'SUSPENDED',
-            ][$restriction->kind] ?? null;
+            $expectedStatus =
+                [
+                    'LOCK' => 'LOCKED',
+                    'SUSPEND' => 'SUSPENDED',
+                ][$restriction->kind] ?? null;
 
             if ($restriction->user_status !== $expectedStatus) {
                 return;
@@ -90,8 +93,8 @@ Artisan::command('account:expire-restrictions', function () {
                 ->where('status', $expectedStatus)
                 ->update([
                     'status' => $restriction->email_verified_at === null
-                        ? 'PENDING_VERIFICATION'
-                        : 'ACTIVE',
+                            ? 'PENDING_VERIFICATION'
+                            : 'ACTIVE',
                     'locked_until' => null,
                     'updated_at' => $now,
                 ]);

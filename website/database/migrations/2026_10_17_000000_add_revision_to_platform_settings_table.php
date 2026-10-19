@@ -18,7 +18,10 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasColumn('platform_settings', 'revision')) {
-            Schema::table('platform_settings', fn (Blueprint $table) => $table->dropColumn('revision'));
+            Schema::table(
+                'platform_settings',
+                fn (Blueprint $table) => $table->dropColumn('revision'),
+            );
         }
     }
 };

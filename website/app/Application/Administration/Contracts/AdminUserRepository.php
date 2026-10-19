@@ -55,9 +55,19 @@ interface AdminUserRepository
     /**
      * Revokes all ACTIVE restrictions and sets the given status.
      */
-    public function liftRestrictions(int $userId, UserStatus $status, int $revokedBy, string $reason): void;
+    public function liftRestrictions(
+        int $userId,
+        UserStatus $status,
+        int $revokedBy,
+        string $reason,
+    ): void;
 
-    public function grantRole(int $userId, int $roleId, int $grantedBy, ?DateTimeImmutable $expiresAt): void;
+    public function grantRole(
+        int $userId,
+        int $roleId,
+        int $grantedBy,
+        ?DateTimeImmutable $expiresAt,
+    ): void;
 
     public function revokeRole(int $userId, int $roleId): void;
 
@@ -65,7 +75,12 @@ interface AdminUserRepository
 
     public function permissionCode(int $permissionId): ?string;
 
-    public function setPermissionOverride(int $userId, int $permissionId, string $effect, int $grantedBy): void;
+    public function setPermissionOverride(
+        int $userId,
+        int $permissionId,
+        string $effect,
+        int $grantedBy,
+    ): void;
 
     /**
      * Latest admin audit entries, newest first.

@@ -21,7 +21,11 @@ final class PublicPostController extends Controller
         TiptapHtmlRenderer $renderer,
     ): View {
         try {
-            $result = $viewPost->execute($slug, $post, $request->user() ? (int) $request->user()->id : null);
+            $result = $viewPost->execute(
+                $slug,
+                $post,
+                $request->user() ? (int) $request->user()->id : null,
+            );
         } catch (BlogNotFound) {
             abort(404);
         }
@@ -32,7 +36,9 @@ final class PublicPostController extends Controller
             'page' => $result['page'],
             'post' => $record,
             'html' => $renderer->render($record->content, $result['media']),
-            'cover' => $record->coverMediaId !== null ? ($result['media'][$record->coverMediaId] ?? null) : null,
+            'cover' => $record->coverMediaId !== null
+                    ? $result['media'][$record->coverMediaId] ?? null
+                    : null,
         ]);
     }
 }
