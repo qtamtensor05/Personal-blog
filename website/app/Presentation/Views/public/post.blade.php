@@ -52,8 +52,8 @@
                     href="{{ route('public.blog', $blog->slug) }}"
                     class="text-sm"
                     style="color: var(--d-primary)"
-                    >&larr; {{ $blog->name }}</a
-                >
+                    ><i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
+                </a>
             @endif
 
             <article

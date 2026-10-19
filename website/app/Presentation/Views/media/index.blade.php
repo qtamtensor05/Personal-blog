@@ -6,7 +6,7 @@
     <div class="container-custom section-spacing max-w-6xl" data-media-library>
         <div class="mb-8">
             <a href="{{ route('blogs.show', $blog->id) }}" class="text-secondary hover:text-accent-primary text-sm">
-                &larr; {{ $blog->name }}
+                <i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
             </a>
             <h1 class="text-hero mt-2">{{ __('template.media_library') }}</h1>
             <p class="text-secondary mt-2">{{ __('template.media_archive_help') }}</p>

@@ -151,7 +151,10 @@
                 @empty
                     <x-empty-state :message="__('template.empty_region')">{{ __('template.admin_config_required') }}</x-empty-state>
                 @endforelse
-                <div class="flex flex-wrap gap-3"><button type="submit" class="btn-secondary">{{ __('template.save_draft', ['region' => $regionLabels[$activeRegion]]) }}</button><button type="submit" name="publish" value="1" class="btn-primary">{{ __('template.save_publish', ['region' => $regionLabels[$activeRegion]]) }}</button></div>
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" class="border border-secondary px-4 py-2 rounded-md">{{ __('template.save_draft', ['region' => $regionLabels[$activeRegion]]) }}</button>
+                    <button type="submit" name="publish" value="1" class="btn-primary px-4 py-2 rounded-md">{{ __('template.save_publish', ['region' => $regionLabels[$activeRegion]]) }}</button>
+                </div>
             </form>
         </section>
     @endif

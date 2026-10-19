@@ -24,7 +24,9 @@
             </div>
             <form method="POST" action="{{ route('blogs.posts.publish', [$blog->id, $post->id]) }}" data-publish-form>
                 @csrf
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane mr-2" aria-hidden="true"></i>{{ $post->publishedAt === null ? __('post.publish') : __('post.save_changes') }}</button>
+                <button type="submit" class="btn-primary px-4 py-2 rounded-md">
+                    <i class="fa-solid fa-paper-plane mr-2" aria-hidden="true"></i>{{ $post->publishedAt === null ? __('post.publish') : __('post.save_changes') }}
+                </button>
             </form>
         </div>
 
@@ -148,8 +150,10 @@
                     />
                     {{ __('post.featured') }}
                 </label>
+                
+                <br/>
 
-                <button type="submit" class="btn-secondary w-full justify-center">
+                <button type="submit" class="btn-primary px-4 py-2 rounded-md w-full justify-center">
                     {{ __('post.save_info') }}
                 </button>
             </form>
@@ -165,7 +169,7 @@
         >
             @csrf
             @method ('DELETE')
-            <button type="submit" class="text-sm text-red-500 hover:underline">{{ __('post.delete') }}</button>
+            <button type="submit" class="text-sm text-red-500 border border-red-500 px-4 py-2 rounded-md hover:underline">{{ __('post.delete') }}</button>
         </form>
     </div>
 @endsection

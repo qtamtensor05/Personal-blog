@@ -150,7 +150,7 @@
                         <input type="hidden" name="visibility" value="{{ old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}">
                         <input type="hidden" name="discoverable" value="{{ $blog->discoverable ? 1 : 0 }}">
                         @if ($errors->any()) <p class="text-sm text-red-500">{{ $errors->first() }}</p> @endif
-                        <button type="submit" class="btn-primary">{{ __('template.save_changes') }}</button>
+                        <button type="submit" class="btn-primary px-4 py-2 rounded-md">{{ __('template.save_changes') }}</button>
                     </form>
                 </section>
 
@@ -163,7 +163,7 @@
                             <x-input name="name" :label="__('template.name')" required data-slug-source />
                             <x-input name="slug" :label="__('template.slug')" required data-slug-target />
                             <input type="hidden" name="parent_id" value="">
-                            <button class="btn-secondary self-end" type="submit">{{ __('template.add') }}</button>
+                            <button class="bg-accent-primary px-4 py-2 rounded-md border !text-white self-end" type="submit">{{ __('template.add') }}</button>
                         </form>
                         <ul class="divide-default divide-y">
                             @forelse ($categories as $category)
@@ -177,7 +177,7 @@
                             @csrf
                             <x-input name="name" :label="__('template.name')" required data-slug-source />
                             <x-input name="slug" :label="__('template.slug')" required data-slug-target />
-                            <button class="btn-secondary self-end" type="submit">{{ __('template.add') }}</button>
+                            <button class="bg-accent-primary px-4 py-2 rounded-md border !text-white self-end" type="submit">{{ __('template.add') }}</button>
                         </form>
                         <ul class="divide-default divide-y">
                             @forelse ($tags as $tag)
@@ -200,7 +200,7 @@
             >
                 @csrf
                 @method ('DELETE')
-                <button type="submit" class="text-sm text-red-500 hover:underline">
+                <button type="submit" class="text-sm text-red-500 px-4 py-2 border border-red-500 rounded-md hover:underline">
                     {{ __('template.delete_blog') }}
                 </button>
             </form>

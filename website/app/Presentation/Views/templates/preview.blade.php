@@ -53,7 +53,9 @@
                         <p
                             class="mb-5 text-sm"
                             style="color: var(--d-primary)"
-                        >&larr; {{ $blog->name }}</p>
+                        >
+                            <i class="fa-solid fa-arrow-left-long"></i> {{ $blog->name }}
+                        </p>
                     @endif
                     <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
                         <h1
