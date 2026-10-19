@@ -22,7 +22,15 @@ const Layout = Node.create({
     defining: true,
     addAttributes: () => ({ columns: { default: 2 } }),
     parseHTML: () => [{ tag: 'div[data-template-layout]' }],
-    renderHTML: ({ HTMLAttributes }) => ['div', { ...HTMLAttributes, 'data-template-layout': '', class: `template-layout template-layout-${HTMLAttributes.columns}` }, 0],
+    renderHTML: ({ HTMLAttributes }) => [
+        'div',
+        {
+            ...HTMLAttributes,
+            'data-template-layout': '',
+            class: `template-layout template-layout-${HTMLAttributes.columns}`,
+        },
+        0,
+    ],
 });
 
 const LayoutCell = Node.create({
@@ -31,11 +39,16 @@ const LayoutCell = Node.create({
     content: 'block+',
     isolating: true,
     parseHTML: () => [{ tag: 'div[data-template-layout-cell]' }],
-    renderHTML: () => ['div', { 'data-template-layout-cell': '', class: 'template-layout-cell' }, 0],
+    renderHTML: () => [
+        'div',
+        { 'data-template-layout-cell': '', class: 'template-layout-cell' },
+        0,
+    ],
 });
 
 function withImageSources(node, mediaUrls) {
-    if (node.type === 'image' && node.attrs?.mediaId) node.attrs.src = mediaUrls[node.attrs.mediaId] ?? '';
+    if (node.type === 'image' && node.attrs?.mediaId)
+        node.attrs.src = mediaUrls[node.attrs.mediaId] ?? '';
     (node.content ?? []).forEach((child) => withImageSources(child, mediaUrls));
     return node;
 }
@@ -48,13 +61,21 @@ function initTemplateEditor(root) {
     const editor = new Editor({
         element: root.querySelector('[data-template-content-editor]'),
         extensions: [
-            StarterKit.configure({ heading: { levels: [1, 2, 3, 4] }, link: { openOnClick: false } }),
+            StarterKit.configure({
+                heading: { levels: [1, 2, 3, 4] },
+                link: { openOnClick: false },
+            }),
             MediaImage,
             Layout,
             LayoutCell,
         ],
         content: withImageSources(config.content, config.mediaUrls ?? {}),
-        editorProps: { attributes: { class: 'template-editor min-h-[32rem] focus:outline-none', 'aria-label': 'Template content editor' } },
+        editorProps: {
+            attributes: {
+                class: 'template-editor min-h-[32rem] focus:outline-none',
+                'aria-label': 'Template content editor',
+            },
+        },
     });
 
     const setStatus = (text, error = false) => {
@@ -62,9 +83,19 @@ function initTemplateEditor(root) {
         status.classList.toggle('text-red-500', error);
     };
 
-    const insertLayout = (columns) => editor.chain().focus().insertContent({
-        type: 'layout', attrs: { columns }, content: Array.from({ length: columns }, () => ({ type: 'layoutCell', content: [{ type: 'paragraph' }] })),
-    }).run();
+    const insertLayout = (columns) =>
+        editor
+            .chain()
+            .focus()
+            .insertContent({
+                type: 'layout',
+                attrs: { columns },
+                content: Array.from({ length: columns }, () => ({
+                    type: 'layoutCell',
+                    content: [{ type: 'paragraph' }],
+                })),
+            })
+            .run();
 
     const commands = {
         bold: () => editor.chain().focus().toggleBold().run(),
@@ -81,7 +112,9 @@ function initTemplateEditor(root) {
         image: () => fileInput.click(),
     };
 
-    root.querySelectorAll('[data-template-command]').forEach((button) => button.addEventListener('click', () => commands[button.dataset.templateCommand]?.()));
+    root.querySelectorAll('[data-template-command]').forEach((button) =>
+        button.addEventListener('click', () => commands[button.dataset.templateCommand]?.()),
+    );
 
     fileInput.addEventListener('change', async () => {
         const file = fileInput.files[0];
@@ -92,11 +125,23 @@ function initTemplateEditor(root) {
         form.append('scope', 'PLATFORM');
         setStatus('Uploading image to Cloudinary…');
         try {
-            const response = await fetch(config.mediaUrl, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: form });
+            const response = await fetch(config.mediaUrl, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: form,
+            });
             const body = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(body.message || 'Image upload failed.');
-            const alt = await window.requestModalInput('Image description', 'Describe the image (alt text)', '');
-            editor.chain().focus().setImage({ src: body.data.url, alt, mediaId: body.data.id }).run();
+            const alt = await window.requestModalInput(
+                'Image description',
+                'Describe the image (alt text)',
+                '',
+            );
+            editor
+                .chain()
+                .focus()
+                .setImage({ src: body.data.url, alt, mediaId: body.data.id })
+                .run();
             setStatus('Image uploaded.');
         } catch (error) {
             setStatus(error.message, true);
@@ -110,13 +155,22 @@ function initTemplateEditor(root) {
         setStatus('Saving draft…');
         const data = new FormData(form);
         const payload = {
-            name: data.get('name'), slug: data.get('slug'), description: data.get('description') || null,
+            name: data.get('name'),
+            slug: data.get('slug'),
+            description: data.get('description') || null,
             demo_url: data.get('demo_url') || null,
             draft_data: {
-                sections: [{ key: 'document', section: 'document', props: { content: editor.getJSON() } }],
+                sections: [
+                    { key: 'document', section: 'document', props: { content: editor.getJSON() } },
+                ],
                 designTokens: {
-                    primaryColor: data.get('primaryColor'), secondaryColor: data.get('secondaryColor'), accentColor: data.get('accentColor'),
-                    textColor: data.get('textColor'), backgroundColor: data.get('backgroundColor'), headingFont: data.get('headingFont'), bodyFont: data.get('bodyFont'),
+                    primaryColor: data.get('primaryColor'),
+                    secondaryColor: data.get('secondaryColor'),
+                    accentColor: data.get('accentColor'),
+                    textColor: data.get('textColor'),
+                    backgroundColor: data.get('backgroundColor'),
+                    headingFont: data.get('headingFont'),
+                    bodyFont: data.get('bodyFont'),
                 },
                 postLayout: {
                     variant: data.get('postLayoutVariant'),
@@ -128,7 +182,15 @@ function initTemplateEditor(root) {
             },
         };
         try {
-            const response = await fetch(config.saveUrl, { method: config.method, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify(payload) });
+            const response = await fetch(config.saveUrl, {
+                method: config.method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify(payload),
+            });
             const body = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(body.message || 'The template could not be saved.');
             window.location.href = config.successUrl;

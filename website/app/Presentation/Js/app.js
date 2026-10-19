@@ -26,8 +26,12 @@ function renderThemeToggle() {
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
         button.setAttribute('aria-label', `Switch to ${nextTheme} theme`);
         button.setAttribute('title', `Switch to ${nextTheme} theme`);
-        button.querySelector('[data-theme-icon="dark"]')?.classList.toggle('hidden', theme === 'dark');
-        button.querySelector('[data-theme-icon="light"]')?.classList.toggle('hidden', theme !== 'dark');
+        button
+            .querySelector('[data-theme-icon="dark"]')
+            ?.classList.toggle('hidden', theme === 'dark');
+        button
+            .querySelector('[data-theme-icon="light"]')
+            ?.classList.toggle('hidden', theme !== 'dark');
     });
 }
 
@@ -54,7 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('storage', (event) => {
-    if (event.key === themeStorageKey && (event.newValue === 'light' || event.newValue === 'dark')) {
+    if (
+        event.key === themeStorageKey &&
+        (event.newValue === 'light' || event.newValue === 'dark')
+    ) {
         document.documentElement.dataset.theme = event.newValue;
         renderThemeToggle();
     }
@@ -83,10 +90,7 @@ function initPasswordToggles() {
             input.type = showPassword ? 'text' : 'password';
 
             button.setAttribute('aria-pressed', String(showPassword));
-            button.setAttribute(
-                'aria-label',
-                `${showPassword ? 'Hide' : 'Show'} password`,
-            );
+            button.setAttribute('aria-label', `${showPassword ? 'Hide' : 'Show'} password`);
 
             showIcon.hidden = showPassword;
             hideIcon.hidden = !showPassword;
@@ -119,10 +123,16 @@ function initErrorModal() {
     };
 
     modal.dataset.initialized = 'true';
-    modal.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', () => close()));
+    modal
+        .querySelectorAll('[data-modal-close]')
+        .forEach((button) => button.addEventListener('click', () => close()));
     cancel.addEventListener('click', () => close());
-    confirm.addEventListener('click', () => close(input.classList.contains('hidden') ? true : input.value));
-    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+    confirm.addEventListener('click', () =>
+        close(input.classList.contains('hidden') ? true : input.value),
+    );
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
         if (event.key === 'Enter' && !input.classList.contains('hidden')) close(input.value);
@@ -137,33 +147,35 @@ function initErrorModal() {
         panel.focus();
     };
 
-    window.requestModalInput = (modalTitle, prompt, initialValue = '') => new Promise((resolve) => {
-        pending = resolve;
-        title.textContent = modalTitle;
-        message.textContent = prompt;
-        input.value = initialValue;
-        input.classList.remove('hidden');
-        cancel.classList.remove('hidden');
-        confirm.textContent = 'Confirm';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modal.setAttribute('aria-hidden', 'false');
-        input.focus();
-        input.select();
-    });
+    window.requestModalInput = (modalTitle, prompt, initialValue = '') =>
+        new Promise((resolve) => {
+            pending = resolve;
+            title.textContent = modalTitle;
+            message.textContent = prompt;
+            input.value = initialValue;
+            input.classList.remove('hidden');
+            cancel.classList.remove('hidden');
+            confirm.textContent = 'Confirm';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+            input.focus();
+            input.select();
+        });
 
-    window.requestModalConfirmation = (modalTitle, prompt) => new Promise((resolve) => {
-        pending = (value) => resolve(value === true);
-        title.textContent = modalTitle;
-        message.textContent = prompt;
-        input.classList.add('hidden');
-        cancel.classList.remove('hidden');
-        confirm.textContent = 'Confirm';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modal.setAttribute('aria-hidden', 'false');
-        confirm.focus();
-    });
+    window.requestModalConfirmation = (modalTitle, prompt) =>
+        new Promise((resolve) => {
+            pending = (value) => resolve(value === true);
+            title.textContent = modalTitle;
+            message.textContent = prompt;
+            input.classList.add('hidden');
+            cancel.classList.remove('hidden');
+            confirm.textContent = 'Confirm';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+            confirm.focus();
+        });
 
     document.querySelectorAll('[data-modal-confirm-form]').forEach((form) => {
         form.addEventListener('submit', async (event) => {

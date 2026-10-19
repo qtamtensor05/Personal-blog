@@ -47,7 +47,10 @@ function initPostEditor(root) {
         ],
         content: withImageSources(config.content, config.mediaUrls),
         editorProps: {
-            attributes: { class: 'post-content min-h-[24rem] focus:outline-none', 'aria-label': 'Post content' },
+            attributes: {
+                class: 'post-content min-h-[24rem] focus:outline-none',
+                'aria-label': 'Post content',
+            },
         },
     });
 
@@ -68,7 +71,11 @@ function initPostEditor(root) {
         try {
             const response = await fetch(config.draftUrl, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
                 body: JSON.stringify({
                     title: titleInput.value,
                     // Pages have no excerpt field.
@@ -115,7 +122,11 @@ function initPostEditor(root) {
         blockquote: () => editor.chain().focus().toggleBlockquote().run(),
         codeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
         link: async () => {
-            const href = await window.requestModalInput('Add link', 'Link URL (https://…)', editor.getAttributes('link').href ?? '');
+            const href = await window.requestModalInput(
+                'Add link',
+                'Link URL (https://…)',
+                editor.getAttributes('link').href ?? '',
+            );
             if (href === null) return;
             if (href === '') {
                 editor.chain().focus().unsetLink().run();
@@ -155,9 +166,17 @@ function initPostEditor(root) {
                 return;
             }
 
-            const alt = await window.requestModalInput('Image description', 'Describe the image (alt text)', '');
+            const alt = await window.requestModalInput(
+                'Image description',
+                'Describe the image (alt text)',
+                '',
+            );
             // setImage passes all attributes through to the inserted node.
-            editor.chain().focus().setImage({ src: body.data.url, alt, mediaId: body.data.id }).run();
+            editor
+                .chain()
+                .focus()
+                .setImage({ src: body.data.url, alt, mediaId: body.data.id })
+                .run();
         } catch {
             setStatus('Image upload failed.', true);
         }
