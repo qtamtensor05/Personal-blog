@@ -352,7 +352,7 @@
                 </section>
             </div>
             <div class="mt-6 flex justify-end">
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary rounded-md px-4 py-2">
                     <i class="fa-solid fa-paper-plane mr-2" aria-hidden="true"></i
                     >{{ __('post.publish') }}
                 </button>

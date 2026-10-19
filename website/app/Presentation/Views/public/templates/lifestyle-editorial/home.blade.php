@@ -230,13 +230,11 @@
                                         src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : $images.'/'.$fallbackCards[$loop->index % 3] }}"
                                         alt=""
                                     />
-                                    <time
-                                        >{{
+                                    <time>{{
                                         $post->publishedAt
-                                            ? \\Illuminate\\Support\\Carbon::parse($post->publishedAt)->format('d.m.Y')
+                                            ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y')
                                             : ''
-                                    }}</time
-                                    >
+                                    }}</time>
                                     <h2>
                                         <a
                                             href="{{ route('public.post', [$blog->slug, $post->slug]) }}"

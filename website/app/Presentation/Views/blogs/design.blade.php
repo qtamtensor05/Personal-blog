@@ -26,7 +26,7 @@
                     "
                     href="{{ route('blogs.show', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
-                    >← {{ $blog->name }}</a
+                    ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ $blog->name }}</a
                 >
                 <p class="text-accent-primary mt-3 text-sm font-semibold tracking-wider uppercase">
                     {{ __('template.studio') }}

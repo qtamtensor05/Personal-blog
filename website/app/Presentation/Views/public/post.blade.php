@@ -30,22 +30,12 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
-<body
-    class="antialiased"
-    style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}'; background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;"
->
+<body style="background: #ffffff">
     @if ($page->isOwnerPreview)
-        <div
-            class="px-4 py-2 text-center text-sm"
-            style="background: var(--d-accent); color: var(--d-text)"
-        >
+        <div class="bg-accent-primary px-4 py-8 text-center text-sm text-white">
             {{ __('public.owner_preview') }}
         </div>
     @endif
-
-    <div class="container-custom flex justify-end pt-3">
-        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
-    </div>
 
     <phantom-ui
         loading
@@ -53,7 +43,7 @@
         reveal="0.2"
         aria-label="{{ __('public.loading_post') }}"
     >
-        <main data-animate="page" class="container-custom {{ $contentWidthClass }} py-10">
+        <main data-animate="page" class="container-custom {{ $contentWidthClass }} bg-white py-10">
             @if ($layout->showBlogName)
                 <a
                     href="{{ route('public.blog', $blog->slug) }}"
@@ -61,8 +51,7 @@
                         window.history.back();
                         return false;
                     "
-                    class="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
-                    style="color: var(--d-primary); border-color: var(--d-secondary)"
+                    class="btn-primary inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
                 >
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                     {{ __('post.back_previous') }}

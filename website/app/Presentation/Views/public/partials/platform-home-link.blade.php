@@ -1,4 +1,7 @@
-@if (!auth()->check() || (int) auth()->id() !== $blog->ownerUserId)
+@if (
+    !($templatePreview ?? false)
+    && (!auth()->check() || (int) auth()->id() !== (int) ($blog->ownerUserId ?? $blog->owner_user_id ?? 0))
+)
     <a
         href="{{ route('home') }}"
         class="inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline"
