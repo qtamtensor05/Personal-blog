@@ -68,7 +68,7 @@
                     </header>
                     @if ($layout->showCover)
                         <div
-                            class="mb-8 aspect-[16/9] w-full rounded-md opacity-25"
+                            class="mb-8 aspect-video w-full rounded-md opacity-25"
                             style="background: var(--d-secondary)"
                         ></div>
                     @endif

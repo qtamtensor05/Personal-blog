@@ -25,7 +25,7 @@
                 {{ __('templates.admin_empty_help') }}
             </x-empty-state>
         @else
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" data-shimmer-no-children>
                 <table class="w-full">
                     <thead class="bg-surface-secondary border-default border-b">
                         <tr>
