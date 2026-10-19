@@ -13,6 +13,7 @@ use App\Application\Media\UseCases\DeleteMedia\DeleteMediaUseCase;
 use App\Application\Media\UseCases\UploadMedia\UploadMediaService;
 use App\Application\Media\UseCases\UploadMedia\UploadMediaUseCase;
 use App\Infrastructure\Media\CloudinaryMediaStorage;
+use App\Infrastructure\Media\LocalMediaStorage;
 use App\Infrastructure\Media\Persistence\QueryBuilderBlogOwnership;
 use App\Infrastructure\Media\Persistence\QueryBuilderMediaAssetRepository;
 use Illuminate\Support\ServiceProvider;
@@ -24,10 +25,11 @@ final class MediaServiceProvider extends ServiceProvider
         $this->app->bind(MediaAssetRepository::class, QueryBuilderMediaAssetRepository::class);
         $this->app->bind(BlogOwnership::class, QueryBuilderBlogOwnership::class);
 
-        // Lazy: a missing CLOUDINARY_URL only fails when media is actually used.
         $this->app->singleton(
             MediaStorage::class,
-            fn () => new CloudinaryMediaStorage((string) config('media.cloudinary_url')),
+            fn () => config('media.driver') === 'cloudinary'
+                ? new CloudinaryMediaStorage((string) config('media.cloudinary_url'))
+                : new LocalMediaStorage((string) config('media.local_disk')),
         );
 
         $this->app->bind(

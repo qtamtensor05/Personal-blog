@@ -10,6 +10,7 @@ export default defineConfig({
                 'app/Presentation/Css/app.css',
                 'app/Presentation/Js/app.js',
                 'app/Presentation/Js/post-editor.js',
+                'app/Presentation/Js/template-editor.js',
             ],
             refresh: ['app/Presentation/Views/**/*.blade.php'],
             fonts: [

@@ -135,5 +135,16 @@
 @endsection
 
 @push('scripts')
+<script>
+(function () {
+    const title = document.getElementById('title');
+    const slug = document.querySelector('[name=slug]');
+    if (!title || !slug) return;
+    let edited = slug.value !== title.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    title.addEventListener('input', () => { if (!edited) slug.value = slugify(title.value); });
+    slug.addEventListener('input', () => { edited = true; });
+})();
+</script>
     @vite('app/Presentation/Js/post-editor.js')
 @endpush

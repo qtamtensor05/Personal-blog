@@ -7,6 +7,8 @@ namespace App\Presentation\Web\Controllers\Admin;
 use App\Application\AccessControl\Services\PermissionResolver;
 use App\Application\Administration\Contracts\AdminUserRepository;
 use App\Application\Administration\UseCases\ManageUsers\ManageUsersService;
+use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
+use App\Application\Identity\UseCases\RegisterUser\RegisterUserUseCase;
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Domain\Identity\Enums\UserStatus;
 use DateTimeImmutable;
@@ -14,6 +16,7 @@ use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class UserController extends Controller
@@ -45,6 +48,50 @@ final class UserController extends Controller
         ]);
     }
 
+    public function createAdmin(
+        Request $request,
+        AdminUserRepository $users,
+        RegisterUserUseCase $registerUser,
+    ): RedirectResponse {
+        $data = $request->validate([
+            'email' => ['required', 'string', 'email', 'max:254'],
+        ]);
+
+        $name = trim((string) preg_replace('/[._-]+/', ' ', strstr($data['email'], '@', true) ?: $data['email']));
+        $name = ucwords($name === '' ? 'Administrator' : $name);
+
+        try {
+            $user = $registerUser->execute(
+                name: $name,
+                email: $data['email'],
+                password: (string) config('identity.admin_default_password'),
+            );
+        } catch (EmailAlreadyRegistered) {
+            throw ValidationException::withMessages([
+                'email' => 'Email address is already registered.',
+            ]);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['email' => $exception->getMessage()]);
+        }
+
+        $adminRole = collect($users->roles())->firstWhere('code', 'SUPER_ADMIN');
+
+        if ($adminRole === null) {
+            throw new DomainException('The SUPER_ADMIN role is not configured.');
+        }
+
+        $users->grantRole(
+            $user->id(),
+            (int) $adminRole['id'],
+            (int) $request->user()->id,
+            null,
+        );
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('status', 'Admin account created. A verification email was sent to the address.');
+    }
+
     public function show(int $user, Request $request, AdminUserRepository $users, PermissionResolver $permissions): View
     {
         $record = $users->find($user) ?? abort(404);
@@ -52,6 +99,8 @@ final class UserController extends Controller
         return view('admin.users.show', [
             'user' => $record,
             'roles' => $users->roles(),
+            'permissions' => $users->permissions(),
+            'permissionOverrides' => $users->permissionOverrides($user),
             'isSelf' => $record->id === (int) $request->user()->id,
             'canManageRoles' => $permissions->has((int) $request->user()->id, PlatformPermission::ManageRoles),
         ]);
@@ -107,6 +156,24 @@ final class UserController extends Controller
             fn () => $service->revokeRole((int) $request->user()->id, $user, $role),
             'Role revoked.',
         );
+    }
+
+    public function setPermission(
+        int $user,
+        Request $request,
+        ManageUsersService $service,
+    ): RedirectResponse {
+        $data = $request->validate([
+            'permission_id' => ['required', 'integer', 'min:1'],
+            'effect' => ['required', 'in:GRANT,DENY'],
+        ]);
+
+        return $this->run($user, fn () => $service->setPermissionOverride(
+            (int) $request->user()->id,
+            $user,
+            (int) $data['permission_id'],
+            $data['effect'],
+        ), 'User permission updated.');
     }
 
     public function auditLogs(Request $request, AdminUserRepository $users): View

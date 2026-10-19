@@ -15,6 +15,7 @@
     <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
             <a href="{{ route('blogs.show', $blog->id) }}" class="text-sm text-secondary hover:text-accent-primary">← {{ $blog->name }}</a>
+            <p class="mt-3 text-sm font-semibold uppercase tracking-wider text-accent-primary">Step 2 of 2</p>
             <h1 class="text-hero mt-2">Blog Design</h1>
             <p class="text-secondary">
                 @if($live)
@@ -48,9 +49,9 @@
         <div class="space-y-8">
             {{-- Template picker --}}
             <section class="card">
-                <h2 class="text-lg font-semibold text-primary mb-1">Template</h2>
+                <h2 class="text-lg font-semibold text-primary mb-1">Choose an admin template</h2>
                 <p class="text-sm text-secondary mb-4">
-                    Applying a template replaces your draft. Your live design stays until you publish.
+                    These designs were published by an administrator. Applying one replaces your draft; your live design stays unchanged until you publish.
                 </p>
 
                 @if(count($templates) === 0)
@@ -78,7 +79,7 @@
                                 </span>
                             </label>
                         @endforeach
-                        <button type="submit" class="btn-secondary">Apply template</button>
+                        <button type="submit" class="btn-primary">Use selected template</button>
                     </form>
                 @endif
             </section>
@@ -102,10 +103,24 @@
                             ] as $field => $label)
                                 <x-input type="color" :name="$field" :label="$label" :value="$tokens->{$field}" required />
                             @endforeach
-                            <x-input name="headingFont" label="Heading font" :value="$tokens->headingFont" required />
-                            <x-input name="bodyFont" label="Body font" :value="$tokens->bodyFont" required />
+                            <div class="space-y-1">
+                                <label for="headingFont" class="block text-sm font-medium text-primary">Heading font</label>
+                                <select name="headingFont" id="headingFont" class="input" required>
+                                    @foreach(['Instrument Sans', 'DM Sans', 'Manrope', 'Merriweather', 'Playfair Display', 'Space Grotesk'] as $font)
+                                        <option value="{{ $font }}" @selected($tokens->headingFont === $font)>{{ $font }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="bodyFont" class="block text-sm font-medium text-primary">Body font</label>
+                                <select name="bodyFont" id="bodyFont" class="input" required>
+                                    @foreach(['Instrument Sans', 'DM Sans', 'Manrope', 'Source Serif 4', 'Merriweather', 'Space Grotesk'] as $font)
+                                        <option value="{{ $font }}" @selected($tokens->bodyFont === $font)>{{ $font }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                        <button type="submit" class="btn-primary">Save draft</button>
+                        <button type="submit" class="btn-primary py-2 px-4 rounded-md">Save draft</button>
                     </form>
                 </section>
             @endif
@@ -119,7 +134,7 @@
                      style="--d-primary: {{ $tokens->primaryColor }}; --d-secondary: {{ $tokens->secondaryColor }}; --d-accent: {{ $tokens->accentColor }}; --d-text: {{ $tokens->textColor }}; --d-bg: {{ $tokens->backgroundColor }}; --d-heading-font: '{{ $tokens->headingFont }}'; --d-body-font: '{{ $tokens->bodyFont }}';">
                     <div class="p-6 space-y-6" style="background: var(--d-bg); color: var(--d-text); font-family: var(--d-body-font), sans-serif;">
                         @foreach($current->sections as $section)
-                            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog])
+                            @includeIf('blogs.design-sections.'.$section->section, ['blog' => $blog, 'section' => $section, 'mediaUrls' => $mediaUrls, 'documentHtml' => $documentHtml])
                         @endforeach
                     </div>
                 </div>

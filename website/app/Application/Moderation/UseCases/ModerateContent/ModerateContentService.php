@@ -8,6 +8,7 @@ use App\Application\Administration\Contracts\AuditLogger;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Moderation\Contracts\ContentReportRepository;
+use App\Application\Notifications\Contracts\NotificationPublisher;
 use App\Domain\Moderation\Enums\ReportStatus;
 use DomainException;
 
@@ -24,6 +25,7 @@ final readonly class ModerateContentService
         private ViewPublicBlogService $blogs,
         private PostRepository $posts,
         private AuditLogger $audit,
+        private NotificationPublisher $notifications,
     ) {}
 
     public function report(int $reporterId, string $blogSlug, ?string $postSlug, string $reason): void
@@ -51,8 +53,16 @@ final readonly class ModerateContentService
 
     public function startReview(int $adminId, int $reportId): void
     {
-        $this->pending($reportId);
+        $report = $this->pending($reportId);
         $this->reports->startReview($reportId, $adminId);
+
+        if ($report->reporter_user_id !== null) {
+            $this->notifications->publish((int) $report->reporter_user_id, 'moderation.review_started', [
+                'title' => 'Report under review',
+                'message' => "Your report #{$reportId} is now being reviewed.",
+                'report_id' => $reportId,
+            ]);
+        }
     }
 
     public function close(int $adminId, int $reportId, ReportStatus $status, string $action, ?string $note): void
@@ -83,6 +93,24 @@ final readonly class ModerateContentService
             ['status' => $status->value, 'action' => $action, 'note' => $note],
             (int) $report->blog_id,
         );
+
+        if ($report->reporter_user_id !== null) {
+            $this->notifications->publish((int) $report->reporter_user_id, 'moderation.report_closed', [
+                'title' => 'Report closed',
+                'message' => "Your report #{$reportId} was {$status->value}.",
+                'report_id' => $reportId,
+                'status' => $status->value,
+            ]);
+        }
+
+        if ($action !== 'none') {
+            $this->notifications->publish((int) $report->owner_user_id, 'moderation.action_taken', [
+                'title' => 'Moderation action applied',
+                'message' => "A moderation action ({$action}) was applied to {$report->blog_name}.",
+                'report_id' => $reportId,
+                'action' => $action,
+            ]);
+        }
     }
 
     public function liftBlogSuspension(int $adminId, int $reportId): void
@@ -98,6 +126,12 @@ final readonly class ModerateContentService
         $this->audit->log($adminId, 'blog.suspension_lifted', 'blog', (string) $report->blog_id,
             ['status' => 'SUSPENDED'], ['status' => $status, 'report_id' => $reportId], (int) $report->blog_id,
         );
+
+        $this->notifications->publish((int) $report->owner_user_id, 'moderation.suspension_lifted', [
+            'title' => 'Blog suspension lifted',
+            'message' => "The suspension on {$report->blog_name} was lifted.",
+            'report_id' => $reportId,
+        ]);
     }
 
     private function pending(int $reportId): object

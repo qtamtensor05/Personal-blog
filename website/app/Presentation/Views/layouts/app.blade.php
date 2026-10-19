@@ -6,6 +6,23 @@
     <meta name="claude:viewport-fit-sides" content="cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <script>
+        (() => {
+            let savedTheme = null;
+
+            try {
+                savedTheme = localStorage.getItem('theme');
+            } catch {
+                // Storage may be disabled; the system preference still works.
+            }
+            const theme = savedTheme === 'light' || savedTheme === 'dark'
+                ? savedTheme
+                : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
+
     <title>{{ $title ?? config('app.name', 'Personal Blog') }}</title>
 
     @fonts
@@ -37,8 +54,8 @@
                         Articles
                     </a>
                     @auth
-                        <a href="{{ url('/my-posts') }}" class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->is('my-posts*') ? 'text-accent-primary' : '' }}">
-                            My Posts
+                        <a href="{{ route('blogs.index') }}" class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->routeIs('blogs.*') ? 'text-accent-primary' : '' }}">
+                            My Blogs
                         </a>
                     @endauth
                 </div>
@@ -46,22 +63,38 @@
                 <!-- Auth Actions -->
                 <div class="flex items-center gap-3">
                     @guest
-                        <a href="{{ route('login') }}" class="btn-ghost text-sm hidden sm:inline-flex">
+                        @include('layouts.partials.theme-toggle')
+                        <a href="{{ route('login') }}" class="btn-ghost text-sm hidden sm:inline-flex border px-4 py-2 rounded-md">
                             Sign In
                         </a>
-                        <a href="{{ url('/register') }}" class="btn-primary text-sm">
+                        <a href="{{ url('/register') }}" class="btn-primary text-sm px-4 py-2 rounded-md">
                             Get Started
                         </a>
                     @else
+                        <a href="{{ route('notifications.index') }}" class="relative btn-ghost p-2" aria-label="Notifications">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 01-6 0m6 0H9"/>
+                            </svg>
+                            @if($notificationUnreadCount > 0)
+                                <span class="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-xs font-semibold text-white">
+                                    {{ $notificationUnreadCount > 99 ? '99+' : $notificationUnreadCount }}
+                                </span>
+                            @endif
+                        </a>
+                        @include('layouts.partials.theme-toggle')
                         <div class="relative" x-data="{ open: false }">
                             <button
                                 @click="open = !open"
                                 @click.away="open = false"
                                 class="flex items-center gap-2 text-sm font-medium hover:text-accent-primary transition-colors"
                             >
-                                <div class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-surface font-semibold">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
-                                </div>
+                                @if($profileAvatarUrl)
+                                    <img src="{{ $profileAvatarUrl }}" alt="{{ auth()->user()->name }}" class="h-8 w-8 rounded-full object-cover">
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-surface font-semibold">
+                                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                @endif
                                 <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -80,11 +113,19 @@
                                 class="absolute right-0 mt-2 w-48 bg-surface border border-default rounded-lg shadow-lg py-1"
                                 style="display: none;"
                             >
-                                <a href="{{ url('/profile') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
                                     Profile
                                 </a>
-                                <a href="{{ url('/my-posts') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
-                                    My Posts
+                                @if($canAccessAdminConsole)
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm font-medium text-accent-primary hover:bg-surface-secondary">
+                                        Admin Console
+                                    </a>
+                                @endif
+                                <a href="{{ route('blogs.index') }}" class="block px-4 py-2 text-sm hover:bg-surface-secondary">
+                                    My Blogs
+                                </a>
+                                <a href="{{ route('blogs.create') }}" class="block px-4 py-2 text-sm font-medium text-accent-primary hover:bg-surface-secondary">
+                                    Create Blog
                                 </a>
                                 <hr class="my-1 border-default">
                                 <form method="POST" action="{{ route('logout') }}">
@@ -130,8 +171,11 @@
                         Articles
                     </a>
                     @auth
-                        <a href="{{ url('/my-posts') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
-                            My Posts
+                        <a href="{{ route('blogs.index') }}" class="text-sm font-medium hover:text-accent-primary transition-colors">
+                            My Blogs
+                        </a>
+                        <a href="{{ route('blogs.create') }}" class="text-sm font-medium text-accent-primary hover:text-accent-primary transition-colors">
+                            Create Blog
                         </a>
                     @endauth
                 </div>
@@ -163,7 +207,8 @@
                         <li><a href="{{ url('/') }}" class="hover:text-accent-primary transition-colors">Home</a></li>
                         <li><a href="{{ url('/posts') }}" class="hover:text-accent-primary transition-colors">Articles</a></li>
                         @auth
-                            <li><a href="{{ url('/my-posts') }}" class="hover:text-accent-primary transition-colors">My Posts</a></li>
+                            <li><a href="{{ route('blogs.index') }}" class="hover:text-accent-primary transition-colors">My Blogs</a></li>
+                            <li><a href="{{ route('blogs.create') }}" class="hover:text-accent-primary transition-colors">Create Blog</a></li>
                         @endauth
                     </ul>
                 </div>
@@ -176,7 +221,7 @@
                             <li><a href="{{ route('login') }}" class="hover:text-accent-primary transition-colors">Sign In</a></li>
                             <li><a href="{{ url('/register') }}" class="hover:text-accent-primary transition-colors">Register</a></li>
                         @else
-                            <li><a href="{{ url('/profile') }}" class="hover:text-accent-primary transition-colors">Profile</a></li>
+                            <li><a href="{{ route('profile.edit') }}" class="hover:text-accent-primary transition-colors">Profile</a></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}" class="inline">
                                     @csrf
@@ -199,6 +244,8 @@
             </div>
         </div>
     </footer>
+
+    <x-modal id="appErrorModal" title="Something went wrong" />
 
     <!-- Alpine.js for mobile menu -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>

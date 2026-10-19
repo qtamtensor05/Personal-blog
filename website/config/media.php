@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Local storage is the development fallback when Cloudinary is not configured.
+    'driver' => env('MEDIA_DRIVER', env('CLOUDINARY_URL') ? 'cloudinary' : 'local'),
+
+    'local_disk' => env('MEDIA_LOCAL_DISK', 'public'),
+
     // Standard Cloudinary URL: cloudinary://<api_key>:<api_secret>@<cloud_name>
     'cloudinary_url' => env('CLOUDINARY_URL'),
 

@@ -33,10 +33,18 @@
                         @endforeach
                     </select>
                 </div>
-                <x-input name="timezone" label="Timezone" :value="$settings->timezone" required
-                         :error="$errors->first('timezone')" hint="e.g. Asia/Ho_Chi_Minh" />
+                <div class="space-y-1">
+                    <label for="timezone" class="block text-sm font-medium text-primary">Timezone</label>
+                    <select name="timezone" id="timezone" class="input" required>
+                        @foreach(['Asia/Ho_Chi_Minh' => 'Vietnam (UTC+7)', 'UTC' => 'UTC', 'Asia/Tokyo' => 'Tokyo (UTC+9)', 'Europe/London' => 'London', 'America/New_York' => 'New York'] as $zone => $label)
+                            <option value="{{ $zone }}" @selected(old('timezone', $settings->timezone) === $zone)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @if($errors->first('timezone'))<p class="text-sm text-red-600">{{ $errors->first('timezone') }}</p>@endif
+                </div>
                 <x-input type="number" name="posts_per_page" label="Posts per page" min="1" max="100"
-                         :value="$settings->postsPerPage" required :error="$errors->first('posts_per_page')" />
+                         :value="$settings->postsPerPage" required :error="$errors->first('posts_per_page')"
+                         hint="How many posts appear on each public page." />
             </div>
         </section>
 
@@ -50,7 +58,7 @@
 
         <section class="card space-y-4">
             <h2 class="text-lg font-semibold text-primary">Images</h2>
-            <p class="text-sm text-secondary">Enter the media ID of an image uploaded to this blog. A media picker comes with the Media Library.</p>
+            <p class="text-sm text-secondary">Choose images from your Media Library and paste their IDs here.</p>
             <div class="grid sm:grid-cols-3 gap-4">
                 <x-input type="number" name="logo_media_id" label="Logo" min="1" :value="$settings->logoMediaId" />
                 <x-input type="number" name="favicon_media_id" label="Favicon" min="1" :value="$settings->faviconMediaId" />

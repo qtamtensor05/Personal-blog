@@ -10,6 +10,9 @@ use App\Application\BlogDesign\UseCases\ApplyTemplate\ApplyTemplateService;
 use App\Application\BlogDesign\UseCases\PublishDesign\PublishDesignService;
 use App\Application\BlogDesign\UseCases\SaveDesignDraft\SaveDesignDraftService;
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Media\Contracts\MediaAssetRepository;
+use App\Domain\Content\ValueObjects\TiptapDocument;
+use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Domain\Templates\ValueObjects\TemplateDesignTokens;
@@ -28,6 +31,8 @@ final class BlogDesignController extends Controller
         OwnedBlogGuard $guard,
         BlogDesignRepository $designs,
         TemplateRepository $templates,
+        MediaAssetRepository $media,
+        TiptapHtmlRenderer $renderer,
     ): View {
         try {
             $record = $guard->ensure((int) $request->user()->id, $blog);
@@ -35,10 +40,33 @@ final class BlogDesignController extends Controller
             abort(404);
         }
 
+        $design = $designs->find($blog);
+        $sections = $design?->draftData?->sections ?? $design?->publishedData?->sections ?? [];
+        $mediaUrls = [];
+        $documentHtml = [];
+        foreach ($sections as $section) {
+            $mediaId = isset($section->props['mediaId']) ? (int) $section->props['mediaId'] : 0;
+            if ($mediaId > 0 && ($asset = $media->find($mediaId)) !== null) {
+                $mediaUrls[$mediaId] = $asset->secureUrl;
+            }
+            if ($section->section === 'document' && isset($section->props['content']) && is_array($section->props['content'])) {
+                $document = TiptapDocument::fromArray($section->props['content']);
+                $assets = [];
+                foreach ($document->mediaIds() as $id) {
+                    if (($asset = $media->find($id)) !== null) {
+                        $assets[$id] = ['url' => $asset->secureUrl, 'width' => $asset->width, 'height' => $asset->height];
+                    }
+                }
+                $documentHtml[$section->key] = $renderer->render($document, $assets);
+            }
+        }
+
         return view('blogs.design', [
             'blog' => $record,
-            'design' => $designs->find($blog),
+            'design' => $design,
             'templates' => $templates->published(),
+            'mediaUrls' => $mediaUrls,
+            'documentHtml' => $documentHtml,
         ]);
     }
 

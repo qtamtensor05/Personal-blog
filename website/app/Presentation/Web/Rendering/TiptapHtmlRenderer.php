@@ -53,8 +53,16 @@ final class TiptapHtmlRenderer
                 $inner(),
             ),
             'image' => $this->image($node, $media),
+            'layout' => '<div class="template-layout template-layout-'.$this->safeColumns($node).'">'.$inner().'</div>',
+            'layoutCell' => '<div class="template-layout-cell">'.$inner().'</div>',
             default => '',
         };
+    }
+
+    /** @param array<string, mixed> $node */
+    private function safeColumns(array $node): int
+    {
+        return max(2, min(3, (int) ($node['attrs']['columns'] ?? 2)));
     }
 
     /**

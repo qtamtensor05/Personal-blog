@@ -14,6 +14,8 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
 {
     private const TABLE = 'templates';
 
+    public function __construct(private readonly TemplateDataHydrator $hydrator) {}
+
     public function find(int $id): ?TemplateRecord
     {
         $row = DB::table(self::TABLE)->where('id', $id)->whereNull('deleted_at')->first();
@@ -128,6 +130,16 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
             ->all();
     }
 
+    public function allDeleted(): array
+    {
+        return DB::table(self::TABLE)
+            ->whereNotNull('deleted_at')
+            ->orderByDesc('deleted_at')
+            ->get()
+            ->map(fn ($row) => $this->toDomain($row))
+            ->all();
+    }
+
     public function published(): array
     {
         return DB::table(self::TABLE)
@@ -137,6 +149,22 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
             ->get()
             ->map(fn ($row) => $this->toDomain($row))
             ->all();
+    }
+
+    public function restore(int $id): void
+    {
+        DB::table(self::TABLE)
+            ->where('id', $id)
+            ->whereNotNull('deleted_at')
+            ->update([
+                'deleted_at' => null,
+                'updated_at' => now(),
+            ]);
+    }
+
+    public function forceDelete(int $id): void
+    {
+        DB::table(self::TABLE)->where('id', $id)->delete();
     }
 
     private function toDomain(object $row): TemplateRecord
@@ -153,12 +181,13 @@ final class QueryBuilderTemplateRepository implements TemplateRepository
             updatedBy: (int) $row->updated_by,
             publishedBy: $row->published_by !== null ? (int) $row->published_by : null,
             publishedAt: $row->published_at,
+            deletedAt: $row->deleted_at,
             versionNumber: (int) $row->version_number,
             publishedData: $row->template_data !== null
-                ? TemplateData::fromArray(json_decode($row->template_data, true))
+                ? $this->hydrator->fromJson($row->template_data)
                 : null,
             draftData: $row->draft_data !== null
-                ? TemplateData::fromArray(json_decode($row->draft_data, true))
+                ? $this->hydrator->fromJson($row->draft_data)
                 : null,
         );
     }

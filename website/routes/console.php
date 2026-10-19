@@ -45,6 +45,64 @@ Artisan::command('admin:grant {email}', function (string $email) {
     return 0;
 })->purpose('Grant the SUPER_ADMIN platform role to an active user');
 
+Artisan::command('account:expire-restrictions', function () {
+    $now = now();
+    $expired = DB::table('account_restrictions as restrictions')
+        ->join('users', 'users.id', '=', 'restrictions.user_id')
+        ->where('restrictions.status', 'ACTIVE')
+        ->whereNotNull('restrictions.ends_at')
+        ->where('restrictions.ends_at', '<=', $now)
+        ->get([
+            'restrictions.id',
+            'restrictions.user_id',
+            'restrictions.kind',
+            'users.status as user_status',
+            'users.email_verified_at',
+        ]);
+
+    $expiredCount = 0;
+
+    foreach ($expired as $restriction) {
+        DB::transaction(function () use ($now, $restriction, &$expiredCount): void {
+            $updated = DB::table('account_restrictions')
+                ->where('id', $restriction->id)
+                ->where('status', 'ACTIVE')
+                ->update([
+                    'status' => 'EXPIRED',
+                    'updated_at' => $now,
+                ]);
+
+            if ($updated === 0) {
+                return;
+            }
+
+            $expectedStatus = [
+                'LOCK' => 'LOCKED',
+                'SUSPEND' => 'SUSPENDED',
+            ][$restriction->kind] ?? null;
+
+            if ($restriction->user_status !== $expectedStatus) {
+                return;
+            }
+
+            DB::table('users')
+                ->where('id', $restriction->user_id)
+                ->where('status', $expectedStatus)
+                ->update([
+                    'status' => $restriction->email_verified_at === null
+                        ? 'PENDING_VERIFICATION'
+                        : 'ACTIVE',
+                    'locked_until' => null,
+                    'updated_at' => $now,
+                ]);
+
+            $expiredCount++;
+        });
+    }
+
+    $this->info("Expired {$expiredCount} account restriction(s).");
+})->purpose('Expire temporary account restrictions');
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

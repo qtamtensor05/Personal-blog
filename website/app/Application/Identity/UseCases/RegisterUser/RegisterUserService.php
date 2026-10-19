@@ -11,6 +11,7 @@ use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
 use App\Application\Identity\UseCases\SendVerificationEmail\SendVerificationEmailUseCase;
 use App\Domain\Identity\Entities\User;
 use App\Domain\Identity\ValueObjects\EmailAddress;
+use DateTimeImmutable;
 use DomainException;
 
 final readonly class RegisterUserService implements RegisterUserUseCase
@@ -20,6 +21,7 @@ final readonly class RegisterUserService implements RegisterUserUseCase
         private PasswordHasher $passwordHasher,
         private VerificationUrlGenerator $verificationUrlGenerator,
         private SendVerificationEmailUseCase $sendVerificationEmail,
+        private bool $emailVerificationEnabled = true,
     ) {}
 
     public function execute(string $name, string $email, string $password): User
@@ -46,8 +48,14 @@ final readonly class RegisterUserService implements RegisterUserUseCase
             passwordHash: $this->passwordHasher->hash($password),
         );
 
-        $verificationUrl = $this->verificationUrlGenerator->generate($user->id());
+        if (! $this->emailVerificationEnabled) {
+            $user->verifyEmail(new DateTimeImmutable);
+            $this->users->update($user);
 
+            return $user;
+        }
+
+        $verificationUrl = $this->verificationUrlGenerator->generate($user->id());
         $this->sendVerificationEmail->execute($user->id(), $verificationUrl);
 
         return $user;

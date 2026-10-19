@@ -12,6 +12,12 @@ enum TemplateSection: string
     // Top of the blog: title, subtitle, hero image or illustration.
     case Hero = 'hero';
 
+    // Standalone image block with a configurable placement.
+    case Image = 'image';
+
+    // Full-page Tiptap document for flexible template composition.
+    case Document = 'document';
+
     // List of recent posts, with configurable count and layout (grid, list).
     case RecentPosts = 'recent_posts';
 

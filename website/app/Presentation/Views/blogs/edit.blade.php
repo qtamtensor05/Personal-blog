@@ -29,7 +29,7 @@
             <x-input
                 name="slug"
                 label="Slug"
-                hint="Lowercase letters, numbers and hyphens only"
+                hint="Generated from the blog name. Edit it when you need a different URL."
                 :value="old('slug', $blog->slug)"
                 :error="$errors->first('slug')"
                 required
@@ -80,10 +80,24 @@
             </div>
 
             <div class="flex items-center gap-3 pt-4 border-t border-default">
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="submit" class="btn-primary px-4 py-2">Save Changes</button>
                 <a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const name = document.querySelector('[name=name]');
+    const slug = document.querySelector('[name=slug]');
+    if (!name || !slug) return;
+    let edited = slug.value !== name.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    name.addEventListener('input', () => { if (!edited) slug.value = slugify(name.value); });
+    slug.addEventListener('input', () => { edited = true; });
+})();
+</script>
+@endpush
 @endsection

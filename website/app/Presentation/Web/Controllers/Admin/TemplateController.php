@@ -12,6 +12,7 @@ use App\Application\Templates\UseCases\CreateTemplate\CreateTemplateUseCase;
 use App\Application\Templates\UseCases\DeleteTemplate\DeleteTemplateUseCase;
 use App\Application\Templates\UseCases\PublishTemplate\PublishTemplateUseCase;
 use App\Application\Templates\UseCases\UpdateTemplateDraft\UpdateTemplateDraftUseCase;
+use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Templates\Enums\TemplateStatus;
 use App\Domain\Templates\ValueObjects\TemplateData;
 use App\Presentation\Web\Requests\Admin\CreateTemplateRequest;
@@ -20,6 +21,7 @@ use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -29,6 +31,7 @@ final class TemplateController extends Controller
     {
         return view('admin.templates.index', [
             'templates' => $templates->all(),
+            'deletedTemplates' => $templates->allDeleted(),
         ]);
     }
 
@@ -43,7 +46,7 @@ final class TemplateController extends Controller
             $id = $create->execute(
                 actorId: (int) $request->user()->id,
                 name: $request->validated('name'),
-                slug: $request->validated('slug'),
+                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
                 previewMediaId: $request->validated('preview_media_id') !== null
                     ? (int) $request->validated('preview_media_id')
@@ -58,7 +61,7 @@ final class TemplateController extends Controller
         return new JsonResponse(['data' => ['id' => $id]], 201);
     }
 
-    public function edit(int $template, TemplateRepository $templates): View
+    public function edit(int $template, TemplateRepository $templates, MediaAssetRepository $media): View
     {
         $record = $templates->find($template);
 
@@ -66,7 +69,30 @@ final class TemplateController extends Controller
             abort(404);
         }
 
-        return view('admin.templates.edit', ['template' => $record]);
+        $mediaUrls = [];
+        $sections = $record->draftData?->sections ?? $record->publishedData?->sections ?? [];
+        foreach ($sections as $section) {
+            $content = $section->props['content'] ?? null;
+            if (! is_array($content)) {
+                continue;
+            }
+            $walk = function (array $node) use (&$walk, &$mediaUrls, $media): void {
+                if (($node['type'] ?? null) === 'image' && isset($node['attrs']['mediaId'])) {
+                    $id = (int) $node['attrs']['mediaId'];
+                    if (($asset = $media->find($id)) !== null) {
+                        $mediaUrls[$id] = $asset->secureUrl;
+                    }
+                }
+                foreach ($node['content'] ?? [] as $child) {
+                    if (is_array($child)) {
+                        $walk($child);
+                    }
+                }
+            };
+            $walk($content);
+        }
+
+        return view('admin.templates.edit', ['template' => $record, 'mediaUrls' => $mediaUrls]);
     }
 
     public function update(
@@ -79,7 +105,7 @@ final class TemplateController extends Controller
                 actorId: (int) $request->user()->id,
                 templateId: $template,
                 name: $request->validated('name'),
-                slug: $request->validated('slug'),
+                slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
                 previewMediaId: $request->validated('preview_media_id') !== null
                     ? (int) $request->validated('preview_media_id')
@@ -148,6 +174,30 @@ final class TemplateController extends Controller
         } catch (TemplateNotFound) {
             return $this->error('Template not found.', 404);
         }
+
+        return new JsonResponse(null, 204);
+    }
+
+    public function restore(int $template, TemplateRepository $templates): JsonResponse
+    {
+        if (collect($templates->allDeleted())->firstWhere('id', $template) === null) {
+            return $this->error('Template not found.', 404);
+        }
+
+        $templates->restore($template);
+
+        return new JsonResponse(null, 204);
+    }
+
+    public function forceDestroy(int $template, TemplateRepository $templates): JsonResponse
+    {
+        $deleted = collect($templates->allDeleted())->firstWhere('id', $template);
+
+        if ($deleted === null) {
+            return $this->error('Deleted template not found.', 404);
+        }
+
+        $templates->forceDelete($template);
 
         return new JsonResponse(null, 204);
     }

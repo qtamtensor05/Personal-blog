@@ -63,10 +63,17 @@ interface TemplateRepository
      */
     public function all(): array;
 
+    /** @return list<TemplateRecord> */
+    public function allDeleted(): array;
+
     /**
      * Only templates users may apply to a blog: PUBLISHED status, not deleted.
      *
      * @return list<TemplateRecord>
      */
     public function published(): array;
+
+    public function restore(int $id): void;
+
+    public function forceDelete(int $id): void;
 }

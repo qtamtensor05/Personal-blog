@@ -25,7 +25,19 @@ interface AdminUserRepository
      */
     public function roles(): array;
 
+    /** @return list<array{id: int, code: string, description: ?string}> */
+    public function permissions(): array;
+
+    /** @return list<array{permission_id: int, code: string, effect: string}> */
+    public function permissionOverrides(int $userId): array;
+
     public function roleExists(int $roleId): bool;
+
+    public function roleCode(int $roleId): ?string;
+
+    public function userHasRole(int $userId, string $roleCode): bool;
+
+    public function countActiveSuperAdmins(): int;
 
     /**
      * Records the restriction, updates users.status (and locked_until for LOCK)
@@ -48,6 +60,12 @@ interface AdminUserRepository
     public function grantRole(int $userId, int $roleId, int $grantedBy, ?DateTimeImmutable $expiresAt): void;
 
     public function revokeRole(int $userId, int $roleId): void;
+
+    public function permissionExists(int $permissionId): bool;
+
+    public function permissionCode(int $permissionId): ?string;
+
+    public function setPermissionOverride(int $userId, int $permissionId, string $effect, int $grantedBy): void;
 
     /**
      * Latest admin audit entries, newest first.

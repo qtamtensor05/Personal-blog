@@ -15,7 +15,7 @@ final readonly class TiptapDocument
 {
     private const BLOCK_NODES = [
         'paragraph', 'heading', 'bulletList', 'orderedList', 'listItem',
-        'blockquote', 'codeBlock', 'horizontalRule', 'image',
+        'blockquote', 'codeBlock', 'horizontalRule', 'image', 'layout', 'layoutCell',
     ];
 
     private const INLINE_NODES = ['text', 'hardBreak'];
@@ -157,6 +157,26 @@ final readonly class TiptapDocument
 
         if ($type === 'hardBreak' || $type === 'horizontalRule') {
             return ['type' => $type];
+        }
+
+        if ($type === 'layout' || $type === 'layoutCell') {
+            $children = self::normalizeChildren($node['content'] ?? [], $depth + 1, $count);
+
+            if ($type === 'layout' && count($children) < 2) {
+                return null;
+            }
+
+            if ($type === 'layoutCell' && $children === []) {
+                return null;
+            }
+
+            return [
+                'type' => $type,
+                'attrs' => $type === 'layout'
+                    ? ['columns' => max(2, min(3, (int) ($node['attrs']['columns'] ?? count($children))))]
+                    : [],
+                'content' => $children,
+            ];
         }
 
         if ($type === 'image') {

@@ -36,6 +36,10 @@ final class IdentityServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserRepository::class, QueryBuilderUserRepository::class);
 
+        $this->app->when(RegisterUserService::class)
+            ->needs('$emailVerificationEnabled')
+            ->give(fn (): bool => (bool) config('identity.email_verification_enabled'));
+
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
 
         $this->app->bind(RegisterUserUseCase::class, RegisterUserService::class);

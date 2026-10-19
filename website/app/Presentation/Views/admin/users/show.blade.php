@@ -56,7 +56,7 @@
                         @csrf
                         @method('DELETE')
                         <x-textarea name="reason" label="Reason for lifting" rows="2" required />
-                        <button type="submit" class="btn-primary">Lift restriction</button>
+                        <button type="submit" class="btn-primary py-2 px-4 rounded-md">Lift restriction</button>
                     </form>
                 @else
                     <form method="POST" action="{{ route('admin.users.restrict', $user->id) }}" class="space-y-3"
@@ -72,7 +72,7 @@
                         </div>
                         <x-input type="datetime-local" name="ends_at" label="Ends at (optional)" />
                         <x-textarea name="reason" label="Reason" rows="2" required />
-                        <button type="submit" class="btn-secondary">Apply restriction</button>
+                        <button type="submit" class="btn-primary py-2 px-4 rounded-md">Apply restriction</button>
                     </form>
                 @endif
             @endunless
@@ -120,7 +120,49 @@
                         </select>
                     </div>
                     <x-input type="date" name="expires_at" label="Expires (optional)" />
-                    <button type="submit" class="btn-secondary">Grant</button>
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-md">Grant</button>
+                </form>
+            @endif
+        </section>
+
+        {{-- Individual permission overrides --}}
+        <section class="card space-y-4">
+            <h2 class="text-lg font-semibold text-primary">Individual permissions</h2>
+
+            @if(count($permissionOverrides) > 0)
+                <ul class="divide-y divide-default">
+                    @foreach($permissionOverrides as $override)
+                        <li class="py-2 flex items-center justify-between gap-3 text-sm">
+                            <span class="font-mono text-primary">{{ $override['code'] }}</span>
+                            <x-badge :variant="$override['effect'] === 'GRANT' ? 'primary' : 'highlight'">
+                                {{ $override['effect'] }}
+                            </x-badge>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="text-sm text-secondary">No individual permission overrides.</p>
+            @endif
+
+            @if($canManageRoles && ! $isSelf && count($permissions) > 0)
+                <form method="POST" action="{{ route('admin.users.permissions.set', $user->id) }}" class="space-y-3 border-t border-default pt-4">
+                    @csrf
+                    <div class="space-y-1">
+                        <label for="permission_id" class="block text-sm font-medium text-primary">Permission</label>
+                        <select name="permission_id" id="permission_id" class="input" required>
+                            @foreach($permissions as $permission)
+                                <option value="{{ $permission['id'] }}">{{ $permission['code'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="permission_effect" class="block text-sm font-medium text-primary">Action</label>
+                        <select name="effect" id="permission_effect" class="input" required>
+                            <option value="GRANT">Grant permission</option>
+                            <option value="DENY">Deny permission</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-md">Update permission</button>
                 </form>
             @endif
         </section>
