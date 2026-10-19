@@ -10,10 +10,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-        {{
-            $staticPage->seoTitle ??
-                $staticPage->title
-        }} — {{ $blog->name }}
+        {{ $staticPage->seoTitle ?? $staticPage->title }} — {{ $blog->name }}
     </title>
     @if ($description !== '')
         <meta name="description" content="{{ $description }}" />
@@ -37,8 +34,10 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
-    <div class="container-custom flex justify-end pt-3">
-        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
+
+    <div class="container-custom flex items-center justify-between gap-4 pt-3">
+        @include('public.partials.platform-home-link', ['blog' => $blog])
+        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
     <main data-animate="page" class="container-custom max-w-3xl py-10">
@@ -47,7 +46,7 @@
             class="text-sm"
             style="color: var(--d-primary)"
         >
-            <i class="fa-solid fa-arrow-left"></i>
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
             {{ $blog->name }}
         </a>
 

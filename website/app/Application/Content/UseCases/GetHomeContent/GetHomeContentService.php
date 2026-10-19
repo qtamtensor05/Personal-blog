@@ -19,11 +19,9 @@ final readonly class GetHomeContentService implements GetHomeContentUseCase
     {
         $featured = $this->posts->featured(self::FEATURED_LIMIT);
 
-        $featuredIds = array_map(static fn ($post): int => $post->id, $featured);
-
         return new HomeContent(
             featuredPosts: $featured,
-            recentPosts: $this->posts->recent(self::RECENT_LIMIT, $featuredIds),
+            recentPosts: $this->posts->recent(self::RECENT_LIMIT),
         );
     }
 }

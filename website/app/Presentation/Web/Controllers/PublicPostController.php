@@ -39,6 +39,7 @@ final class PublicPostController extends Controller
             'cover' => $record->coverMediaId !== null
                     ? $result['media'][$record->coverMediaId] ?? null
                     : null,
+            'author' => $result['author'],
         ]);
     }
 }

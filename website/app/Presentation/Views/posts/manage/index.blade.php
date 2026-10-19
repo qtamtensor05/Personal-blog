@@ -5,11 +5,7 @@
 @section ('content')
     <div class="container-custom section-spacing max-w-5xl">
         <div class="mb-8">
-            <a
-                href="{{ route('blogs.show', $blog->id) }}"
-                class="text-secondary hover:text-accent-primary text-sm"
-                ><i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i>{{ $blog->name }}</a
-            >
+            <a onclick="window.history.back(); return false;" href="{{ route('blogs.show', $blog->id) }}" class="text-secondary hover:text-accent-primary text-sm"><i class="fa-solid fa-arrow-left mr-1" aria-hidden="true"></i>{{ $blog->name }}</a>
             <h1 class="text-hero mt-2">{{ __('post.posts') }}</h1>
             <p class="text-secondary">{{ __('post.posts_intro') }}</p>
         </div>

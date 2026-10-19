@@ -300,16 +300,31 @@ function initHeroCarousels() {
             });
             count.textContent = `${index + 1} / ${slides.length}`;
             const activeThumb = carousel.querySelector(`[data-hero-thumb="${index}"]`);
+            const thumbnailStrip = carousel.querySelector('[data-hero-thumbnails]');
             carousel.querySelectorAll('[data-hero-thumb]').forEach((thumb) => {
                 const active = thumb === activeThumb;
                 thumb.classList.toggle('is-active', active);
                 thumb.setAttribute('aria-current', active ? 'true' : 'false');
             });
-            activeThumb?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest',
-            });
+
+            if (activeThumb && thumbnailStrip) {
+                const thumbRect = activeThumb.getBoundingClientRect();
+                const stripRect = thumbnailStrip.getBoundingClientRect();
+
+                if (thumbnailStrip.scrollHeight > thumbnailStrip.clientHeight) {
+                    if (thumbRect.top < stripRect.top) {
+                        thumbnailStrip.scrollTo({ top: thumbnailStrip.scrollTop - (stripRect.top - thumbRect.top), behavior: 'smooth' });
+                    } else if (thumbRect.bottom > stripRect.bottom) {
+                        thumbnailStrip.scrollTo({ top: thumbnailStrip.scrollTop + (thumbRect.bottom - stripRect.bottom), behavior: 'smooth' });
+                    }
+                } else if (thumbnailStrip.scrollWidth > thumbnailStrip.clientWidth) {
+                    if (thumbRect.left < stripRect.left) {
+                        thumbnailStrip.scrollTo({ left: thumbnailStrip.scrollLeft - (stripRect.left - thumbRect.left), behavior: 'smooth' });
+                    } else if (thumbRect.right > stripRect.right) {
+                        thumbnailStrip.scrollTo({ left: thumbnailStrip.scrollLeft + (thumbRect.right - stripRect.right), behavior: 'smooth' });
+                    }
+                }
+            }
         };
         carousel
             .querySelector('[data-hero-prev]')

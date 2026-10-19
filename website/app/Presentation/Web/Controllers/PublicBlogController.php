@@ -75,16 +75,40 @@ final class PublicBlogController extends Controller
             default => 'public.blog-home',
         };
 
-        $publicPosts = $posts->publicSummariesForBlog($page->blog->id, 24);
+        $screen = in_array($request->route('screen'), ['posts', 'about', 'contact'], true)
+            ? $request->route('screen')
+            : 'home';
+        $search = '';
+        if ($screen === 'posts') {
+            $validated = $request->validate([
+                'search' => ['nullable', 'string', 'max:100'],
+            ]);
+            $search = trim((string) ($validated['search'] ?? ''));
+        }
+
+        $publicPosts = $posts->publicSummariesForBlog(
+            $page->blog->id,
+            $screen === 'posts' ? null : 24,
+            $search !== '' ? $search : null,
+        );
+
+        $coverMediaIds = array_values(array_unique(array_filter(array_map(
+            static fn ($post): ?int => $post->coverMediaId,
+            $publicPosts,
+        ))));
+        if ($coverMediaIds !== []) {
+            foreach ($media->readyAssetsForBlog($page->blog->id, $coverMediaIds) as $mediaId => $asset) {
+                $mediaUrls[(int) $mediaId] = $asset['url'];
+            }
+        }
 
         return view($view, [
             'page' => $page,
             'publicPosts' => $publicPosts,
+            'search' => $search,
             'mediaUrls' => $mediaUrls,
             'documentHtml' => $documentHtml,
-            'screen' => in_array($request->route('screen'), ['posts', 'about', 'contact'], true)
-                ? $request->route('screen')
-                : 'home',
+            'screen' => $screen,
             'templatePreview' => false,
         ]);
     }

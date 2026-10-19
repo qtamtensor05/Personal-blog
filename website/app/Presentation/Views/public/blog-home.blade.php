@@ -32,8 +32,10 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
-    <div class="container-custom flex justify-end pt-3">
-        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
+
+    <div class="container-custom flex items-center justify-between gap-4 pt-3">
+        @include('public.partials.platform-home-link', ['blog' => $blog])
+        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
     @if ($page->pages !== [])
@@ -51,7 +53,7 @@
         </nav>
     @endif
 
-    @php ($regions = collect($page->sections) ->filter(fn($section) => $section->visible) ->groupBy('region'))
+    @php ($regions = collect($page->sections)->filter(fn ($section) => $section->visible)->groupBy('region'))
     <header data-animate="page" class="container-custom max-w-6xl space-y-4 pt-6">
         @foreach ($regions->get('header', []) as $section)
             @includeIf ('blogs.design-sections.' . $section->section,
@@ -65,6 +67,7 @@
                 ])
         @endforeach
     </header>
+
     <main class="container-custom grid max-w-6xl gap-10 py-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div class="space-y-10">
             @foreach ($regions->get('body', []) as $section)
@@ -79,6 +82,7 @@
                     ])
             @endforeach
         </div>
+
         @if ($regions->get('sidebar', collect())->isNotEmpty())
             <aside class="space-y-6">
                 @foreach ($regions->get('sidebar', []) as $section)
@@ -111,6 +115,7 @@
             </nav>
         @endif
     </main>
+
     <footer data-animate="section" class="container-custom max-w-6xl space-y-4 pb-10">
         @foreach ($regions->get('footer', []) as $section)
             @includeIf ('blogs.design-sections.' . $section->section,

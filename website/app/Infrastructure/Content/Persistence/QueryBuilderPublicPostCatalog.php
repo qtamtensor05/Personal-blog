@@ -12,6 +12,18 @@ use Illuminate\Support\Facades\DB;
 
 final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
 {
+    private const SUMMARY_COLUMNS = [
+        'p.id',
+        'p.title',
+        'p.slug',
+        'p.excerpt',
+        'p.published_at',
+        'p.is_featured',
+        'b.slug as blog_slug',
+        'u.name as author_name',
+        'm.secure_url as cover_url',
+    ];
+
     public function paginate(?string $search, int $page, int $perPage): PublicPostPage
     {
         $query = $this->query();
@@ -28,34 +40,12 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
         $page = min($page, $lastPage);
 
         $items = $query
-            ->select([
-                'p.id',
-                'p.title',
-                'p.slug',
-                'p.excerpt',
-                'p.published_at',
-                'p.is_featured',
-                'b.slug as blog_slug',
-                'u.name as author_name',
-                'm.secure_url as cover_url',
-            ])
+            ->select(self::SUMMARY_COLUMNS)
             ->orderByDesc('p.published_at')
             ->orderByDesc('p.id')
             ->forPage($page, $perPage)
             ->get()
-            ->map(
-                fn (object $row) => new PublicPostSummary(
-                    id: (int) $row->id,
-                    title: $row->title,
-                    slug: $row->slug,
-                    blogSlug: $row->blog_slug,
-                    excerpt: $row->excerpt,
-                    coverUrl: $row->cover_url,
-                    publishedAt: $row->published_at,
-                    authorName: $row->author_name,
-                    isFeatured: (bool) $row->is_featured,
-                ),
-            )
+            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
             ->all();
 
         return new PublicPostPage($items, $total, $page, $perPage);
@@ -88,6 +78,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->orderByDesc('p.published_at')
             ->orderByDesc('p.id')
             ->limit(max(0, $limit))
+            ->select(self::SUMMARY_COLUMNS)
             ->get()
             ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
             ->all();
@@ -105,8 +96,24 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->orderByDesc('p.published_at')
             ->orderByDesc('p.id')
             ->limit(max(0, $limit))
+            ->select(self::SUMMARY_COLUMNS)
             ->get()
             ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
             ->all();
+    }
+
+    private function toSummary(object $row): PublicPostSummary
+    {
+        return new PublicPostSummary(
+            id: (int) $row->id,
+            title: $row->title,
+            slug: $row->slug,
+            blogSlug: $row->blog_slug,
+            excerpt: $row->excerpt,
+            coverUrl: $row->cover_url,
+            publishedAt: $row->published_at,
+            authorName: $row->author_name,
+            isFeatured: (bool) $row->is_featured,
+        );
     }
 }
