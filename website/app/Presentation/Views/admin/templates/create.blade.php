@@ -1,12 +1,12 @@
 @extends ('layouts.app')
 
-@section ('title', 'New Template — Admin Console')
+@section ('title', __('templates.create_title') . ' - ' . __('admin.console'))
 
 @section ('content')
     <div class="container-custom section-spacing max-w-6xl">
         <div class="mb-8">
-            <h1 class="text-hero mb-2">New Template</h1>
-            <p class="text-secondary">Create a template draft with sections and design tokens.</p>
+            <h1 class="text-hero mb-2">{{ __('templates.create_title') }}</h1>
+            <p class="text-secondary">{{ __('templates.create_help') }}</p>
         </div>
 
         @include ('admin.templates._editor')
@@ -20,64 +20,64 @@
                 <form id="templateForm" class="space-y-6">
                     @csrf
 
-                    <x-input name="name" label="Template Name" placeholder="Modern Blog" required />
+                    <x-input name="name" :label="__('templates.old_name')" :placeholder="__('templates.old_modern')" required />
 
                     <x-input
                         name="slug"
-                        label="Slug"
+                        :label="__('templates.slug')"
                         placeholder="modern-blog"
                         required
-                        hint="Generated from the name. Edit it when you need a different URL."
+                        :hint="__('templates.slug_hint')"
                     />
 
                     <x-textarea
                         name="description"
-                        label="Description"
-                        placeholder="A clean, minimal blog layout with hero and recent posts"
+                        :label="__('templates.description_label')"
+                        :placeholder="__('templates.old_description')"
                         rows="3"
                     />
 
                     <x-input
                         name="demo_url"
-                        label="Demo URL"
+                        :label="__('templates.old_demo_url')"
                         readonly
-                        hint="Generated automatically from the slug."
+                        :hint="__('templates.old_demo_hint')"
                     />
 
                     <div class="border-default border-t pt-6">
-                        <h2 class="text-primary mb-4 text-lg font-semibold">Design Tokens</h2>
+                        <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('templates.design_tokens') }}</h2>
                         <div class="grid gap-4 md:grid-cols-2">
                             <x-input
                                 name="primaryColor"
-                                label="Primary Color"
+                                :label="__('templates.primary_color')"
                                 type="color"
                                 value="#90B250"
                                 required
                             />
                             <x-input
                                 name="secondaryColor"
-                                label="Secondary Color"
+                                :label="__('templates.secondary_color')"
                                 type="color"
                                 value="#BD927D"
                                 required
                             />
                             <x-input
                                 name="accentColor"
-                                label="Accent Color"
+                                :label="__('templates.accent_color')"
                                 type="color"
                                 value="#E0BE75"
                                 required
                             />
                             <x-input
                                 name="textColor"
-                                label="Text Color"
+                                :label="__('templates.text_color')"
                                 type="color"
                                 value="#616B5E"
                                 required
                             />
                             <x-input
                                 name="backgroundColor"
-                                label="Background Color"
+                                :label="__('templates.background_color')"
                                 type="color"
                                 value="#F7F6F1"
                                 required
@@ -86,7 +86,7 @@
                                 <label
                                     for="headingFont"
                                     class="text-primary block text-sm font-medium"
-                                    >Heading font</label
+                                    >{{ __('templates.heading_font') }}</label
                                 >
                                 <select name="headingFont" id="headingFont" class="input" required>
                                     @foreach ([
@@ -104,7 +104,7 @@
                             </div>
                             <div class="space-y-1">
                                 <label for="bodyFont" class="text-primary block text-sm font-medium"
-                                    >Body font</label
+                                    >{{ __('templates.body_font') }}</label
                                 >
                                 <select name="bodyFont" id="bodyFont" class="input" required>
                                     @foreach ([
@@ -124,28 +124,28 @@
                     </div>
 
                     <div class="border-default border-t pt-6">
-                        <h2 class="text-primary mb-1 text-lg font-semibold">Sections</h2>
-                        <p class="text-secondary mb-4 text-sm">Add, remove, and reorder the blocks that make up the template.</p>
+                        <h2 class="text-primary mb-1 text-lg font-semibold">{{ __('templates.sections') }}</h2>
+                        <p class="text-secondary mb-4 text-sm">{{ __('templates.sections_help') }}</p>
                         <div id="sections" class="space-y-4"></div>
                         <button type="button" onclick="addSection()" class="btn-secondary mt-4">
-                            Add Section
+                            {{ __('templates.add_section') }}
                         </button>
                     </div>
 
                     <div class="border-default flex items-center gap-3 border-t pt-4">
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                            Save Draft
+                            {{ __('templates.save') }}
                         </button>
-                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">Cancel</a>
+                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">{{ __('templates.cancel') }}</a>
                     </div>
                 </form>
             </div>
             <aside class="lg:sticky lg:top-6">
                 <div class="mb-2 flex items-center justify-between">
                     <h2 class="text-secondary text-sm font-semibold tracking-wide uppercase">
-                        Live review
+                        {{ __('templates.live_review') }}
                     </h2>
-                    <span class="text-secondary text-xs">Draft configuration</span>
+                    <span class="text-secondary text-xs">{{ __('templates.draft_config') }}</span>
                 </div>
                 <div id="templatePreview" class="card overflow-hidden p-0">
                     <div
@@ -157,9 +157,9 @@
                             font-family: 'Instrument Sans', sans-serif;
                         "
                     >
-                        <p id="previewEyebrow" class="text-xs tracking-widest uppercase opacity-70">Template preview</p>
-                        <h2 id="previewTitle" class="mt-2 text-3xl font-semibold">Modern Blog</h2>
-                        <p id="previewDescription" class="mt-2 text-sm opacity-80">Your template description will appear here.</p>
+                        <p id="previewEyebrow" class="text-xs tracking-widest uppercase opacity-70">{{ __('templates.preview') }}</p>
+                        <h2 id="previewTitle" class="mt-2 text-3xl font-semibold">{{ __('templates.old_modern') }}</h2>
+                        <p id="previewDescription" class="mt-2 text-sm opacity-80">{{ __('templates.description_preview') }}</p>
                     </div>
                     <div
                         id="previewSections"
@@ -175,14 +175,14 @@
         <script>
             let sectionCount = 0;
             const availableSections = [
-                ['hero', 'Hero'],
-                ['recent_posts', 'Recent posts'],
-                ['featured_post', 'Featured post'],
-                ['categories', 'Categories'],
-                ['about', 'About'],
-                ['newsletter', 'Newsletter'],
-                ['image', 'Image'],
-                ['footer', 'Footer'],
+                ['hero', @js(__('templates.old_hero'))],
+                ['recent_posts', @js(__('templates.old_recent_posts'))],
+                ['featured_post', @js(__('templates.old_featured_post'))],
+                ['categories', @js(__('templates.old_categories'))],
+                ['about', @js(__('templates.old_about'))],
+                ['newsletter', @js(__('templates.old_newsletter'))],
+                ['image', @js(__('templates.old_image'))],
+                ['footer', @js(__('templates.old_footer'))],
             ];
 
             const slugify = (value) =>
@@ -226,24 +226,24 @@
                 div.innerHTML = `
                     <div class="flex items-start gap-4">
                         <div class="flex-1 space-y-3">
-                            <input type="text" name="sections[${id}][key]" placeholder="Section key (e.g. hero-1)" class="input" required />
+                            <input type="text" name="sections[${id}][key]" placeholder="${@js(__('templates.section_key_hint'))}" class="input" required />
                             <select name="sections[${id}][section]" class="input" required>
-                                <option value="">-- Choose section type --</option>
+                                <option value="">${@js(__('templates.choose_section'))}</option>
                                 ${availableSections.map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
                             </select>
                             <div class="hidden space-y-3 rounded-md border border-default p-3" data-image-fields>
                                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-template-image class="input" />
                                 <input type="hidden" name="sections[${id}][props][mediaId]" data-template-media-id />
-                                <input type="text" name="sections[${id}][props][alt]" placeholder="Image description" class="input" />
+                                <input type="text" name="sections[${id}][props][alt]" placeholder="${@js(__('templates.image_description'))}" class="input" />
                                 <select name="sections[${id}][props][position]" class="input">
-                                    <option value="full">Full width</option>
-                                    <option value="left">Align left</option>
-                                    <option value="right">Align right</option>
+                                    <option value="full">${@js(__('templates.full_width'))}</option>
+                                    <option value="left">${@js(__('templates.align_left'))}</option>
+                                    <option value="right">${@js(__('templates.align_right'))}</option>
                                 </select>
-                                <p class="text-xs text-secondary" data-upload-status>Choose an image to upload to Cloudinary.</p>
+                                <p class="text-xs text-secondary" data-upload-status>${@js(__('templates.choose_image'))}</p>
                             </div>
                         </div>
-                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">Remove</button>
+                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">${@js(__('templates.remove'))}</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -269,7 +269,7 @@
                 const form = new FormData();
                 form.append('file', file);
                 form.append('scope', 'PLATFORM');
-                status.textContent = 'Uploading image to Cloudinary…';
+                status.textContent = @js(__('templates.uploading_image'));
                 try {
                     const response = await fetch('{{ route('media.store') }}', {
                         method: 'POST',
@@ -280,9 +280,9 @@
                         body: form,
                     });
                     const body = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(body.message || 'Image upload failed.');
+                    if (!response.ok) throw new Error(body.message || @js(__('templates.image_upload_failed')));
                     section.querySelector('[data-template-media-id]').value = body.data.id;
-                    status.textContent = 'Image uploaded to Cloudinary.';
+                    status.textContent = @js(__('templates.image_uploaded'));
                     updatePreview();
                 } catch (error) {
                     status.textContent = error.message;
@@ -294,9 +294,9 @@
                 const form = document.getElementById('templateForm');
                 const data = new FormData(form);
                 const preview = document.getElementById('templatePreview');
-                document.getElementById('previewTitle').textContent = data.get('name') || 'Untitled template';
+                document.getElementById('previewTitle').textContent = data.get('name') || @js(__('templates.untitled'));
                 document.getElementById('previewDescription').textContent =
-                    data.get('description') || 'Your template description will appear here.';
+                    data.get('description') || @js(__('templates.description_preview'));
                 const header = document.getElementById('previewHeader');
                 header.style.background = data.get('backgroundColor') || '#F7F6F1';
                 header.style.color = data.get('textColor') || '#616B5E';
@@ -306,7 +306,7 @@
                 )
                     .map(
                         (field, index) =>
-                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || 'Section'}</strong><span class="block text-xs opacity-70">${field.value || 'Choose a section type'}</span></div>`,
+                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js(__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js(__('templates.choose_section_type'))}</span></div>`,
                     )
                     .join('');
             }

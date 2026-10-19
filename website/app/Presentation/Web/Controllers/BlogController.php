@@ -10,6 +10,7 @@ use App\Application\Blogs\Exceptions\BlogSlugTaken;
 use App\Application\Blogs\UseCases\CreateBlog\CreateBlogUseCase;
 use App\Application\Blogs\UseCases\DeleteBlog\DeleteBlogUseCase;
 use App\Application\Blogs\UseCases\UpdateBlog\UpdateBlogUseCase;
+use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
 use App\Presentation\Web\Requests\CreateBlogRequest;
@@ -51,15 +52,19 @@ final class BlogController extends Controller
         }
 
         return redirect()
-            ->route('blogs.design.edit', $id)
+            ->route('blogs.show', $id)
             ->with(
                 'status',
                 'Blog created. Choose a template published by an admin to start your design.',
             );
     }
 
-    public function show(int $blog, BlogRepository $blogs, Request $request): View
-    {
+    public function show(
+        int $blog,
+        BlogRepository $blogs,
+        Request $request,
+        TaxonomyRepository $taxonomy,
+    ): View {
         $record = $blogs->find($blog);
 
         // Workspace page: owner only. Public rendering is a separate route.
@@ -67,7 +72,11 @@ final class BlogController extends Controller
             abort(404);
         }
 
-        return view('blogs.show', ['blog' => $record]);
+        return view('blogs.show', [
+            'blog' => $record,
+            'categories' => $taxonomy->categories($blog),
+            'tags' => $taxonomy->tags($blog),
+        ]);
     }
 
     public function edit(int $blog, BlogRepository $blogs, Request $request): View
@@ -93,8 +102,8 @@ final class BlogController extends Controller
                 name: $request->validated('name'),
                 slug: $request->validated('slug') ?: Str::slug($request->validated('name')),
                 description: $request->validated('description'),
-                status: BlogStatus::from($request->validated('status')),
-                visibility: BlogVisibility::from($request->validated('visibility')),
+                status: $request->validated('status') === 'PRIVATE' ? BlogStatus::Published : BlogStatus::from($request->validated('status')),
+                visibility: BlogVisibility::from($request->validated('visibility') ?? 'PUBLIC'),
                 discoverable: (bool) $request->validated('discoverable'),
             );
         } catch (BlogNotFound) {

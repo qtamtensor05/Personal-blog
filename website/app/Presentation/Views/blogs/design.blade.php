@@ -72,14 +72,38 @@
                     @endphp
                     @if($fields !== [])
                         <details id="slot-{{ $section->key }}" class="group scroll-mt-6 rounded-md border border-default bg-surface-secondary">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-semibold text-primary"><span>{{ $sectionTitle }}</span><span class="text-xl text-accent-primary transition group-open:rotate-45">+</span></summary>
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-semibold text-primary"><span>{{ $sectionTitle }}</span><i class="fa-solid fa-chevron-down text-sm text-accent-primary transition group-open:rotate-180" aria-hidden="true"></i></summary>
                             <fieldset class="grid gap-3 border-t border-default p-4">
                                 @foreach($fields as $field)
                                     @php
                                         $value = $values[$field] ?? '';
                                         $inputName = 'slot_content['.$section->key.']['.$field.']';
                                     @endphp
-                                    @if(in_array($field, ['description', 'archiveDescription'], true))
+                                    @if($field === 'slides' && $section->section === 'hero')
+                                        @php($slides = is_array($value) && $value !== [] ? $value : [['eyebrow' => $values['eyebrow'] ?? '', 'title' => $values['title'] ?? '', 'description' => $values['description'] ?? '', 'mediaId' => $values['mediaId'] ?? '', 'ctaLabel' => $values['ctaLabel'] ?? '', 'ctaUrl' => $values['ctaUrl'] ?? '']])
+                                        <div class="space-y-4" data-hero-slides data-slot-key="{{ $section->key }}">
+                                            <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-semibold text-primary">{{ __('template.hero_slides') }}</h3><button type="button" class="btn-secondary" data-add-slide><i class="fa-solid fa-plus mr-2" aria-hidden="true"></i>{{ __('template.add_slide') }}</button></div>
+                                            <div class="space-y-4" data-slide-list>
+                                                @foreach($slides as $slideIndex => $slide)
+                                                    <details class="hero-slide-card rounded-md border border-default" data-slide @if($loop->first) open @endif>
+                                                        <summary class="hero-slide-summary"><span data-slide-title>{{ __('template.slide') }} {{ $loop->iteration }}{{ !empty($slide['title']) ? ' · '.$slide['title'] : '' }}</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+                                                        <div class="p-4">
+                                                            <div class="mb-3 flex justify-end"><button type="button" class="text-sm text-red-500" data-remove-slide aria-label="{{ __('template.remove_slide') }}"><i class="fa-solid fa-trash" aria-hidden="true"></i> {{ __('template.remove_slide') }}</button></div>
+                                                        <div class="grid gap-3 sm:grid-cols-2">
+                                                            <x-input :name="'slide-'.$slideIndex.'-eyebrow'" data-slide-field="eyebrow" :label="__('template.field.eyebrow')" :value="$slide['eyebrow'] ?? ''" />
+                                                            <x-input :name="'slide-'.$slideIndex.'-title'" data-slide-field="title" :label="__('template.field.title')" :value="$slide['title'] ?? ''" required />
+                                                            <div class="sm:col-span-2"><x-textarea :name="'slide-'.$slideIndex.'-description'" data-slide-field="description" :label="__('template.field.description')" rows="3">{{ $slide['description'] ?? '' }}</x-textarea></div>
+                                                            <x-input :name="'slide-'.$slideIndex.'-ctaLabel'" data-slide-field="ctaLabel" :label="__('template.field.cta_label')" :value="$slide['ctaLabel'] ?? ''" />
+                                                            <x-input :name="'slide-'.$slideIndex.'-ctaUrl'" data-slide-field="ctaUrl" :label="__('template.field.cta_url')" :value="$slide['ctaUrl'] ?? ''" />
+                                                        </div>
+                                                        @php($slideAsset = collect($mediaAssets)->firstWhere('id', (int) ($slide['mediaId'] ?? 0)))
+                                                        <div class="mt-3 space-y-2" data-direct-media="single"><label class="block text-sm font-medium text-primary">{{ __('template.media') }}</label><input type="hidden" value="{{ $slide['mediaId'] ?? '' }}" data-slide-field="mediaId" data-media-value><div data-media-preview>@if($slideAsset?->secureUrl)<img src="{{ $slideAsset->secureUrl }}" alt="" class="max-h-48 rounded-md object-cover">@endif</div><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="input" data-media-file><p class="text-xs text-secondary" data-media-status>{{ __('template.upload_replace') }}</p></div>
+                                                        </div>
+                                                    </details>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @elseif(in_array($field, ['description', 'archiveDescription'], true))
                                         <x-textarea :name="$inputName" :label="$fieldLabels[$field] ?? $field" rows="3">{{ $value }}</x-textarea>
                                     @elseif($field === 'mediaId')
                                         @php($selectedAsset = collect($mediaAssets)->firstWhere('id', (int) $value))
@@ -171,6 +195,52 @@
             } catch (error) { status.textContent = error.message; status.classList.add('text-red-500'); }
             input.value = '';
         });
+    });
+
+    document.querySelectorAll('[data-hero-slides]').forEach((editor) => {
+        const list = editor.querySelector('[data-slide-list]');
+        const reindex = () => [...list.querySelectorAll('[data-slide]')].forEach((slide, index) => {
+            const title = slide.querySelector('[data-slide-field="title"]')?.value.trim();
+            slide.querySelector('[data-slide-title]').textContent = `{{ __('template.slide') }} ${index + 1}${title ? ` · ${title}` : ''}`;
+            slide.querySelectorAll('[data-slide-field]').forEach((field) => {
+                field.name = `slot_content[${editor.dataset.slotKey}][slides][${index}][${field.dataset.slideField}]`;
+            });
+        });
+        editor.addEventListener('input', (event) => {
+            if (event.target.matches('[data-slide-field="title"]')) reindex();
+        });
+        editor.addEventListener('click', (event) => {
+            if (event.target.closest('[data-add-slide]')) {
+                if (list.children.length >= 10) return;
+                const clone = list.firstElementChild.cloneNode(true);
+                list.querySelectorAll('[data-slide]').forEach((slide) => { slide.open = false; });
+                clone.open = true;
+                clone.classList.add('hero-slide-enter');
+                clone.querySelectorAll('[data-slide-field]').forEach((field) => { field.value = ''; });
+                clone.querySelector('[data-media-preview]').innerHTML = '';
+                clone.querySelector('[data-media-status]').textContent = '{{ __('template.upload_replace') }}';
+                const mediaRoot = clone.querySelector('[data-direct-media]');
+                mediaRoot.querySelector('[data-media-file]').addEventListener('change', async (uploadEvent) => {
+                    const file = uploadEvent.target.files[0]; uploadEvent.target.value = ''; if (!file) return;
+                    const status = mediaRoot.querySelector('[data-media-status]');
+                    try { const asset = await upload(file, status); mediaRoot.querySelector('[data-media-value]').value = asset.id; mediaRoot.querySelector('[data-media-preview]').innerHTML = `<img src="${asset.url}" alt="" class="max-h-48 rounded-md object-cover">`; status.textContent = uploadedText; }
+                    catch (error) { status.textContent = error.message; status.classList.add('text-red-500'); }
+                });
+                list.append(clone); reindex();
+                window.setTimeout(() => clone.classList.remove('hero-slide-enter'), 350);
+            }
+            if (event.target.closest('[data-remove-slide]')) {
+                const slide = event.target.closest('[data-slide]');
+                if (list.children.length === 1) {
+                    slide.classList.remove('hero-slide-shake');
+                    requestAnimationFrame(() => slide.classList.add('hero-slide-shake'));
+                    return;
+                }
+                slide.classList.add('hero-slide-leave');
+                window.setTimeout(() => { slide.remove(); reindex(); }, 220);
+            }
+        });
+        reindex();
     });
 })();
 </script>

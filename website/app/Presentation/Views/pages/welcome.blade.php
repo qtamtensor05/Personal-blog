@@ -79,15 +79,15 @@
                     style="color: #fff"
                 >
                     <span class="bg-accent-primary h-2 w-2 rounded-full"></span>
-                    Ideas worth sharing
+                    {{ __('home.tagline') }}
                 </span>
 
                 <h1
                     class="mt-6 text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl"
                     style="color: #fff; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5)"
                 >
-                    Discover ideas.
-                    <span class="text-accent-primary block">Share knowledge.</span>
+                    {{ __('home.title') }}
+                    <span class="text-accent-primary block">{{ __('home.title_accent') }}</span>
                 </h1>
 
                 <p
@@ -96,7 +96,7 @@
                         color: rgba(255, 255, 255, 0.9);
                         text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
                     "
-                >Read articles from writers across the platform, find new perspectives, and publish what you have learned.</p>
+                >{{ __('home.description') }}</p>
 
                 <div
                     style="
@@ -108,7 +108,7 @@
                         pointer-events: auto;
                     "
                 >
-                    <x-button :href="route('posts.index')" size="lg"> Explore articles </x-button>
+                    <x-button :href="route('posts.index')" size="lg">{{ __('home.explore') }}</x-button>
 
                     <a
                         href="{{ auth()->check() ? route('blogs.create') : route('register') }}"
@@ -126,7 +126,7 @@
                             backdrop-filter: blur(6px);
                         "
                     >
-                        Start writing
+                        {{ __('home.start_writing') }}
                     </a>
                 </div>
             </div>
@@ -353,9 +353,7 @@
 
             <x-button :href="route('posts.index')" variant="outline">
                 View all articles
-                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17 17 7M7 7h10v10" />
-                </svg>
+                <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
             </x-button>
         </div>
 
@@ -470,16 +468,12 @@
                         @if (auth()->check())
                             <x-button :href="route('blogs.create')" size="lg">
                                 Create a blog
-                                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0-5 5m5-5H6" />
-                                </svg>
+                                <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
                             </x-button>
                         @else
                             <x-button :href="route('register')" size="lg">
                                 Create an account
-                                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0-5 5m5-5H6" />
-                                </svg>
+                                <i class="fa-solid fa-arrow-right ml-2 h-4 w-4" aria-hidden="true"></i>
                             </x-button>
                         @endif
                     </div>

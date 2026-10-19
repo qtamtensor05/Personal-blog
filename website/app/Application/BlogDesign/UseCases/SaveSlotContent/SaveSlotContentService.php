@@ -60,6 +60,14 @@ final readonly class SaveSlotContentService
                     );
                 }
             }
+            foreach ($slotValues['slides'] ?? [] as $slide) {
+                if (! is_array($slide) || empty($slide['mediaId'])) {
+                    continue;
+                }
+                if (! $this->media->isUsableForBlog((int) $slide['mediaId'], $blogId)) {
+                    throw new DomainException('Selected slide media does not belong to this blog or is not ready.');
+                }
+            }
             foreach (
                 array_filter([
                     $slotValues['categoryId'] ?? null,

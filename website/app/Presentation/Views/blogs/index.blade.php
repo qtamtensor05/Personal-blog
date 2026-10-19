@@ -1,23 +1,21 @@
 @extends ('layouts.app')
 
-@section ('title', 'My Blogs')
+@section ('title', __('blog.my_blogs'))
 
 @section ('content')
     <div class="container-custom section-spacing">
         <div class="mb-8">
             <div class="mb-4 flex items-center justify-between">
-                <h1 class="text-hero">My Blogs</h1>
+                <h1 class="text-hero">{{ __('blog.my_blogs') }}</h1>
                 <a
                     href="{{ route('blogs.create') }}"
                     class="btn-primary flex items-center gap-2 rounded-md px-4 py-2"
                 >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Blog
+                    <i class="fa-solid fa-plus h-5 w-5" aria-hidden="true"></i>
+                    {{ __('blog.new_blog') }}
                 </a>
             </div>
-            <p class="text-secondary">Manage your blogs and choose templates to customize.</p>
+            <p class="text-secondary">{{ __('blog.manage_intro') }}</p>
         </div>
 
         @if (session('status'))
@@ -26,11 +24,11 @@
 
         @if (count($blogs) === 0)
             <x-empty-state
-                message="No blogs yet"
+                :message="__('blog.empty_title')"
                 action="{{ route('blogs.create') }}"
-                actionLabel="Create your first blog"
+                :actionLabel="__('blog.empty_action')"
             >
-                Start by creating a blog, then choose a template and customize its design.
+                {{ __('blog.empty_help') }}
             </x-empty-state>
         @else
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -49,7 +47,7 @@
                                 <x-badge
                                     :variant="$blog->status->value === 'PUBLISHED' ? 'primary' : 'default'"
                                 >
-                                    {{ $blog->status->value }}
+                                    {{ __('blog.status_'.$blog->status->value) }}
                                 </x-badge>
                             </div>
                             @if ($blog->description)
@@ -62,13 +60,7 @@
                             @endif
                         </div>
 
-                        <div class="border-default flex items-center justify-between border-t pt-4">
-                            <a
-                                href="{{ route('blogs.edit', $blog->id) }}"
-                                class="text-accent-primary text-sm hover:underline"
-                            >
-                                Edit
-                            </a>
+                        <div class="border-default border-t pt-4">
                             <span class="text-secondary font-mono text-xs">{{ $blog->slug }}</span>
                         </div>
                     </div>

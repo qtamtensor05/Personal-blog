@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Domains — ' . $blog->name)
+@section ('title', __('domains.title') . ' - ' . $blog->name)
 
 @section ('content')
     <div class="container-custom section-spacing max-w-4xl">
@@ -10,8 +10,8 @@
                 class="text-secondary hover:text-accent-primary text-sm"
                 >← {{ $blog->name }}</a
             >
-            <h1 class="text-hero mt-2">Custom Domains</h1>
-            <p class="text-secondary">Serve your blog on your own domain. Prove ownership with a DNS TXT record, then point the domain to this platform (CNAME or A record) and activate it.</p>
+            <h1 class="text-hero mt-2">{{ __('domains.title') }}</h1>
+            <p class="text-secondary">{{ __('domains.intro') }}</p>
         </div>
 
         @if (session('status'))
@@ -32,19 +32,19 @@
                 <div class="min-w-60 flex-1">
                     <x-input
                         name="hostname"
-                        label="Domain"
+                        :label="__('ui.domain')"
                         placeholder="blog.example.com"
                         required
                         maxlength="253"
                     />
                 </div>
-                <button type="submit" class="btn-primary">Add domain</button>
+                <button type="submit" class="btn-primary">{{ __('domains.add') }}</button>
             </form>
         </section>
 
         @if (count($domains) === 0)
-            <x-empty-state message="No custom domains"
-                >Your blog is available at {{ route('public.blog', $blog->slug) }}.</x-empty-state
+            <x-empty-state :message="__('domains.no_domains')"
+                >{{ __('domains.blog_available', ['url' => route('public.blog', $blog->slug)]) }}</x-empty-state
             >
         @else
             <div class="space-y-4">
@@ -59,7 +59,7 @@
                                 >
                                 <x-badge
                                     :variant="$status === 'ACTIVE' ? 'primary' : ($status === 'FAILED' ? 'highlight' : 'default')"
-                                    >{{ $status }}</x-badge
+                                    >{{ __('ui.domain_status_'.$status) }}</x-badge
                                 >
                             </div>
 
@@ -71,7 +71,7 @@
                                     >
                                         @csrf
                                         <button type="submit" class="btn-secondary text-sm">
-                                            Verify DNS
+                                            {{ __('ui.verify_dns') }}
                                         </button>
                                     </form>
                                 @endif
@@ -82,7 +82,7 @@
                                     >
                                         @csrf
                                         <button type="submit" class="btn-primary text-sm">
-                                            Activate
+                                            {{ __('ui.activate') }}
                                         </button>
                                     </form>
                                 @endif
@@ -92,7 +92,7 @@
                                         target="_blank"
                                         rel="noopener"
                                         class="btn-ghost text-sm"
-                                        >Open</a
+                                        >{{ __('domains.open') }}</a
                                     >
                                     <form
                                         method="POST"
@@ -100,7 +100,7 @@
                                     >
                                         @csrf
                                         <button type="submit" class="btn-secondary text-sm">
-                                            Disable
+                                            {{ __('ui.disable') }}
                                         </button>
                                     </form>
                                 @endif
@@ -108,8 +108,8 @@
                                     method="POST"
                                     action="{{ route('blogs.domains.destroy', [$blog->id, $domain->id]) }}"
                                     data-modal-confirm-form
-                                    data-confirm-title="Remove domain"
-                                    data-confirm-message="Remove this domain?"
+                                    data-confirm-title="{{ __('ui.remove_domain') }}"
+                                    data-confirm-message="{{ __('ui.remove_domain_confirm') }}"
                                 >
                                     @csrf
                                     @method ('DELETE')
@@ -117,7 +117,7 @@
                                         type="submit"
                                         class="text-sm text-red-500 hover:underline"
                                     >
-                                        Remove
+                                        {{ __('ui.remove') }}
                                     </button>
                                 </form>
                             </div>
@@ -125,9 +125,9 @@
 
                         @if (in_array($status, ['PENDING', 'FAILED'], true))
                             <div class="bg-surface-secondary space-y-1 rounded-md p-3 text-sm">
-                                <p class="text-primary font-medium">Add this TXT record at your DNS provider:</p>
-                                <p><span class="text-secondary">Name:</span> <code class="font-mono break-all">{{ $dns['name'] }}</code></p>
-                                <p><span class="text-secondary">Value:</span> <code class="font-mono break-all">{{ $dns['value'] }}</code></p>
+                                <p class="text-primary font-medium">{{ __('domains.txt_help') }}</p>
+                                <p><span class="text-secondary">{{ __('domains.name') }}</span> <code class="font-mono break-all">{{ $dns['name'] }}</code></p>
+                                <p><span class="text-secondary">{{ __('domains.value') }}</span> <code class="font-mono break-all">{{ $dns['value'] }}</code></p>
                             </div>
                         @endif
                     </section>

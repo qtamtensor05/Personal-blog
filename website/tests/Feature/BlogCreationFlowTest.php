@@ -23,10 +23,10 @@ it('redirects a newly created blog to the admin template picker', function (): v
 
     $blogId = (int) DB::table('blogs')->where('slug', $slug)->value('id');
     expect($blogId)->toBeGreaterThan(0);
-    $response->assertRedirect(route('blogs.design.edit', $blogId));
+    $response->assertRedirect(route('blogs.show', $blogId));
 
     $this->actingAs($user)
-        ->get(route('blogs.design.edit', $blogId))
+        ->get(route('blogs.show', $blogId))
         ->assertOk()
         ->assertSee('Choose an admin template')
         ->assertSee('Tạp chí tối giản');

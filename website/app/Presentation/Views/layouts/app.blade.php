@@ -53,10 +53,7 @@
                     href="{{ url('/') }}"
                     class="text-primary hover:text-accent-primary flex items-center gap-2 text-lg font-semibold transition-colors"
                 >
-                    <svg class="h-8 w-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" />
-                        <path d="M12 12h8M10 16h12M12 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
+                    <i class="fa-solid fa-book-open h-8 w-8" aria-hidden="true"></i>
                     <span>{{ config('app.name', 'Blog') }}</span>
                 </a>
 
@@ -66,20 +63,20 @@
                         href="{{ url('/') }}"
                         class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->is('/') ? 'text-accent-primary' : '' }}"
                     >
-                        Home
+                        {{ __('ui.home') }}
                     </a>
                     <a
                         href="{{ url('/posts') }}"
                         class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->is('posts*') ? 'text-accent-primary' : '' }}"
                     >
-                        Articles
+                        {{ __('ui.articles') }}
                     </a>
                     @auth
                         <a
                             href="{{ route('blogs.index') }}"
                             class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->routeIs('blogs.*') ? 'text-accent-primary' : '' }}"
                         >
-                            My Blogs
+                            {{ __('ui.my_blogs') }}
                         </a>
                     @endauth
                 </div>
@@ -100,23 +97,21 @@
                             href="{{ route('login') }}"
                             class="btn-ghost hidden rounded-md border px-4 py-2 text-sm sm:inline-flex"
                         >
-                            Sign In
+                            {{ __('ui.sign_in') }}
                         </a>
                         <a
                             href="{{ url('/register') }}"
                             class="btn-primary rounded-md px-4 py-2 text-sm"
                         >
-                            Get Started
+                            {{ __('ui.get_started') }}
                         </a>
                     @else
                         <a
                             href="{{ route('notifications.index') }}"
                             class="btn-ghost relative p-2"
-                            aria-label="Notifications"
+                            aria-label="{{ __('ui.notifications') }}"
                         >
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 01-6 0m6 0H9" />
-                            </svg>
+                            <i class="fa-solid fa-bell h-5 w-5" aria-hidden="true"></i>
                             @if ($notificationUnreadCount > 0)
                                 <span
                                     class="absolute -top-1 -right-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-xs font-semibold text-white"
@@ -154,9 +149,7 @@
                                     </div>
                                 @endif
                                 <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <i class="fa-solid fa-chevron-down h-4 w-4" aria-hidden="true"></i>
                             </button>
 
                             <!-- Dropdown -->
@@ -175,27 +168,27 @@
                                     href="{{ route('profile.edit') }}"
                                     class="hover:bg-surface-secondary block px-4 py-2 text-sm"
                                 >
-                                    Profile
+                                    {{ __('ui.profile') }}
                                 </a>
                                 @if ($canAccessAdminConsole)
                                     <a
                                         href="{{ route('admin.dashboard') }}"
                                         class="text-accent-primary hover:bg-surface-secondary block px-4 py-2 text-sm font-medium"
                                     >
-                                        Admin Console
+                                        {{ __('ui.admin_console') }}
                                     </a>
                                 @endif
                                 <a
                                     href="{{ route('blogs.index') }}"
                                     class="hover:bg-surface-secondary block px-4 py-2 text-sm"
                                 >
-                                    My Blogs
+                                    {{ __('ui.my_blogs') }}
                                 </a>
                                 <a
                                     href="{{ route('blogs.create') }}"
                                     class="text-accent-primary hover:bg-surface-secondary block px-4 py-2 text-sm font-medium"
                                 >
-                                    Create Blog
+                                    {{ __('ui.create_blog') }}
                                 </a>
                                 <hr class="border-default my-1" />
                                 <form method="POST" action="{{ route('logout') }}">
@@ -204,7 +197,7 @@
                                         type="submit"
                                         class="hover:bg-surface-secondary w-full px-4 py-2 text-left text-sm"
                                     >
-                                        Sign Out
+                                        {{ __('ui.sign_out') }}
                                     </button>
                                 </form>
                             </div>
@@ -216,13 +209,11 @@
                         type="button"
                         @click="mobileMenuOpen = !mobileMenuOpen"
                         class="btn-ghost p-2 md:hidden"
-                        aria-label="Toggle menu"
+                        aria-label="{{ __('ui.toggle_menu') }}"
                         :aria-expanded="mobileMenuOpen.toString()"
                         aria-controls="mobile-navigation"
                     >
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
+                        <i class="fa-solid fa-bars h-6 w-6" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -250,40 +241,40 @@
                         href="{{ url('/') }}"
                         class="hover:text-accent-primary text-sm font-medium transition-colors"
                     >
-                        Home
+                        {{ __('ui.home') }}
                     </a>
                     <a
                         href="{{ url('/posts') }}"
                         class="hover:text-accent-primary text-sm font-medium transition-colors"
                     >
-                        Articles
+                        {{ __('ui.articles') }}
                     </a>
                     @auth
                         <a
                             href="{{ route('blogs.index') }}"
                             class="hover:text-accent-primary text-sm font-medium transition-colors"
                         >
-                            My Blogs
+                            {{ __('ui.my_blogs') }}
                         </a>
                         <a
                             href="{{ route('blogs.create') }}"
                             class="text-accent-primary hover:text-accent-primary text-sm font-medium transition-colors"
                         >
-                            Create Blog
+                            {{ __('ui.create_blog') }}
                         </a>
                         <div class="border-default border-t pt-3"></div>
                         <a
                             href="{{ route('profile.edit') }}"
                             class="hover:text-accent-primary text-sm font-medium transition-colors"
                         >
-                            Profile
+                            {{ __('ui.profile') }}
                         </a>
                         @if ($canAccessAdminConsole)
                             <a
                                 href="{{ route('admin.dashboard') }}"
                                 class="text-accent-primary hover:text-accent-primary text-sm font-medium transition-colors"
                             >
-                                Admin Console
+                                {{ __('ui.admin_console') }}
                             </a>
                         @endif
                         <form method="POST" action="{{ route('logout') }}">
@@ -292,7 +283,7 @@
                                 type="submit"
                                 class="hover:text-accent-primary text-left text-sm font-medium transition-colors"
                             >
-                                Sign Out
+                                {{ __('ui.sign_out') }}
                             </button>
                         </form>
                     @endauth
@@ -322,25 +313,25 @@
                             )
                         }}
                     </h3>
-                    <p class="text-secondary mb-4 text-sm leading-relaxed">A space for sharing thoughts, ideas, and stories. Built with Laravel and passion for clean code.</p>
+                    <p class="text-secondary mb-4 text-sm leading-relaxed">{{ __('ui.footer_description') }}</p>
                 </div>
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-primary mb-3 text-sm font-semibold">Quick Links</h4>
+                    <h4 class="text-primary mb-3 text-sm font-semibold">{{ __('ui.quick_links') }}</h4>
                     <ul class="space-y-2 text-sm">
                         <li>
                             <a
                                 href="{{ url('/') }}"
                                 class="hover:text-accent-primary transition-colors"
-                                >Home</a
+                                >{{ __('ui.home') }}</a
                             >
                         </li>
                         <li>
                             <a
                                 href="{{ url('/posts') }}"
                                 class="hover:text-accent-primary transition-colors"
-                                >Articles</a
+                                >{{ __('ui.articles') }}</a
                             >
                         </li>
                         @auth
@@ -348,14 +339,14 @@
                                 <a
                                     href="{{ route('blogs.index') }}"
                                     class="hover:text-accent-primary transition-colors"
-                                    >My Blogs</a
+                                    >{{ __('ui.my_blogs') }}</a
                                 >
                             </li>
                             <li>
                                 <a
                                     href="{{ route('blogs.create') }}"
                                     class="hover:text-accent-primary transition-colors"
-                                    >Create Blog</a
+                                    >{{ __('ui.create_blog') }}</a
                                 >
                             </li>
                         @endauth
@@ -364,21 +355,21 @@
 
                 <!-- Account -->
                 <div>
-                    <h4 class="text-primary mb-3 text-sm font-semibold">Account</h4>
+                    <h4 class="text-primary mb-3 text-sm font-semibold">{{ __('ui.account') }}</h4>
                     <ul class="space-y-2 text-sm">
                         @guest
                             <li>
                                 <a
                                     href="{{ route('login') }}"
                                     class="hover:text-accent-primary transition-colors"
-                                    >Sign In</a
+                                    >{{ __('ui.sign_in') }}</a
                                 >
                             </li>
                             <li>
                                 <a
                                     href="{{ url('/register') }}"
                                     class="hover:text-accent-primary transition-colors"
-                                    >Register</a
+                                    >{{ __('ui.register') }}</a
                                 >
                             </li>
                         @else
@@ -386,7 +377,7 @@
                                 <a
                                     href="{{ route('profile.edit') }}"
                                     class="hover:text-accent-primary transition-colors"
-                                    >Profile</a
+                                    >{{ __('ui.profile') }}</a
                                 >
                             </li>
                             <li>
@@ -396,7 +387,7 @@
                                         type="submit"
                                         class="hover:text-accent-primary transition-colors"
                                     >
-                                        Sign Out
+                                        {{ __('ui.sign_out') }}
                                     </button>
                                 </form>
                             </li>
@@ -409,16 +400,16 @@
             <div
                 class="border-default flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row"
             >
-                <p class="text-secondary text-sm">&copy; {{ date('Y') }} {{ config('app.name', 'Personal Blog') }}. All rights reserved.</p>
+                <p class="text-secondary text-sm">&copy; {{ date('Y') }} {{ config('app.name', 'Personal Blog') }}. {{ __('ui.all_rights_reserved') }}</p>
                 <p class="text-secondary text-sm">
-                    Built with
+                    {{ __('ui.built_with') }}
                     <span class="text-accent-primary">Laravel {{ app()->version() }}</span>
                 </p>
             </div>
         </div>
     </footer>
 
-    <x-modal id="appErrorModal" title="Something went wrong" />
+    <x-modal id="appErrorModal" :title="__('ui.something_wrong')" />
 
     <!-- Alpine.js for mobile menu -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>

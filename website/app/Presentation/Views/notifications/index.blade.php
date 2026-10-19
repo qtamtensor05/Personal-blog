@@ -1,19 +1,19 @@
 @extends ('layouts.app')
 
-@section ('title', 'Notifications')
+@section ('title', __('notifications.title'))
 
 @section ('content')
     <div class="container-custom section-spacing max-w-4xl">
         <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-hero mb-2">Notifications</h1>
-                <p class="text-secondary">Role, account restriction and moderation updates.</p>
+                <h1 class="text-hero mb-2">{{ __('notifications.title') }}</h1>
+                <p class="text-secondary">{{ __('notifications.intro') }}</p>
             </div>
             @if ($notificationUnreadCount > 0)
                 <form method="POST" action="{{ route('notifications.read-all') }}">
                     @csrf
                     @method ('PATCH')
-                    <button type="submit" class="btn-secondary">Mark all as read</button>
+                    <button type="submit" class="btn-secondary">{{ __('notifications.mark_all') }}</button>
                 </form>
             @endif
         </div>
@@ -23,7 +23,7 @@
         @endif
 
         @if (count($notifications->items) === 0)
-            <x-empty-state message="No notifications yet" />
+            <x-empty-state :message="__('notifications.empty')" />
         @else
             <div class="space-y-3">
                 @foreach ($notifications->items as $notification)
@@ -35,7 +35,7 @@
                                 <h2 class="text-primary font-semibold">
                                     {{
                                         $notification->data['title'] ??
-                                            'Notification'
+                                            __('notifications.fallback_title')
                                     }}
                                 </h2>
                                 <p class="text-secondary mt-1 text-sm">{{
@@ -57,7 +57,7 @@
                                         @csrf
                                         @method ('PATCH')
                                         <button type="submit" class="btn-ghost text-sm">
-                                            Mark read
+                                            {{ __('notifications.mark_read') }}
                                         </button>
                                     </form>
                                 @endif
@@ -65,13 +65,13 @@
                                     method="POST"
                                     action="{{ route('notifications.destroy', $notification->id) }}"
                                     data-modal-confirm-form
-                                    data-confirm-title="Delete notification"
-                                    data-confirm-message="Delete this notification?"
+                                    data-confirm-title="{{ __('notifications.delete_title') }}"
+                                    data-confirm-message="{{ __('notifications.delete_confirm') }}"
                                 >
                                     @csrf
                                     @method ('DELETE')
                                     <button type="submit" class="btn-ghost text-sm text-red-500">
-                                        Delete
+                                        {{ __('notifications.delete') }}
                                     </button>
                                 </form>
                             </div>
@@ -83,25 +83,25 @@
             @if ($notifications->lastPage() > 1)
                 <nav
                     class="mt-6 flex items-center justify-between text-sm"
-                    aria-label="Notification pagination"
+                    aria-label="{{ __('notifications.pagination') }}"
                 >
                     @if ($notifications->page > 1)
                         <a
                             class="btn-ghost"
                             href="{{ route('notifications.index', ['page' => $notifications->page - 1]) }}"
-                            >Previous</a
+                            >{{ __('notifications.previous') }}</a
                         >
                     @else
                         <span></span>
                     @endif
                     <span class="text-secondary"
-                        >Page {{ $notifications->page }} of {{ $notifications->lastPage() }}</span
+                        >{{ __('notifications.page_of', ['page' => $notifications->page, 'total' => $notifications->lastPage()]) }}</span
                     >
                     @if ($notifications->page < $notifications->lastPage())
                         <a
                             class="btn-ghost"
                             href="{{ route('notifications.index', ['page' => $notifications->page + 1]) }}"
-                            >Next</a
+                            >{{ __('notifications.next') }}</a
                         >
                     @else
                         <span></span>

@@ -26,6 +26,9 @@ interface PostRepository
     /** @return list<PostRecord> */
     public function publishedForBlog(int $blogId, int $limit): array;
 
+    /** @return list<PostRecord> */
+    public function publicSummariesForBlog(int $blogId, int $limit): array;
+
     public function countForBlog(int $blogId): int;
 
     public function slugExists(int $blogId, string $slug, ?int $exceptId = null): bool;
@@ -65,4 +68,11 @@ interface PostRepository
     public function setStatus(int $blogId, int $id, PostStatus $status, int $updatedBy): void;
 
     public function softDelete(int $blogId, int $id, int $updatedBy): void;
+
+    public function restore(int $blogId, int $id): void;
+
+    public function permanentlyDelete(int $blogId, int $id): void;
+
+    /** @return list<PostRecord> */
+    public function deletedForBlog(int $blogId): array;
 }

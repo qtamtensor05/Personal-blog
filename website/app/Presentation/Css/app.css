@@ -11,8 +11,8 @@ phantom-ui {
 @theme {
     /* Typography */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+        'Noto Sans', 'Arial', 'Tahoma', 'Segoe UI', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* Brand Palette - Personal Blog */
     --color-accent-primary: #90b250; /* Fresh green - CTA, active states */
@@ -336,6 +336,39 @@ a:hover {
 .post-content > * + * {
     margin-top: 1em;
 }
+
+[data-editor] .ProseMirror {
+    min-height: 24rem;
+    padding: 1rem;
+    outline: none;
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.75;
+}
+
+[data-editor] {
+    overflow: hidden;
+    min-height: 26rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.post-editor-fallback {
+    display: block;
+    width: 100%;
+    min-height: 24rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font: inherit;
+    line-height: 1.75;
+    resize: vertical;
+}
+.post-editor-fallback[hidden] { display: none; }
 
 .post-content h2 {
     font-size: 1.5rem;

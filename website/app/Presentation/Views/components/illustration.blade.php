@@ -27,9 +27,7 @@
             <div
                 class="border-accent-primary/30 bg-accent-primary/5 flex h-full w-full flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed p-4 text-center"
             >
-                <svg class="text-accent-primary/60 h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m3 16 5-5 4 4 3-3 6 6M4 4h16v16H4z" />
-                </svg>
+                <i class="fa-solid fa-sparkles text-accent-primary/60 h-8 w-8" aria-hidden="true"></i>
                 <p class="text-secondary text-xs font-medium">Add an SVG here</p>
                 <code class="text-secondary/80 text-[11px] break-all">public/{{ $path }}</code>
             </div>

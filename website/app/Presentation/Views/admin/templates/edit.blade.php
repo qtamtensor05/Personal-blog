@@ -1,12 +1,12 @@
 @extends ('layouts.app')
 
-@section ('title', 'Edit Template — Admin Console')
+@section ('title', __('templates.edit') . ' - ' . __('admin.console'))
 
 @section ('content')
     <div class="container-custom section-spacing max-w-5xl">
         <div class="mb-8 px-4">
-            <h1 class="text-hero mb-2">Edit Template: {{ $template->name }}</h1>
-            <p class="text-secondary">Modify the draft. Changes won't affect published version until you publish again.</p>
+            <h1 class="text-hero mb-2">{{ __('templates.edit') }}: {{ $template->name }}</h1>
+            <p class="text-secondary">{{ __('templates.edit_help') }}</p>
         </div>
 
         @include ('admin.templates._editor')
@@ -21,29 +21,29 @@
                     @csrf
                     @method ('PUT')
 
-                    <x-input name="name" label="Template Name" :value="$template->name" required />
+                    <x-input name="name" :label="__('templates.name_label')" :value="$template->name" required />
 
                     <x-input
                         name="slug"
-                        label="Slug"
+                        :label="__('templates.slug')"
                         :value="$template->slug"
                         required
-                        hint="Generated from the name. Edit it when you need a different URL."
+                        :hint="__('templates.slug_hint')"
                     />
 
                     <x-textarea
                         name="description"
-                        label="Description"
+                        :label="__('templates.description_label')"
                         rows="3"
                         >{{ $template->description }}</x-textarea
                     >
 
                     <x-input
                         name="demo_url"
-                        label="Demo URL"
+                        :label="__('templates.old_demo_url')"
                         :value="$template->demoUrl"
                         readonly
-                        hint="Generated automatically from the slug."
+                        :hint="__('templates.old_demo_hint')"
                     />
 
                     @php
@@ -52,39 +52,39 @@
 
                     @if ($tokens !== null)
                         <div class="border-default border-t pt-6">
-                            <h2 class="text-primary mb-4 text-lg font-semibold">Design Tokens</h2>
+                            <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('templates.design_tokens') }}</h2>
                             <div class="grid gap-4 md:grid-cols-2">
                                 <x-input
                                     name="primaryColor"
-                                    label="Primary"
+                                    :label="__('templates.primary_color')"
                                     type="color"
                                     :value="$tokens->primaryColor"
                                     required
                                 />
                                 <x-input
                                     name="secondaryColor"
-                                    label="Secondary"
+                                    :label="__('templates.secondary_color')"
                                     type="color"
                                     :value="$tokens->secondaryColor"
                                     required
                                 />
                                 <x-input
                                     name="accentColor"
-                                    label="Accent"
+                                    :label="__('templates.accent_color')"
                                     type="color"
                                     :value="$tokens->accentColor"
                                     required
                                 />
                                 <x-input
                                     name="textColor"
-                                    label="Text"
+                                    :label="__('templates.text_color')"
                                     type="color"
                                     :value="$tokens->textColor"
                                     required
                                 />
                                 <x-input
                                     name="backgroundColor"
-                                    label="Background"
+                                    :label="__('templates.background_color')"
                                     type="color"
                                     :value="$tokens->backgroundColor"
                                     required
@@ -93,7 +93,7 @@
                                     <label
                                         for="headingFont"
                                         class="text-primary block text-sm font-medium"
-                                        >Heading font</label
+                                        >{{ __('templates.heading_font') }}</label
                                     >
                                     <select
                                         name="headingFont"
@@ -123,7 +123,7 @@
                                     <label
                                         for="bodyFont"
                                         class="text-primary block text-sm font-medium"
-                                        >Body font</label
+                                        >{{ __('templates.body_font') }}</label
                                     >
                                     <select name="bodyFont" id="bodyFont" class="input" required>
                                         @foreach ([
@@ -210,14 +210,14 @@
                                                     type="text"
                                                     name="section_image_alts[]"
                                                     value="{{ $s->props['alt'] ?? '' }}"
-                                                    placeholder="Image description"
+                                                    placeholder="{{ __('templates.image_description') }}"
                                                     class="input"
                                                 />
                                                 <select
                                                     name="section_image_positions[]"
                                                     class="input"
                                                 >
-                                                    @foreach (['full' => 'Full width', 'left' => 'Align left', 'right' => 'Align right']
+                                                    @foreach (['full' => __('templates.full_width'), 'left' => __('templates.align_left'), 'right' => __('templates.align_right')]
                                                         as $position => $label)
                                                         <option
                                                             value="{{ $position }}"
@@ -229,8 +229,8 @@
                                                 </select>
                                                 <p class="text-secondary text-xs" data-upload-status>{{
                                                     isset($s->props['mediaId'])
-                                                        ? 'Cloudinary image selected.'
-                                                        : 'Choose an image to upload to Cloudinary.'
+                                                        ? __('templates.image_uploaded')
+                                                        : __('templates.choose_image')
                                                 }}</p>
                                             </div>
                                         </div>
@@ -239,29 +239,29 @@
                                             onclick="this.closest('.card').remove()"
                                             class="text-sm text-red-500 hover:text-red-600"
                                         >
-                                            Remove
+                                            {{ __('templates.remove') }}
                                         </button>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                         <button type="button" onclick="addSection()" class="btn-secondary mt-4">
-                            Add Section
+                            {{ __('templates.add_section') }}
                         </button>
                     </div>
 
                     <div class="border-default flex items-center gap-3 border-t pt-4">
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                            Save Changes
+                            {{ __('templates.save') }}
                         </button>
-                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">Cancel</a>
+                        <a href="{{ route('admin.templates.index') }}" class="btn-ghost">{{ __('templates.cancel') }}</a>
                     </div>
                 </form>
             </div>
             <aside class="lg:sticky lg:top-6">
                 <div class="mb-2 flex items-center justify-between">
                     <h2 class="text-secondary text-sm font-semibold tracking-wide uppercase">
-                        Live review
+                        {{ __('templates.live_review') }}
                     </h2>
                     <span class="text-secondary text-xs">Draft configuration</span>
                 </div>
@@ -349,7 +349,7 @@
                             <div class="hidden space-y-3 rounded-md border border-default p-3" data-image-fields>
                                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-template-image class="input" />
                                 <input type="hidden" name="section_image_media_ids[]" />
-                                <input type="text" name="section_image_alts[]" placeholder="Image description" class="input" />
+                                <input type="text" name="section_image_alts[]" placeholder="{{ __('templates.image_description') }}" class="input" />
                                 <select name="section_image_positions[]" class="input">
                                     <option value="full">Full width</option>
                                     <option value="left">Align left</option>
@@ -396,7 +396,7 @@
                 const form = new FormData();
                 form.append('file', file);
                 form.append('scope', 'PLATFORM');
-                status.textContent = 'Uploading image to Cloudinary…';
+                status.textContent = @js(__('templates.uploading_image'));
                 try {
                     const response = await fetch('{{ route('media.store') }}', {
                         method: 'POST',
@@ -431,7 +431,7 @@
                 )
                     .map(
                         (field, index) =>
-                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || 'Section'}</strong><span class="block text-xs opacity-70">${field.value || 'Choose a section type'}</span></div>`,
+                            `<div class="rounded-md border border-default px-3 py-3 text-sm" style="border-left:4px solid ${data.get('accentColor') || '#E0BE75'}"><strong>${index + 1}. ${field.options[field.selectedIndex]?.text || @js(__('templates.untitled_section'))}</strong><span class="block text-xs opacity-70">${field.value || @js(__('templates.choose_section_type'))}</span></div>`,
                     )
                     .join('');
             }

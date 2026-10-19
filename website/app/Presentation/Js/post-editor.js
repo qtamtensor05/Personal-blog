@@ -54,6 +54,7 @@ function initPostEditor(root) {
             },
         },
     });
+    root.querySelector('[data-editor-fallback]').hidden = true;
 
     let timer = null;
     let dirty = false;

@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Categories & Tags — ' . $blog->name)
+@section ('title', __('taxonomy.title') . ' - ' . $blog->name)
 
 @section ('content')
     <div class="container-custom section-spacing max-w-5xl">
@@ -10,8 +10,8 @@
                 class="text-secondary hover:text-accent-primary text-sm"
                 >← {{ $blog->name }}</a
             >
-            <h1 class="text-hero mt-2">Categories &amp; Tags</h1>
-            <p class="text-secondary">Organize posts. Deleting a category or tag removes it from posts, not the posts themselves.</p>
+            <h1 class="text-hero mt-2">{{ __('taxonomy.title') }}</h1>
+            <p class="text-secondary">{{ __('taxonomy.help') }}</p>
         </div>
 
         @if (session('status'))
@@ -23,9 +23,9 @@
         @endif
 
         <div class="grid gap-8 lg:grid-cols-2">
-            {{-- Categories --}}
+            {{-- {{ __('taxonomy.categories') }} --}}
             <section class="card space-y-5">
-                <h2 class="text-primary text-lg font-semibold">Categories</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('taxonomy.categories') }}</h2>
 
                 <form
                     method="POST"
@@ -34,33 +34,33 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name" label="Name" required data-slug-source />
+                        <x-input name="name"  :label="__('taxonomy.name')" required data-slug-source />
                         <x-input
                             name="slug"
-                            label="Slug"
+                             :label="__('taxonomy.slug')"
                             required
-                            hint="e.g. travel-notes"
+                             :hint="__('taxonomy.slug_hint')"
                             data-slug-target
                         />
                     </div>
                     <div class="space-y-1">
                         <label for="parent_id" class="text-primary block text-sm font-medium"
-                            >Parent</label
+                            >{{ __('taxonomy.parent') }}</label
                         >
                         <select name="parent_id" id="parent_id" class="input">
-                            <option value="">None</option>
+                            <option value="">{{ __('taxonomy.none') }}</option>
                             @foreach ($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
-                        Add category
+                        {{ __('taxonomy.add_category') }}
                     </button>
                 </form>
 
                 @if (count($categories) === 0)
-                    <p class="text-secondary text-sm">No categories yet.</p>
+                    <p class="text-secondary text-sm">{{ __('taxonomy.no_categories') }}</p>
                 @else
                     <ul class="divide-default border-default divide-y border-t">
                         @foreach ($categories as $category)
@@ -75,15 +75,15 @@
                                         >{{ $category->slug }}</span
                                     >
                                     @if (!$category->isActive)
-                                        <x-badge class="ml-1">inactive</x-badge>
+                                        <x-badge class="ml-1">{{ __('taxonomy.inactive') }}</x-badge>
                                     @endif
                                 </div>
                                 <form
                                     method="POST"
                                     action="{{ route('blogs.categories.destroy', [$blog->id, $category->id]) }}"
                                     data-modal-confirm-form
-                                    data-confirm-title="Delete category"
-                                    data-confirm-message="Delete this category?"
+                                    data-confirm-title="{{ __('taxonomy.delete_category') }}"
+                                    data-confirm-message="{{ __('taxonomy.confirm_delete_category') }}"
                                 >
                                     @csrf
                                     @method ('DELETE')
@@ -91,7 +91,7 @@
                                         type="submit"
                                         class="text-sm text-red-500 hover:underline"
                                     >
-                                        Delete
+                                        {{ __('ui.remove') }}
                                     </button>
                                 </form>
                             </li>
@@ -100,9 +100,9 @@
                 @endif
             </section>
 
-            {{-- Tags --}}
+            {{-- {{ __('taxonomy.tags') }} --}}
             <section class="card space-y-5">
-                <h2 class="text-primary text-lg font-semibold">Tags</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('taxonomy.tags') }}</h2>
 
                 <form
                     method="POST"
@@ -111,16 +111,16 @@
                 >
                     @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <x-input name="name" label="Name" required data-slug-source />
-                        <x-input name="slug" label="Slug" required data-slug-target />
+                        <x-input name="name"  :label="__('taxonomy.name')" required data-slug-source />
+                        <x-input name="slug"  :label="__('taxonomy.slug')" required data-slug-target />
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
-                        Add tag
+                        {{ __('taxonomy.add_tag') }}
                     </button>
                 </form>
 
                 @if (count($tags) === 0)
-                    <p class="text-secondary text-sm">No tags yet.</p>
+                    <p class="text-secondary text-sm">{{ __('taxonomy.no_tags') }}</p>
                 @else
                     <div class="border-default flex flex-wrap gap-2 border-t pt-4">
                         @foreach ($tags as $tag)
@@ -128,8 +128,8 @@
                                 method="POST"
                                 action="{{ route('blogs.tags.destroy', [$blog->id, $tag->id]) }}"
                                 data-modal-confirm-form
-                                data-confirm-title="Delete tag"
-                                data-confirm-message="Delete tag {{ $tag->name }}?"
+                                data-confirm-title="{{ __('taxonomy.delete_tag') }}"
+                                data-confirm-message="{{ __('taxonomy.confirm_delete_tag') }}"
                                 class="inline-flex"
                             >
                                 @csrf
@@ -139,7 +139,7 @@
                                     <button
                                         type="submit"
                                         class="text-red-500"
-                                        aria-label="Delete tag {{ $tag->name }}"
+                                        aria-label="{{ __('taxonomy.delete_tag') }}"
                                     >
                                         ×
                                     </button>

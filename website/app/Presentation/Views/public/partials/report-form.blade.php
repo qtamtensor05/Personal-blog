@@ -3,7 +3,7 @@
     @if (auth()->id() !== $blog->ownerUserId)
         <details class="text-sm opacity-80">
             <summary class="cursor-pointer">
-                Report {{ isset($postSlug) ? 'this post' : 'this blog' }}
+                {{ __('public.report_content', ['content' => isset($postSlug) ? __('public.this_post') : __('public.this_blog')]) }}
             </summary>
 
             @if (session('report_status'))
@@ -22,7 +22,7 @@
                 @isset ($postSlug)
                     <input type="hidden" name="post" value="{{ $postSlug }}" />
                 @endisset
-                <label for="report-reason" class="sr-only">Reason</label>
+                <label for="report-reason" class="sr-only">{{ __('public.report_reason') }}</label>
                 <textarea
                     id="report-reason"
                     name="reason"
@@ -31,9 +31,9 @@
                     maxlength="2000"
                     required
                     class="textarea min-h-0"
-                    placeholder="What is wrong with this content?"
+                    placeholder="{{ __('public.report_placeholder') }}"
                 ></textarea>
-                <button type="submit" class="btn-secondary text-sm">Send report</button>
+                <button type="submit" class="btn-secondary text-sm">{{ __('public.send_report') }}</button>
             </form>
         </details>
     @endif

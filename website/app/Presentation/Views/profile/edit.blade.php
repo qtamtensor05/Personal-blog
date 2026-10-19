@@ -1,20 +1,20 @@
 @extends ('layouts.app')
 
-@section ('title', 'Profile')
+@section ('title', __('profile.title'))
 
 @section ('content')
     <div class="container-custom section-spacing max-w-4xl">
         <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h1 class="text-hero mb-2">Your profile</h1>
-                <p class="text-secondary">Manage your display name, profile image and password.</p>
+                <h1 class="text-hero mb-2">{{ __('profile.your_profile') }}</h1>
+                <p class="text-secondary">{{ __('profile.manage_help') }}</p>
             </div>
             <button
                 type="submit"
                 form="profile-form"
                 class="btn-primary shrink-0 rounded-md px-4 py-2"
             >
-                Save changes
+                {{ __('profile.save') }}
             </button>
         </div>
 
@@ -33,7 +33,7 @@
 
             <div class="grid gap-6 lg:grid-cols-2">
                 <section class="card h-fit">
-                    <h2 class="text-primary mb-4 text-lg font-semibold">Profile information</h2>
+                    <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('profile.information') }}</h2>
                     <div class="mb-6 flex items-center gap-4">
                         @if ($profile->avatarUrl)
                             <img
@@ -61,7 +61,7 @@
                     <div class="space-y-4">
                         <x-input
                             name="name"
-                            label="Display name"
+                            :label="__('profile.display_name')"
                             :value="old('name', $profile->name)"
                             required
                             maxlength="160"
@@ -70,21 +70,21 @@
                             <p class="text-sm text-red-600">{{ $message }}</p>
                         @enderror
                         <div>
-                            <label class="text-primary mb-1 block text-sm font-medium">Email</label>
+                            <label class="text-primary mb-1 block text-sm font-medium">{{ __('profile.email') }}</label>
                             <input
                                 class="input bg-surface-secondary"
                                 value="{{ $profile->email }}"
                                 disabled
                             />
-                            <p class="text-secondary mt-1 text-xs">Email changes are not enabled yet.</p>
+                            <p class="text-secondary mt-1 text-xs">{{ __('profile.email_unavailable') }}</p>
                         </div>
                     </div>
                 </section>
 
                 <div class="space-y-6">
                     <section class="card">
-                        <h2 class="text-primary mb-2 text-lg font-semibold">Profile image</h2>
-                        <p class="text-secondary mb-4 text-sm">JPG, PNG, WebP or GIF, up to {{ config('media.max_upload_kb') / 1024 }} MB.</p>
+                        <h2 class="text-primary mb-2 text-lg font-semibold">{{ __('profile.image') }}</h2>
+                        <p class="text-secondary mb-4 text-sm">{{ __('profile.image_formats', ['size' => config('media.max_upload_kb') / 1024]) }}</p>
                         <div class="space-y-4">
                             <input
                                 type="file"
@@ -105,7 +105,7 @@
                                     value="1"
                                     @checked (old('remove_avatar'))
                                 />
-                                Remove current image
+                                {{ __('profile.remove_image') }}
                             </label>
                         @else
                             <input type="hidden" name="remove_avatar" value="0" />
@@ -113,13 +113,13 @@
                     </section>
 
                     <section class="card">
-                        <h2 class="text-primary mb-2 text-lg font-semibold">Change password</h2>
-                        <p class="text-secondary mb-4 text-sm">Leave these fields blank to keep your password. You will be signed out if it changes.</p>
+                        <h2 class="text-primary mb-2 text-lg font-semibold">{{ __('profile.change_password') }}</h2>
+                        <p class="text-secondary mb-4 text-sm">{{ __('profile.password_help') }}</p>
                         <div class="space-y-4">
                             <x-input
                                 type="password"
                                 name="current_password"
-                                label="Current password"
+                                :label="__('profile.current_password')"
                                 autocomplete="current-password"
                             />
                             @error ('current_password')
@@ -128,7 +128,7 @@
                             <x-input
                                 type="password"
                                 name="password"
-                                label="New password"
+                                :label="__('profile.new_password')"
                                 minlength="8"
                                 autocomplete="new-password"
                             />
@@ -138,7 +138,7 @@
                             <x-input
                                 type="password"
                                 name="password_confirmation"
-                                label="Confirm new password"
+                                :label="__('profile.confirm_new_password')"
                                 minlength="8"
                                 autocomplete="new-password"
                             />
