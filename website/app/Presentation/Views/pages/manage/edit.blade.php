@@ -32,8 +32,8 @@
                     <span class="text-secondary text-sm" data-save-status aria-live="polite">
                         {{
                             $page->draft !== null && $page->publishedAt !== null
-                                ? 'Unpublished edits'
-                                : 'All changes saved'
+                                ? __('pages.unpublished_edits')
+                                : __('pages.all_saved')
                         }}
                     </span>
                 </div>
@@ -55,7 +55,7 @@
                         @csrf
                         @method ('PATCH')
                         <input type="hidden" name="status" value="DRAFT" />
-                        <button type="submit" class="btn-secondary text-sm">Unpublish</button>
+                        <button type="submit" class="btn-secondary text-sm">{{ __('pages.unpublish') }}</button>
                     </form>
                 @endif
                 <form
@@ -67,8 +67,8 @@
                     <button type="submit" class="btn-primary">
                         {{
                             $page->publishedAt === null
-                                ? 'Publish'
-                                : 'Publish changes'
+                                ? __('pages.publish')
+                                : __('pages.publish_changes')
                         }}
                     </button>
                 </form>
@@ -85,7 +85,7 @@
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="card space-y-4">
-                <label for="title" class="sr-only">Title</label>
+                <label for="title" class="sr-only">{{ __('pages.title_label') }}</label>
                 <input
                     id="title"
                     name="title"
@@ -93,25 +93,25 @@
                     maxlength="160"
                     required
                     class="text-primary w-full bg-transparent text-3xl font-semibold focus:outline-none"
-                    placeholder="Page title"
+                    placeholder="{{ __('pages.title_placeholder') }}"
                 />
 
                 <div
                     class="border-default flex flex-wrap gap-1 border-y py-2"
                     role="toolbar"
-                    aria-label="Formatting"
+                    aria-label="{{ __('pages.formatting') }}"
                 >
                     @foreach ([
-                            'bold' => 'Bold',
-                            'italic' => 'Italic',
+                            'bold' => __('pages.bold'),
+                            'italic' => __('pages.italic'),
                             'h2' => 'H2',
                             'h3' => 'H3',
                             'bulletList' => '• List',
-                            'orderedList' => '1. List',
-                            'blockquote' => 'Quote',
-                            'codeBlock' => 'Code',
-                            'link' => 'Link',
-                            'image' => 'Image'
+                            'orderedList' => __('pages.ordered_list'),
+                            'blockquote' => __('pages.quote'),
+                            'codeBlock' => __('pages.code'),
+                            'link' => __('pages.link'),
+                            'image' => __('pages.image')
                         ]
                         as $command => $label)
                         <button

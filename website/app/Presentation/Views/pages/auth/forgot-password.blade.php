@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Reset Your Password')
+@section ('title', __('auth.reset_password'))
 
 @section ('content')
     <x-room-background
@@ -16,7 +16,7 @@
                 <!-- Header -->
                 <div class="mb-8 text-center">
                     <h1 class="text-mb-2 text-3xl font-bold" style="color: #ffffff">
-                        Forgot Your Password?
+                        {{ __('auth.forgot_title') }}
                     </h1>
                     <p
                         class="text-secondary"
@@ -24,7 +24,7 @@
                             color: rgba(255, 255, 255, 0.9);
                             text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
                         "
-                    >No worries! Enter your email and we'll send you reset instructions</p>
+                    >{{ __('auth.forgot_description') }}</p>
                 </div>
 
                 <!-- Form Card -->
@@ -51,7 +51,7 @@
                         <x-input
                             type="email"
                             name="email"
-                            label="Email Address"
+                            :label="__('auth.email')"
                             :error="$errors->first('email')"
                             value="{{ old('email') }}"
                             placeholder="you@example.com"
@@ -61,7 +61,7 @@
 
                         <!-- Submit Button -->
                         <x-button type="submit" class="w-full justify-center">
-                            Send Reset Link
+                            {{ __('auth.send_reset_link') }}
                         </x-button>
                     </form>
 

@@ -5,7 +5,8 @@
         ->keyBy('key')
         ->map(fn($section) => array_replace($section->props, $page->slotContent[$section->key] ?? []));
     $header = $slots->get('site-header', []);
-    $hero = $slots->get('hero', []);
+    $heroSection = collect($page->sections)->first(fn($section) => $section->section === 'hero');
+    $hero = $heroSection ? array_replace($heroSection->props, $page->slotContent[$heroSection->key] ?? []) : [];
     $latest = $slots->get('latest-posts', []);
     $about = $slots->get('about', []);
     $gallery = $slots->get('gallery', []);
@@ -27,6 +28,7 @@
         ->filter()
         ->values();
     $fallbackCards = ['card-flower.svg', 'card-sky.svg', 'card-field.svg'];
+
     $screen = $screen ?? 'home';
     $templatePreview = $templatePreview ?? false;
     $homeUrl = $templatePreview
@@ -37,9 +39,10 @@
         : route('public.blog.section', [$blog->slug, $target]);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $settings->locale }}">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ $settings->seoTitle ?? $blog->name }}</title>
     @if ($settings->seoDescription ?? $blog->description)
@@ -48,12 +51,13 @@
     @if ($page->noIndex)
         <meta name="robots" content="noindex,nofollow" />
     @endif
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
 </head>
 <body class="le-page">
     @if ($page->isOwnerPreview)
         <div class="le-owner-preview">
-            Bạn đang xem bản nháp. Khách truy cập chỉ thấy nội dung đã xuất bản.
+            {{ __('public.owner_preview') }}
         </div>
     @endif
 
@@ -62,177 +66,106 @@
             @if (!empty($header['mediaId']) && isset($mediaUrls[$header['mediaId']]))
                 <img src="{{ $mediaUrls[$header['mediaId']] }}" alt="" class="le-brand-image" />
             @else
-                <span class="le-brand-mark" aria-hidden="true">TH</span>
+                <i class="fa-solid fa-book-open le-brand-mark" aria-hidden="true"></i>
             @endif
             <span>{{ $header['title'] ?? $blog->name }}</span>
         </a>
-        <nav class="le-nav" aria-label="Điều hướng chính">
-            <a href="{{ $homeUrl }}" @if ($screen === 'home') aria-current="page" @endif
-                >Trang chủ</a
-            >
-            <a href="{{ $screenUrl('posts') }}" @if ($screen === 'posts') aria-current="page" @endif
-                >Bài viết</a
-            >
-            <a href="{{ $screenUrl('about') }}" @if ($screen === 'about') aria-current="page" @endif
-                >Giới thiệu</a
-            >
-            <a
-                href="{{ $screenUrl('contact') }}"
-                @if ($screen === 'contact') aria-current="page" @endif
-                >Liên hệ</a
-            >
+        <nav class="le-nav" aria-label="{{ __('public.navigation') }}">
+            <a href="{{ $homeUrl }}" @if ($screen === 'home') aria-current="page" @endif>{{ __('ui.home') }}</a>
+            <a href="{{ $screenUrl('posts') }}" @if ($screen === 'posts') aria-current="page" @endif>{{ __('ui.articles') }}</a>
+            <a href="{{ $screenUrl('about') }}" @if ($screen === 'about') aria-current="page" @endif>{{ __('template.about') }}</a>
+            <a href="{{ $screenUrl('contact') }}" @if ($screen === 'contact') aria-current="page" @endif>{{ __('public.contact') }}</a>
         </nav>
-        <div class="le-social" aria-label="Mạng xã hội">
+        <div class="le-social" aria-label="{{ __('public.social') }}">
             @foreach (array_slice($settings->socialLinks, 0, 3) as $platform => $url)
                 <a
                     href="{{ $url }}"
                     target="_blank"
                     rel="noopener me"
                     aria-label="{{ ucfirst($platform) }}"
-                    >{{
-                        strtoupper(
-                            substr($platform, 0, 1),
-                        )
-                    }}</a
+                    ><i class="fa-brands {{ match ($platform) { 'facebook' => 'fa-facebook', 'instagram' => 'fa-instagram', 'youtube' => 'fa-youtube', 'tiktok' => 'fa-tiktok', default => 'fa-link' } }}" aria-hidden="true"></i></a
                 >
             @endforeach
-        </div>
+                <form method="POST" action="{{ route('interface-locale.update') }}" class="le-locale-picker">
+            @csrf
+            <label class="sr-only" for="public-interface-locale">{{ __('template.language') }}</label>
+            <select id="public-interface-locale" name="locale" aria-label="{{ __('template.language') }}" onchange="this.form.submit()">
+                <option value="vi" @selected(app()->getLocale() === 'vi')>VI</option>
+                <option value="en" @selected(app()->getLocale() === 'en')>EN</option>
+            </select>
+        </form></div>
     </header>
 
     @if ($screen === 'home')
         <main>
-            <section id="home" class="le-hero" style="--le-hero: url('{{ $heroImage }}')">
-                <div class="le-hero-copy">
-                    <p>{{
-                        $hero['eyebrow'] ??
-                            'Nhật ký sống chậm'
-                    }}</p>
-                    <h1>
-                        {{
-                            $hero['title'] ??
-                                'My Life. My Blog.'
-                        }}
-                    </h1>
-                    <span>{{
-                        $hero['description'] ??
-                            $blog->description
-                    }}</span>
-                    @if (!empty($hero['ctaLabel']))
-                        <a
-                            href="{{ $hero['ctaUrl'] ?? '#latest-posts' }}"
-                            >{{ $hero['ctaLabel'] }}</a
-                        >
-                    @endif
-                </div>
-                <div class="le-hero-strip" aria-hidden="true">
-                    @foreach ($fallbackCards as $image)
-                        <img src="{{ $images.'/'.$image }}" alt="" />
-                    @endforeach
-                </div>
+            @php($heroSlides = is_array($hero['slides'] ?? null) && count($hero['slides']) ? $hero['slides'] : [$hero])
+            <section id="home" class="le-hero" data-hero-carousel>
+                @foreach ($heroSlides as $slide)
+                    @php($slideImage = !empty($slide['mediaId']) && isset($mediaUrls[$slide['mediaId']]) ? $mediaUrls[$slide['mediaId']] : $heroImage)
+                    <div class="le-hero-panel{{ $loop->first ? ' is-active' : '' }}" data-hero-slide aria-hidden="{{ $loop->first ? 'false' : 'true' }}" style="--le-hero: url('{{ $slideImage }}')">
+                        <div class="le-hero-copy">
+                            <p>{{ $slide['eyebrow'] ?? __('public.slow_living') }}</p>
+                            <h1>{{ $slide['title'] ?? __('public.hero_title') }}</h1>
+                            <span>{{ $slide['description'] ?? $blog->description }}</span>
+                            @if (!empty($slide['ctaLabel']))<a href="{{ $slide['ctaUrl'] ?? '#latest-posts' }}">{{ $slide['ctaLabel'] }}</a>@endif
+                        </div>
+                    </div>
+                @endforeach
+                @if (count($heroSlides) > 1)
+                    <div class="le-hero-strip" data-hero-thumbnails aria-label="{{ __('template.hero_slides') }}">
+                        @foreach ($heroSlides as $slide)
+                            @php($thumbImage = !empty($slide['mediaId']) && isset($mediaUrls[$slide['mediaId']]) ? $mediaUrls[$slide['mediaId']] : $images.'/'.$fallbackCards[$loop->index % count($fallbackCards)])
+                            <button type="button" data-hero-thumb="{{ $loop->index }}" class="le-hero-thumb{{ $loop->first ? ' is-active' : '' }}" aria-label="{{ __('template.slide') }} {{ $loop->iteration }}: {{ $slide['title'] ?? '' }}" aria-current="{{ $loop->first ? 'true' : 'false' }}">
+                                <img src="{{ $thumbImage }}" alt="" loading="lazy">
+                                <span>{{ $slide['title'] ?? __('template.slide').' '.$loop->iteration }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+                    <div class="le-hero-controls" aria-label="{{ __('template.hero_slides') }}">
+                        <button type="button" data-hero-prev aria-label="{{ __('template.previous_slide') }}"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                        <span data-hero-count>1 / {{ count($heroSlides) }}</span>
+                        <button type="button" data-hero-next aria-label="{{ __('template.next_slide') }}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                @endif
             </section>
 
             <div class="le-content-grid">
                 <div>
                     <section id="latest-posts" class="le-posts">
-                        <p class="le-kicker">{{
-                            $latest['title'] ??
-                                'Bài viết mới nhất'
-                        }}</p>
+                        <p class="le-kicker">{{ $latest['title'] ?? __('public.latest_posts') }}</p>
                         <div class="le-post-grid">
-                            @forelse (array_slice($page->posts, 0, (int) ($latest['limit'] ?? 3)) as $post)
+                            @forelse (array_slice($publicPosts, 0, (int) ($latest['limit'] ?? 3)) as $post)
                                 <article>
-                                    <img
-                                        src="{{ $images.'/'.$fallbackCards[$loop->index % 3] }}"
-                                        alt=""
-                                    />
-                                    <time>{{
-                                        $post->publishedAt
-                                            ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y')
-                                            : ''
-                                    }}</time>
-                                    <h2>
-                                        <a
-                                            href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                                            >{{ $post->title }}</a
-                                        >
-                                    </h2>
-                                    <p>{{
-                                        $post->excerpt ??
-                                            $post->content->plainText(150)
-                                    }}</p>
-                                    <a
-                                        class="le-read-more"
-                                        href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                                        >Xem thêm <span aria-hidden="true">→</span></a
-                                    >
+                                    <img src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : $images.'/'.$fallbackCards[$loop->index % 3] }}" alt="">
+                                    <time>{{ $post->publishedAt ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y') : '' }}</time>
+                                    <h2><a href="{{ route('public.post', [$blog->slug, $post->slug]) }}">{{ $post->title }}</a></h2>
+                                    <p>{{ $post->excerpt ?? $post->content->plainText(150) }}</p>
+                                    <a class="le-read-more" href="{{ route('public.post', [$blog->slug, $post->slug]) }}">{{ __('public.read_post') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                                 </article>
                             @empty
-                                @foreach ([
-                                        [
-                                            'Biến ngày bình thường thành nguồn cảm hứng',
-                                            'Ghi lại những điều giản dị giúp cuộc sống trở nên nhiều màu sắc hơn.'
-                                        ],
-                                        [
-                                            '5 lý do để bắt đầu ngày mới sớm hơn',
-                                            'Một vài thói quen nhỏ để có buổi sáng nhẹ nhàng và trọn vẹn.'
-                                        ],
-                                        [
-                                            'Học cách sắp xếp lại cuộc sống',
-                                            'Bắt đầu từ không gian quanh mình và giữ lại điều thực sự có ý nghĩa.'
-                                        ]
-                                    ]
-                                    as [$title, $excerpt])
-                                    <article>
-                                        <img
-                                            src="{{ $images.'/'.$fallbackCards[$loop->index] }}"
-                                            alt="Ảnh minh họa bài viết"
-                                        />
-                                        <time>22.03.2026</time>
-                                        <h2>{{ $title }}</h2>
-                                        <p>{{ $excerpt }}</p>
-                                        <a class="le-read-more" href="{{ $screenUrl('posts') }}"
-                                            >Xem thêm <span aria-hidden="true">→</span></a
-                                        >
-                                    </article>
-                                @endforeach
+                                <p class="le-kicker">{{ __('public.no_posts') }}</p>
                             @endforelse
                         </div>
-                        <a class="le-all-posts" href="{{ $screenUrl('posts') }}"
-                            >Xem tất cả bài viết <span aria-hidden="true">→</span></a
-                        >
+                        <a class="le-all-posts" href="{{ $screenUrl('posts') }}">{{ __('public.view_all_posts') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                     </section>
 
                     <section id="about" class="le-about">
-                        <img src="{{ $aboutImage }}" alt="" />
+                        <img src="{{ $aboutImage }}" alt="">
                         <div>
-                            <p class="le-kicker">Câu chuyện của tôi</p>
-                            <h2>{{ $about['title'] ?? 'About me' }}</h2>
-                            <p>{{
-                                $about['description'] ??
-                                    $blog->description
-                            }}</p>
+                            <p class="le-kicker">{{ __('public.about_story') }}</p>
+                            <h2>{{ $about['title'] ?? __('public.about_me') }}</h2>
+                            <p>{{ $about['description'] ?? $blog->description }}</p>
+                            <a class="le-page-cta" href="{{ $screenUrl('about') }}">{{ __('public.about_me') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                         </div>
                     </section>
 
                     <section class="le-gallery">
-                        <h2>
-                            {{
-                                $gallery['title'] ??
-                                    'Những khoảnh khắc'
-                            }}
-                        </h2>
+                        <h2>{{ $gallery['title'] ?? __('public.gallery_title') }}</h2>
                         <div>
                             @if ($galleryMedia->isNotEmpty())
-                                @foreach ($galleryMedia->take(3) as $url)
-                                    <img src="{{ $url }}" alt="" />
-                                @endforeach
+                                @foreach ($galleryMedia->take(3) as $url)<img src="{{ $url }}" alt="">@endforeach
                             @else
-                                @foreach ($fallbackCards as $image)
-                                    <img
-                                        src="{{ $images.'/'.$image }}"
-                                        alt="Ảnh trong bộ sưu tập"
-                                    />
-                                @endforeach
+                                @foreach ($fallbackCards as $image)<img src="{{ $images.'/'.$image }}" alt="{{ __('public.gallery_image') }}">@endforeach
                             @endif
                         </div>
                     </section>
@@ -240,85 +173,32 @@
 
                 <aside class="le-sidebar">
                     <section>
-                        <img
-                            class="le-avatar"
-                            src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}"
-                            alt=""
-                        />
-                        <h2>
-                            {{
-                                $profile['title'] ??
-                                    'Góc nhỏ của tôi'
-                            }}
-                        </h2>
-                        <p>{{
-                            $profile['description'] ??
-                                'Xin chào, mình là người kể chuyện phía sau blog này.'
-                        }}</p>
-                        <a class="le-sidebar-cta" href="{{ $screenUrl('about') }}"
-                            >Xem giới thiệu →</a
-                        >
+                        <img class="le-avatar" src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}" alt="">
+                        <h2>{{ $profile['title'] ?? __('public.my_corner') }}</h2>
+                        <p>{{ $profile['description'] ?? __('public.blogger_intro') }}</p>
+                        <a class="le-sidebar-cta" href="{{ $screenUrl('about') }}">{{ __('public.about_me') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                     </section>
                     <section>
-                        <h2>
-                            {{
-                                $newsletter['title'] ??
-                                    'Nhận bài viết mới'
-                            }}
-                        </h2>
+                        <h2>{{ $newsletter['title'] ?? __('public.subscribe_title') }}</h2>
                         <p>{{ $newsletter['description'] ?? '' }}</p>
                         <div class="le-email">email@example.com</div>
-                        <a class="le-sidebar-button" href="{{ $screenUrl('contact') }}">{{
-                            $newsletter['ctaLabel'] ??
-                                'Đăng ký'
-                        }}</a>
+                        <a class="le-sidebar-button" href="{{ $screenUrl('contact') }}">{{ $newsletter['ctaLabel'] ?? __('public.subscribe') }}</a>
                     </section>
                     @if (count($page->categories) > 0)
                         <section>
-                            <h2>Chuyên mục</h2>
-                            <ul>
-                                @foreach ($page->categories as $category)
-                                    <li>{{ $category->name }}</li>
-                                @endforeach
-                            </ul>
+                            <h2>{{ __('template.categories') }}</h2>
+                            <ul>@foreach ($page->categories as $category)<li>{{ $category->name }}</li>@endforeach</ul>
                         </section>
                     @endif
                 </aside>
             </div>
-
             <section id="contact" class="le-contact">
-                <p class="le-mark">✤</p>
-                <h2>
-                    {{
-                        $contact['title'] ??
-                            "Let me know what's on your mind"
-                    }}
-                </h2>
+                <i class="fa-solid fa-envelope le-mark" aria-hidden="true"></i>
+                <h2>{{ $contact['title'] ?? __('public.contact_title') }}</h2>
                 <p>{{ $contact['description'] ?? '' }}</p>
-                <a href="{{ $screenUrl('contact') }}">{{
-                    $contact['ctaLabel'] ??
-                        'Xem thông tin liên hệ'
-                }}</a>
+                <a href="{{ $contact['ctaUrl'] ?? $screenUrl('contact') }}">{{ $contact['ctaLabel'] ?? __('public.contact') }}</a>
             </section>
-        </main>
-        <section id="contact" class="le-contact">
-            <p class="le-mark">✤</p>
-            <h2>
-                {{
-                    $contact['title'] ??
-                        "Let me know what's on your mind"
-                }}
-            </h2>
-            <p>{{ $contact['description'] ?? '' }}</p>
-            @if (!empty($contact['ctaLabel']))
-                <a
-                    href="{{ $contact['ctaUrl'] ?? 'mailto:hello@example.com' }}"
-                    >{{ $contact['ctaLabel'] }}</a
-                >
-            @endif
-        </section>
-        </main>
-    @else
+        </main>    @else
         @include ('public.templates.lifestyle-editorial.screens.' . $screen,
             compact(
                 'blog',

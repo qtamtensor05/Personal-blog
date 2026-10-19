@@ -47,14 +47,7 @@ final class TemplateSlotCatalog
     {
         return match (TemplateSection::from($section)) {
             TemplateSection::Header => ['title', 'description', 'mediaId', 'ctaLabel', 'ctaUrl'],
-            TemplateSection::Hero => [
-                'eyebrow',
-                'title',
-                'description',
-                'mediaId',
-                'ctaLabel',
-                'ctaUrl',
-            ],
+            TemplateSection::Hero => ['slides'],
             TemplateSection::Image, TemplateSection::ImageText => [
                 'title',
                 'description',

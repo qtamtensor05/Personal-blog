@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Create Your Account')
+@section ('title', __('auth.create_account'))
 
 @section ('content')
     <x-room-background
@@ -18,14 +18,14 @@
                     class="mb-2 text-3xl font-bold"
                     style="color: #fff; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5)"
                 >
-                    Create Your Account
+                    {{ __('auth.create_account') }}
                 </h1>
                 <p
                     style="
                         color: rgba(255, 255, 255, 0.9);
                         text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
                     "
-                >Join our community and start sharing your ideas</p>
+                >{{ __('auth.join_community') }}</p>
             </div>
 
             <!-- Registration Form -->
@@ -38,7 +38,7 @@
 
                 @if ($errors->any())
                     <x-alert type="error" dismissible class="mb-6">
-                        <strong>Please fix the following errors:</strong>
+                        <strong>{{ __('auth.fix_errors') }}</strong>
                         <ul class="mt-2 ml-4 list-disc text-sm">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -54,7 +54,7 @@
                     <x-input
                         type="text"
                         name="name"
-                        label="Full Name"
+                        :label="__('auth.full_name')"
                         :error="$errors->first('name')"
                         value="{{ old('name') }}"
                         placeholder="John Doe"
@@ -65,7 +65,7 @@
                     <x-input
                         type="email"
                         name="email"
-                        label="Email Address"
+                        :label="__('auth.email')"
                         :error="$errors->first('email')"
                         value="{{ old('email') }}"
                         placeholder="you@example.com"
@@ -76,9 +76,9 @@
                     <x-input
                         type="password"
                         name="password"
-                        label="Password"
+                        :label="__('auth.password')"
                         :error="$errors->first('password')"
-                        placeholder="At least 8 characters"
+                        :placeholder="__('auth.password_min')"
                         required
                     />
 
@@ -86,9 +86,9 @@
                     <x-input
                         type="password"
                         name="password_confirmation"
-                        label="Confirm Password"
+                        :label="__('auth.confirm_password')"
                         :error="$errors->first('password_confirmation')"
-                        placeholder="Repeat your password"
+                        :placeholder="__('auth.repeat_password')"
                         required
                     />
 
@@ -105,13 +105,13 @@
                         </div>
                         <div class="ml-3 text-sm">
                             <label for="terms" class="text-secondary">
-                                I agree to the
+                                {{ __('auth.agree_to') }}
                                 <a href="#" class="text-accent-primary hover:underline"
-                                    >Terms of Service</a
+                                    >{{ __('auth.terms') }}</a
                                 >
-                                and
+                                {{ __('auth.and') }}
                                 <a href="#" class="text-accent-primary hover:underline"
-                                    >Privacy Policy</a
+                                    >{{ __('auth.privacy') }}</a
                                 >
                             </label>
                         </div>
@@ -119,19 +119,19 @@
 
                     <!-- Submit Button -->
                     <x-button type="submit" class="w-full justify-center">
-                        Create Account
+                        {{ __('auth.create_submit') }}
                     </x-button>
                 </form>
 
                 <!-- Sign In Link -->
                 <div class="mt-6 text-center">
                     <p class="text-secondary text-sm">
-                        Already have an account?
+                        {{ __('auth.have_account') }}
                         <a
                             href="{{ route('login') }}"
                             class="text-accent-primary font-medium hover:underline"
                         >
-                            Sign in instead
+                            {{ __('auth.sign_in') }}
                         </a>
                     </p>
                 </div>
@@ -145,7 +145,7 @@
                         color: rgba(255, 255, 255, 0.75);
                         text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
                     "
-                >By creating an account, you'll receive a verification email to confirm your address.</p>
+                >{{ __('auth.registration_notice') }}</p>
             </div>
         </div>
     </x-room-background>

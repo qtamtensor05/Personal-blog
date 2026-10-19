@@ -18,14 +18,14 @@
                     class="mb-2 text-3xl font-bold"
                     style="color: #fff; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5)"
                 >
-                    Welcome Back
+                    {{ __('auth.welcome_back') }}
                 </h1>
                 <p
                     style="
                         color: rgba(255, 255, 255, 0.9);
                         text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
                     "
-                >Sign in to continue to your account</p>
+                >{{ __('auth.sign_in_continue') }}</p>
             </div>
 
             <!-- Login Form -->
@@ -51,7 +51,7 @@
                     <x-input
                         type="email"
                         name="email"
-                        label="Email Address"
+                        :label="__('auth.email')"
                         :error="$errors->first('email')"
                         value="{{ old('email') }}"
                         placeholder="you@example.com"
@@ -63,7 +63,7 @@
                     <div>
                         <x-input
                             name="password"
-                            label="Password"
+                            :label="__('auth.password')"
                             type="password"
                             autocomplete="current-password"
                             :toggle-password="true"
@@ -74,7 +74,7 @@
                                 href="{{ url('/password/forgot') }}"
                                 class="text-accent-primary text-sm hover:underline"
                             >
-                                Forgot your password?
+                                {{ __('auth.forgot_password') }}
                             </a>
                         </div>
                     </div>
@@ -88,23 +88,23 @@
                             class="border-default text-accent-primary focus:ring-accent-primary h-4 w-4 rounded focus:ring-2"
                         />
                         <label for="remember" class="text-secondary ml-2 text-sm">
-                            Remember me for 30 days
+                            {{ __('auth.remember_me') }}
                         </label>
                     </div>
 
                     <!-- Submit Button -->
-                    <x-button type="submit" class="w-full justify-center"> Sign In </x-button>
+                    <x-button type="submit" class="w-full justify-center">{{ __('auth.sign_in') }}</x-button>
                 </form>
 
                 <!-- Register Link -->
                 <div class="mt-6 text-center">
                     <p class="text-secondary text-sm">
-                        Don't have an account?
+                        {{ __('auth.no_account') }}
                         <a
                             href="{{ route('register') }}"
                             class="text-accent-primary font-medium hover:underline"
                         >
-                            Create one now
+                            {{ __('auth.create_now') }}
                         </a>
                     </p>
                 </div>

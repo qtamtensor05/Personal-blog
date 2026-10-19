@@ -55,6 +55,13 @@ final class SaveSlotContentRequest extends FormRequest
             'slot_content.*.categoryId' => ['nullable', 'integer', 'min:1'],
             'slot_content.*.categoryIds' => ['nullable', 'string', 'max:240'],
             'slot_content.*.limit' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'slot_content.*.slides' => ['nullable', 'array', 'max:10'],
+            'slot_content.*.slides.*.eyebrow' => ['nullable', 'string', 'max:120'],
+            'slot_content.*.slides.*.title' => ['required_with:slot_content.*.slides', 'string', 'max:200'],
+            'slot_content.*.slides.*.description' => ['nullable', 'string', 'max:1000'],
+            'slot_content.*.slides.*.mediaId' => ['nullable', 'integer', 'min:1'],
+            'slot_content.*.slides.*.ctaLabel' => ['nullable', 'string', 'max:120'],
+            'slot_content.*.slides.*.ctaUrl' => ['nullable', 'string', 'max:2048', 'regex:/\A(?:https?:\/\/|mailto:|\/(?!\/)|#)[^\s]+\z/i'],
         ];
     }
 }

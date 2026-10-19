@@ -10,9 +10,7 @@
                 <div
                     class="bg-accent-primary flex h-20 w-20 items-center justify-center rounded-full"
                 >
-                    <svg class="text-surface h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                    <i class="fa-solid fa-envelope-circle-check text-surface h-10 w-10" aria-hidden="true"></i>
                 </div>
             </div>
 
@@ -37,14 +35,14 @@
                 @endif
 
                 <div class="space-y-4 text-center">
-                    <p class="text-secondary text-sm">Please check your inbox and click the verification link to activate your account. The link will expire in 24 hours.</p>
+                    <p class="text-secondary text-sm">{{ __('auth.check_inbox') }}</p>
 
                     <div class="bg-surface-secondary rounded-lg p-4">
-                        <p class="text-primary mb-2 text-sm font-medium">Didn't receive the email?</p>
+                        <p class="text-primary mb-2 text-sm font-medium">{{ __('auth.no_verification_email') }}</p>
                         <ul class="text-secondary space-y-1 text-left text-xs">
-                            <li>• Check your spam or junk folder</li>
-                            <li>• Make sure the email address is correct</li>
-                            <li>• Wait a few minutes for the email to arrive</li>
+                            <li>• {{ __('auth.check_spam') }}</li>
+                            <li>• {{ __('auth.check_email_address') }}</li>
+                            <li>• {{ __('auth.wait_email') }}</li>
                         </ul>
                     </div>
 
@@ -52,10 +50,8 @@
                     <form method="POST" action="{{ route('identity.email.resend') }}" class="pt-4">
                         @csrf
                         <x-button type="submit" variant="secondary" class="w-full justify-center">
-                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Resend Verification Email
+                            <i class="fa-solid fa-arrow-rotate-right mr-2 h-4 w-4" aria-hidden="true"></i>
+                            {{ __('auth.resend_verification') }}
                         </x-button>
                     </form>
 

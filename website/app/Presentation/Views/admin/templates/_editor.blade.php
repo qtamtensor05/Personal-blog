@@ -9,17 +9,17 @@
     $isLifestyle = $data?->layout === 'lifestyle-editorial';
     $fieldLabels = ['eyebrow' => 'Nhãn nhỏ', 'title' => 'Tiêu đề', 'description' => 'Mô tả', 'archiveTitle' => 'Tiêu đề trang bài viết', 'archiveDescription' => 'Mô tả trang bài viết', 'ctaLabel' => 'Nhãn nút', 'ctaUrl' => 'Liên kết CTA dự phòng', 'email' => 'Email', 'phone' => 'Số điện thoại', 'facebookUrl' => 'Facebook', 'youtubeUrl' => 'YouTube', 'tiktokUrl' => 'TikTok', 'zaloUrl' => 'Zalo', 'limit' => 'Số lượng bài hiển thị', 'copyright' => 'Copyright'];
     $components = [
-        'header' => ['Header', 'Header'],
-        'hero' => ['Banner / Hero', 'Body'],
-        'image_text' => ['Image and content', 'Body'],
-        'gallery' => ['Image gallery', 'Body'],
-        'recent_posts' => ['Latest posts', 'Body'],
-        'categories' => ['Categories', 'Body'],
-        'cta' => ['CTA', 'Body'],
-        'profile' => ['Blogger profile', 'Sidebar'],
-        'sidebar_posts' => ['Sidebar latest posts', 'Sidebar'],
-        'newsletter' => ['Newsletter', 'Body or sidebar'],
-        'footer' => ['Footer', 'Footer'],
+        'header' => [__('template.header'), __('template.header')],
+        'hero' => [__('template.hero'), __('template.home')],
+        'image_text' => [__('template.about'), __('template.home')],
+        'gallery' => [__('template.gallery'), __('template.home')],
+        'recent_posts' => [__('template.post_section'), __('template.home')],
+        'categories' => [__('taxonomy.categories'), __('template.home')],
+        'cta' => [__('template.contact'), __('template.home')],
+        'profile' => [__('template.profile'), __('template.sidebar')],
+        'sidebar_posts' => [__('template.posts'), __('template.sidebar')],
+        'newsletter' => [__('template.newsletter'), __('template.home')],
+        'footer' => [__('template.footer'), __('template.footer')],
     ];
 @endphp
 
@@ -35,13 +35,13 @@
         @if ($isEdit) @method ('PUT') @endif
         <section class="card space-y-4">
             <div>
-                <h2 class="text-primary text-lg font-semibold">Thông tin template</h2>
-                <p class="text-secondary text-sm">Admin quản lý giao diện và nội dung fallback; blogger chỉ thay nội dung tại các vị trí đã định sẵn.</p>
+                <h2 class="text-primary text-lg font-semibold">{{ __('templates.about_information') }}</h2>
+                <p class="text-secondary text-sm">{{ __('templates.admin_help') }}</p>
             </div>
             <div class="grid gap-4 md:grid-cols-2">
                 <x-input
                     name="name"
-                    label="Tên template"
+                    :label="__('templates.name_label')"
                     :value="$isEdit ? $template->name : old('name')"
                     required
                 />
@@ -49,21 +49,21 @@
                     name="slug"
                     label="Slug"
                     :value="$isEdit ? $template->slug : old('slug')"
-                    hint="Leave blank to generate from the name."
+                    :hint="__('blog.slug_help')"
                 />
             </div>
-            <x-textarea name="description" label="Mô tả template" rows="2">{{
+            <x-textarea name="description" :label="__('templates.description_label')" rows="2">{{
                 $isEdit
                     ? $template->description
                     : old('description')
             }}</x-textarea>
             <div class="space-y-1">
                 <label for="layout" class="text-primary block text-sm font-medium"
-                    >Bố cục trang</label
+                    >{{ __('templates.layout') }}</label
                 >
                 <select name="layout" id="layout" class="input">
                     <option value="default" @selected ($data?->layout === 'default')>
-                        Standard blog
+                        {{ __('templates.standard') }}
                     </option>
                     <option
                         value="lifestyle-editorial"
@@ -72,7 +72,7 @@
                         Lifestyle Editorial
                     </option>
                 </select>
-                <p class="text-secondary text-xs">Bố cục quyết định vị trí Header, Body, Sidebar, Footer và không cho blogger kéo thả.</p>
+                <p class="text-secondary text-xs">{{ __('templates.layout_help') }}</p>
             </div>
         </section>
 
@@ -80,8 +80,8 @@
         <section class="card space-y-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="text-primary text-lg font-semibold">Nội dung fallback của template</h2>
-                    <p class="text-secondary text-sm">Đây là nội dung hiển thị khi blogger chưa cấu hình. Cấu trúc và vị trí component đã được khóa theo giao diện Lifestyle Editorial.</p>
+                    <h2 class="text-primary text-lg font-semibold">{{ __('templates.fallback') }}</h2>
+                    <p class="text-secondary text-sm">{{ __('templates.fallback_help') }}</p>
                 </div>
                 @if($isEdit)
                     <a href="{{ route('templates.preview', $template->slug) }}" target="_blank" rel="noopener" class="btn-secondary px-4 py-2 text-sm">Xem trang template ↗</a>
@@ -99,7 +99,7 @@
                         <details class="group rounded-md border border-default bg-surface-secondary">
                             <summary class="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold text-primary">
                                 <span>{{ $section->label ?? $section->key }} <small class="ml-2 font-normal text-secondary">{{ ucfirst($section->region) }}</small></span>
-                                <span class="text-xl text-accent-primary transition group-open:rotate-45">+</span>
+                                <i class="fa-solid fa-chevron-down text-sm text-accent-primary transition group-open:rotate-180" aria-hidden="true"></i>
                             </summary>
                             <div class="grid gap-4 border-t border-default p-4 md:grid-cols-2">
                                 @foreach($fields as $field)
@@ -121,8 +121,8 @@
         @else
         <section class="card space-y-5">
             <div>
-                <h2 class="text-primary text-lg font-semibold">Frame and components</h2>
-                <p class="text-secondary text-sm">Choose from the available components. Positions are locked to Header, Body, Sidebar, and Footer; no custom HTML or JavaScript is allowed.</p>
+                <h2 class="text-primary text-lg font-semibold">{{ __('templates.frame_components') }}</h2>
+                <p class="text-secondary text-sm">{{ __('templates.components_help') }}</p>
             </div>
             <div class="grid gap-3 md:grid-cols-2">
                 @foreach ($components as $value => [$label, $region])
@@ -151,10 +151,10 @@
                                     value="1"
                                     @checked ($slots->get($value)?->visible ?? true)
                                 />
-                                Visible</label
+                                {{ __('templates.visible') }}</label
                             >
                             <label class="ml-auto"
-                                >Order
+                                >{{ __('templates.order') }}
                                 <input
                                     class="input inline w-16 py-1"
                                     type="number"
@@ -174,14 +174,14 @@
             <button class="btn-primary rounded-md px-4 py-2" type="submit">
                 {{
                     $isEdit
-                        ? 'Lưu bản nháp'
-                        : 'Tạo template từ starter'
+                        ? __('templates.save_draft')
+                        : __('templates.create_starter')
                 }}
             </button>
             <a
                 class="btn-ghost rounded-md border px-4 py-2"
                 href="{{ route('admin.templates.index') }}"
-                >Quay lại</a
+                >{{ __('templates.back') }}</a
             >
         </div>
     </form>

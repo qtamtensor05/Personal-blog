@@ -4,7 +4,7 @@
     $tokens = $page->designTokens;
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $settings->locale }}">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,14 +28,16 @@
             class="px-4 py-2 text-center text-sm"
             style="background: var(--d-accent); color: var(--d-text)"
         >
-            Bạn đang xem bản nháp với tư cách chủ blog. Khách truy cập chỉ thấy nội dung đã xuất
-            bản.
+            {{ __('public.owner_preview') }}
         </div>
     @endif
+    <div class="container-custom flex justify-end pt-3">
+        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+    </div>
 
     @if ($page->pages !== [])
         <nav
-            aria-label="Pages"
+            aria-label="{{ __('public.pages') }}"
             class="container-custom flex max-w-4xl flex-wrap gap-4 pt-6 text-sm"
         >
             @foreach ($page->pages as $staticPage)
@@ -48,7 +50,7 @@
         </nav>
     @endif
 
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading content">
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_content') }}">
         @php ($regions = collect($page->sections) ->filter(fn($section) => $section->visible) ->groupBy('region'))
         <header class="container-custom max-w-6xl space-y-4 pt-6">
             @foreach ($regions->get('header', []) as $section)
@@ -98,7 +100,7 @@
             @include ('public.partials.report-form', ['blog' => $blog])
 
             @if ($settings->socialLinks !== [])
-                <nav aria-label="Social links" class="flex flex-wrap gap-4 text-sm">
+                <nav aria-label="{{ __('public.social_links') }}" class="flex flex-wrap gap-4 text-sm">
                     @foreach ($settings->socialLinks as $platform => $url)
                         <a
                             href="{{ $url }}"

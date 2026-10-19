@@ -53,6 +53,17 @@ final class QueryBuilderPostRepository implements PostRepository
             ->all();
     }
 
+    public function publicSummariesForBlog(int $blogId, int $limit): array
+    {
+        return $this->base($blogId)
+            ->where('status', PostStatus::Published->value)
+            ->orderByDesc('published_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => $this->toDomain($row))
+            ->all();
+    }
+
     public function countForBlog(int $blogId): int
     {
         return $this->base($blogId)->count();
@@ -241,6 +252,23 @@ final class QueryBuilderPostRepository implements PostRepository
                 'updated_by' => $updatedBy,
                 'updated_at' => now(),
             ]);
+    }
+
+    public function deletedForBlog(int $blogId): array
+    {
+        return DB::table(self::TABLE)->where('blog_id', $blogId)->whereNotNull('deleted_at')
+            ->orderByDesc('deleted_at')->get()->map(fn ($row) => $this->toDomain($row))->all();
+    }
+
+    public function restore(int $blogId, int $id): void
+    {
+        DB::table(self::TABLE)->where('blog_id', $blogId)->where('id', $id)->whereNotNull('deleted_at')
+            ->update(['deleted_at' => null, 'updated_at' => now()]);
+    }
+
+    public function permanentlyDelete(int $blogId, int $id): void
+    {
+        DB::table(self::TABLE)->where('blog_id', $blogId)->where('id', $id)->whereNotNull('deleted_at')->delete();
     }
 
     private function base(int $blogId): Builder

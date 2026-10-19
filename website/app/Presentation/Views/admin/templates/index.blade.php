@@ -1,30 +1,28 @@
 @extends ('layouts.app')
 
-@section ('title', 'Templates — Admin Console')
+@section ('title', __('templates.admin_index') . ' - ' . __('admin.console'))
 
 @section ('content')
     <div class="container-custom section-spacing">
         <div class="mb-8">
             <div class="mb-4 flex items-center justify-between rounded-md">
-                <h1 class="text-hero">Templates</h1>
+                <h1 class="text-hero">{{ __('templates.admin_index') }}</h1>
                 <a
                     href="{{ route('admin.templates.create') }}"
                     class="btn-primary flex items-center justify-center gap-2 rounded-md px-4 py-2"
                 >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Template
+                    <i class="fa-solid fa-plus h-5 w-5" aria-hidden="true"></i>
+                    {{ __('templates.new') }}
                 </a>
             </div>
-            <p class="text-secondary">Manage blog templates that users can choose and customize.</p>
+            <p class="text-secondary">{{ __('templates.admin_manage_help') }}</p>
         </div>
 
         <div id="templateActionError" class="mb-6 hidden" role="alert"></div>
 
         @if (count($templates) === 0)
-            <x-empty-state message="No templates yet">
-                Create the first template for users to pick when designing their blog.
+            <x-empty-state :message="__('templates.admin_empty')">
+                {{ __('templates.admin_empty_help') }}
             </x-empty-state>
         @else
             <div class="overflow-x-auto">
@@ -32,22 +30,22 @@
                     <thead class="bg-surface-secondary border-default border-b">
                         <tr>
                             <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                Name
+                                {{ __('templates.name') }}
                             </th>
                             <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                Slug
+                                {{ __('templates.slug') }}
                             </th>
                             <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                Status
+                                {{ __('templates.status') }}
                             </th>
                             <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                Version
+                                {{ __('templates.version') }}
                             </th>
                             <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                Updated
+                                {{ __('templates.updated') }}
                             </th>
                             <th class="text-primary px-4 py-3 text-right text-sm font-semibold">
-                                Actions
+                                {{ __('templates.actions') }}
                             </th>
                         </tr>
                     </thead>
@@ -103,27 +101,27 @@
                                             rel="noopener"
                                             class="text-accent-primary text-sm hover:underline"
                                         >
-                                            Xem template
+                                            {{ __('templates.view') }}
                                         </a>
                                         <a
                                             href="{{ route('admin.templates.edit', $template->id) }}"
                                             class="text-accent-primary text-sm hover:underline"
                                         >
-                                            Edit
+                                            {{ __('templates.edit') }}
                                         </a>
                                         @if ($template->draftData !== null && $template->status->value === 'DRAFT')
                                             <button
                                                 onclick="publishTemplate({{ $template->id }})"
                                                 class="text-accent-primary text-sm hover:underline"
                                             >
-                                                Publish
+                                                {{ __('templates.publish') }}
                                             </button>
                                         @endif
                                         <button
                                             onclick="deleteTemplate({{ $template->id }}, '{{ addslashes($template->name) }}')"
                                             class="text-sm text-red-500 hover:underline"
                                         >
-                                            Delete
+                                            {{ __('templates.delete') }}
                                         </button>
                                     </div>
                                 </td>
@@ -137,21 +135,21 @@
         @if (count($deletedTemplates) > 0)
             <section class="mt-10">
                 <div class="mb-4">
-                    <h2 class="text-primary text-xl font-semibold">Recently deleted</h2>
-                    <p class="text-secondary text-sm">Restore a template or permanently remove it and its category assignments.</p>
+                    <h2 class="text-primary text-xl font-semibold">{{ __('templates.deleted') }}</h2>
+                    <p class="text-secondary text-sm">{{ __('templates.deleted_help') }}</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-surface-secondary border-default border-b">
                             <tr>
                                 <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                    Name
+                                    {{ __('templates.name') }}
                                 </th>
                                 <th class="text-primary px-4 py-3 text-left text-sm font-semibold">
-                                    Deleted
+                                    {{ __('templates.deleted_at') }}
                                 </th>
                                 <th class="text-primary px-4 py-3 text-right text-sm font-semibold">
-                                    Actions
+                                    {{ __('templates.actions') }}
                                 </th>
                             </tr>
                         </thead>
@@ -180,14 +178,14 @@
                                                 onclick="restoreTemplate({{ $template->id }})"
                                                 class="text-accent-primary text-sm hover:underline"
                                             >
-                                                Restore
+                                                {{ __('templates.restore') }}
                                             </button>
                                             <button
                                                 type="button"
                                                 onclick="permanentlyDeleteTemplate({{ $template->id }}, '{{ addslashes($template->name) }}')"
                                                 class="text-sm text-red-500 hover:underline"
                                             >
-                                                Delete permanently
+                                                {{ __('templates.delete_forever') }}
                                             </button>
                                         </div>
                                     </td>
@@ -212,8 +210,8 @@
 
             async function publishTemplate(id) {
                 const confirmed = await window.requestModalConfirmation(
-                    'Publish template',
-                    'Publish this template? Users will be able to choose it for their blogs.',
+                    @js(__('templates.publish_confirm_title')),
+                    @js(__('templates.publish_confirm')),
                 );
                 if (!confirmed) return;
 
@@ -232,17 +230,17 @@
                                   .json()
                                   .then((e) =>
                                       showTemplateActionError(
-                                          e.message || 'The template could not be published.',
+                                          e.message || @js(__('templates.publish_error')),
                                       ),
                                   ),
                     )
-                    .catch(() => showTemplateActionError('Network error. Please try again.'));
+                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
             }
 
             async function deleteTemplate(id, name) {
                 const confirmed = await window.requestModalConfirmation(
-                    'Delete template',
-                    `Delete template "${name}"? This cannot be undone.`,
+                    @js(__('templates.delete')),
+                    @js(__('templates.delete_confirm', ['name' => '${name}'])),
                 );
                 if (!confirmed) return;
 
@@ -259,11 +257,11 @@
                                   .json()
                                   .then((e) =>
                                       showTemplateActionError(
-                                          e.message || 'The template could not be deleted.',
+                                          e.message || @js(__('templates.delete_error')),
                                       ),
                                   ),
                     )
-                    .catch(() => showTemplateActionError('Network error. Please try again.'));
+                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
             }
 
             function restoreTemplate(id) {
@@ -280,17 +278,17 @@
                                   .json()
                                   .then((e) =>
                                       showTemplateActionError(
-                                          e.message || 'The template could not be restored.',
+                                          e.message || @js(__('templates.restore_error')),
                                       ),
                                   ),
                     )
-                    .catch(() => showTemplateActionError('Network error. Please try again.'));
+                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
             }
 
             async function permanentlyDeleteTemplate(id, name) {
                 const confirmed = await window.requestModalConfirmation(
-                    'Delete template permanently',
-                    `Permanently delete template "${name}"? This cannot be undone.`,
+                    @js(__('templates.delete_forever')),
+                    @js(__('templates.delete_forever_confirm', ['name' => ':name'])).replace(':name', name),
                 );
                 if (!confirmed) return;
 
@@ -308,11 +306,11 @@
                                   .then((e) =>
                                       showTemplateActionError(
                                           e.message ||
-                                              'The template could not be permanently deleted.',
+                                              @js(__('templates.delete_error')),
                                       ),
                                   ),
                     )
-                    .catch(() => showTemplateActionError('Network error. Please try again.'));
+                    .catch(() => showTemplateActionError(@js(__('ui.network_error'))));
             }
         </script>
     @endpush

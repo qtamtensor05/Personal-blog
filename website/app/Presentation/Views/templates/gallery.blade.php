@@ -1,17 +1,17 @@
 @extends ('layouts.app')
 
-@section ('title', 'Choose a Template')
+@section ('title', __('templates.gallery_title'))
 
 @section ('content')
     <div class="container-custom section-spacing">
         <div class="mx-auto mb-12 max-w-2xl text-center">
-            <h1 class="text-hero mb-4">Choose a Template</h1>
-            <p class="text-secondary">Start with a published template and customize it to match your blog's style.</p>
+            <h1 class="text-hero mb-4">{{ __('templates.gallery_title') }}</h1>
+            <p class="text-secondary">{{ __('templates.gallery_intro') }}</p>
         </div>
 
         @if (count($templates) === 0)
-            <x-empty-state message="No templates available yet">
-                Templates will appear here once the admin publishes them.
+            <x-empty-state :message="__('templates.no_available')">
+                {{ __('templates.published_help') }}
             </x-empty-state>
         @else
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -36,9 +36,7 @@
                                 <div
                                     class="text-secondary flex h-full w-full items-center justify-center"
                                 >
-                                    <svg class="h-16 w-16 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                                    <i class="fa-regular fa-image h-16 w-16 opacity-30" aria-hidden="true"></i>
                                 </div>
                             </div>
                         @endif
@@ -59,7 +57,7 @@
                                     rel="noopener"
                                     class="text-secondary hover:text-accent-primary text-sm transition-colors"
                                 >
-                                    Preview Demo →
+                                    {{ __('templates.preview_demo') }}
                                 </a>
                             @else
                                 <span></span>
@@ -68,7 +66,7 @@
                                 onclick="chooseTemplate({{ $template->id }})"
                                 class="btn-primary text-sm"
                             >
-                                Choose
+                                {{ __('templates.choose') }}
                             </button>
                         </div>
                     </div>

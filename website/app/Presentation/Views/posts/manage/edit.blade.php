@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Edit — ' . $editable->title)
+@section ('title', __('post.edit_title', ['title' => $editable->title]))
 
 @section ('content')
     @php
@@ -14,65 +14,18 @@
     @endphp
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
         <script type="application/json" data-editor-config>
-            {{ Illuminate\Support\Js::from($editorConfig) }}
+            {{ Illuminate\Support\Js::encode($editorConfig) }}
         </script>
 
-        <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-                <a
-                    href="{{ route('blogs.posts.index', $blog->id) }}"
-                    class="text-secondary hover:text-accent-primary text-sm"
-                    >← Bài viết</a
-                >
-                <div class="mt-2 flex items-center gap-2">
-                    <x-badge
-                        :variant="$post->status->value === 'PUBLISHED' ? 'primary' : 'default'"
-                        >{{ $post->status->value }}</x-badge
-                    >
-                    <span class="text-secondary text-sm" data-save-status aria-live="polite">
-                        {{
-                            $post->draft !== null && $post->publishedAt !== null
-                                ? 'Unpublished edits'
-                                : 'All changes saved'
-                        }}
-                    </span>
-                </div>
-            </div>
-
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                @if ($post->status->value === 'PUBLISHED')
-                    <a
-                        href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                        target="_blank"
-                        rel="noopener"
-                        class="btn-ghost text-sm"
-                        >View</a
-                    >
-                    <form
-                        method="POST"
-                        action="{{ route('blogs.posts.status', [$blog->id, $post->id]) }}"
-                    >
-                        @csrf
-                        @method ('PATCH')
-                        <input type="hidden" name="status" value="DRAFT" />
-                        <button type="submit" class="btn-secondary text-sm">Unpublish</button>
-                    </form>
-                @endif
-                <form
-                    method="POST"
-                    action="{{ route('blogs.posts.publish', [$blog->id, $post->id]) }}"
-                    data-publish-form
-                >
-                    @csrf
-                    <button type="submit" class="btn-primary">
-                        {{
-                            $post->publishedAt === null
-                                ? 'Publish'
-                                : 'Publish changes'
-                        }}
-                    </button>
-                </form>
+                <a href="{{ route('blogs.posts.index', $blog->id) }}" class="btn-ghost" aria-label="{{ __('post.editor_back') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('post.editor_back') }}</a>
+                <span class="text-secondary text-sm" data-save-status aria-live="polite">{{ __('post.saved') }}</span>
             </div>
+            <form method="POST" action="{{ route('blogs.posts.publish', [$blog->id, $post->id]) }}" data-publish-form>
+                @csrf
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane mr-2" aria-hidden="true"></i>{{ $post->publishedAt === null ? __('post.publish') : __('post.save_changes') }}</button>
+            </form>
         </div>
 
         @if (session('status'))
@@ -83,90 +36,52 @@
             <x-alert type="error" dismissible class="mb-6">{{ $errors->first() }}</x-alert>
         @endif
 
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div class="grid gap-6">
             {{-- Writing area --}}
             <div class="card space-y-4">
-                <label for="title" class="text-secondary block text-sm font-medium"
-                    >Tên bài viết</label
-                >
-                <input
-                    id="title"
-                    name="title"
-                    value="{{ $editable->title }}"
-                    maxlength="160"
-                    required
-                    class="text-primary w-full bg-transparent text-3xl font-semibold focus:outline-none"
-                    placeholder="Nhập tên bài viết"
-                />
-
-                <label for="excerpt" class="text-secondary block text-sm font-medium"
-                    >Mô tả ngắn</label
-                >
-                <textarea
-                    id="excerpt"
-                    name="excerpt"
-                    rows="2"
-                    maxlength="1000"
-                    placeholder="Mô tả ngắn hiển thị trong danh sách bài viết (không bắt buộc)"
-                    class="textarea min-h-0"
-                    >{{ $editable->excerpt }}</textarea
-                >
+                <label for="title" class="text-secondary block text-sm font-medium">{{ __('post.title') }}</label>
+                <input id="title" name="title" value="{{ $editable->title }}" maxlength="160" required class="input text-xl font-semibold" placeholder="{{ __('post.title_placeholder') }}" />
+                <input type="hidden" name="excerpt" value="{{ $editable->excerpt ?? $post->excerpt }}" />
 
                 <div>
-                    <p class="text-secondary mb-2 text-sm font-medium">Nội dung bài viết</p>
-                    <div
-                        class="border-default flex flex-wrap gap-1 border-y py-2"
-                        role="toolbar"
-                        aria-label="Định dạng nội dung"
-                    >
+                    <label for="post-content-fallback" class="text-secondary mb-2 block text-sm font-medium">{{ __('post.content') }}</label>
+                    <div class="border-default flex flex-wrap gap-1 rounded-t-xl border border-b-0 bg-surface-secondary p-2" role="toolbar" aria-label="{{ __('post.toolbar_label') }}">
                         @foreach ([
-                                'bold' => 'Đậm',
-                                'italic' => 'Nghiêng',
-                                'h2' => 'Tiêu đề H2',
-                                'h3' => 'Tiêu đề H3',
-                                'bulletList' => '• Danh sách',
-                                'orderedList' => '1. Danh sách',
-                                'blockquote' => 'Trích dẫn',
-                                'codeBlock' => 'Mã',
-                                'link' => 'Liên kết',
-                                'image' => 'Thêm hình ảnh'
-                            ]
-                            as $command => $label)
-                            <button
-                                type="button"
-                                class="btn-ghost px-3 py-1 text-sm"
-                                data-command="{{ $command }}"
-                            >
-                                {{ $label }}
+                            'bold' => [__('post.toolbar.bold'), 'fa-bold'], 'italic' => [__('post.toolbar.italic'), 'fa-italic'],
+                            'h2' => [__('post.toolbar.heading2'), 'fa-heading'], 'h3' => [__('post.toolbar.heading3'), 'fa-heading'],
+                            'bulletList' => [__('post.toolbar.bullet_list'), 'fa-list-ul'], 'orderedList' => [__('post.toolbar.numbered_list'), 'fa-list-ol'],
+                            'blockquote' => [__('post.toolbar.quote'), 'fa-quote-left'], 'codeBlock' => [__('post.toolbar.code'), 'fa-code'],
+                            'link' => [__('post.toolbar.link'), 'fa-link'], 'image' => [__('post.toolbar.image'), 'fa-image']
+                        ] as $command => [$label, $icon])
+                            <button type="button" class="btn-ghost h-9 w-9 justify-center" data-command="{{ $command }}" aria-label="{{ $label }}" title="{{ $label }}">
+                                <i class="fa-solid {{ $icon }}" aria-hidden="true"></i>
                             </button>
                         @endforeach
-                        <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp,image/gif"
-                            class="hidden"
-                            data-image-input
-                        />
+                        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" data-image-input />
                     </div>
+                    <textarea id="post-content-fallback" data-editor-fallback class="post-editor-fallback" aria-label="{{ __('post.content') }}" placeholder="{{ __('post.start_writing') }}">{{ $editable->content->plainText(20000) }}</textarea>
+                    <div data-editor></div>
+                    <p class="text-secondary text-xs">{{ __('post.content_help') }}</p>
                 </div>
 
-                <div data-editor></div>
+
             </div>
 
             {{-- Post details --}}
             <form
                 method="POST"
                 action="{{ route('blogs.posts.meta', [$blog->id, $post->id]) }}"
-                class="card space-y-4 self-start"
+                class="card grid gap-5 md:grid-cols-2"
             >
                 @csrf
                 @method ('PUT')
-                <h2 class="text-primary text-lg font-semibold">Thông tin bài viết</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('post.details') }}</h2>
 
-                <x-input name="slug" label="Slug" :value="$post->slug" required maxlength="160" />
+                <x-input name="slug" :label="__('post.slug')" :value="$post->slug" required maxlength="160" />
 
                 @if (count($categories) > 0)
                     <fieldset class="space-y-1">
-                        <legend class="text-primary text-sm font-medium">Categories</legend>
+                        <legend class="text-primary text-sm font-medium">{{ __('post.categories') }}</legend>
                         @foreach ($categories as $category)
                             <label class="flex items-center gap-2 text-sm">
                                 <input
@@ -183,7 +98,7 @@
 
                 @if (count($tags) > 0)
                     <fieldset class="space-y-1">
-                        <legend class="text-primary text-sm font-medium">Tags</legend>
+                        <legend class="text-primary text-sm font-medium">{{ __('post.tags') }}</legend>
                         <div class="flex flex-wrap gap-x-4 gap-y-1">
                             @foreach ($tags as $tag)
                                 <label class="flex items-center gap-2 text-sm">
@@ -202,27 +117,27 @@
 
                 <div class="space-y-1">
                     @php($coverAsset = collect($mediaAssets)->firstWhere('id', $post->coverMediaId))
-                    <label for="cover_upload" class="text-primary block text-sm font-medium">Ảnh đại diện bài viết</label>
+                    <label for="cover_upload" class="text-primary block text-sm font-medium">{{ __('post.cover') }}</label>
                     <input type="hidden" id="cover_media_id" name="cover_media_id" value="{{ $post->coverMediaId }}" data-cover-media-id>
                     <input type="hidden" name="og_media_id" value="{{ $post->ogMediaId }}">
                     <div data-cover-preview>@if($coverAsset?->secureUrl)<img src="{{ $coverAsset->secureUrl }}" alt="" class="mb-2 aspect-video w-full rounded-md object-cover">@endif</div>
                     <input id="cover_upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="input" data-cover-image-input>
-                    <p class="text-secondary text-xs" data-cover-status>Chọn ảnh, hệ thống sẽ tự tải lên. Sau đó nhấn “Lưu thông tin”.</p>
+                    <p class="text-secondary text-xs" data-cover-status>{{ __('post.cover_help') }}</p>
                 </div>
                 <x-input
                     name="seo_title"
-                    label="SEO title"
+                    :label="__('post.seo_title')"
                     :value="$post->seoTitle"
                     maxlength="255"
                 />
                 <x-textarea
                     name="seo_description"
-                    label="SEO description"
+                    :label="__('post.seo_description')"
                     rows="2"
                     maxlength="500"
                     >{{ $post->seoDescription }}</x-textarea
                 >
-
+                <p class="text-secondary text-xs md:col-span-2">{{ __('post.seo_description_help') }}</p>
                 <label class="flex items-center gap-2 text-sm">
                     <input type="hidden" name="is_featured" value="0" />
                     <input
@@ -231,11 +146,11 @@
                         value="1"
                         @checked ($post->isFeatured)
                     />
-                    Featured post
+                    {{ __('post.featured') }}
                 </label>
 
                 <button type="submit" class="btn-secondary w-full justify-center">
-                    Save details
+                    {{ __('post.save_info') }}
                 </button>
             </form>
         </div>
@@ -245,17 +160,44 @@
             action="{{ route('blogs.posts.destroy', [$blog->id, $post->id]) }}"
             class="mt-8"
             data-modal-confirm-form
-            data-confirm-title="Delete post"
-            data-confirm-message="Delete this post?"
+            data-confirm-title="{{ __('post.delete') }}"
+            data-confirm-message="{{ __('post.delete_confirm') }}"
         >
             @csrf
             @method ('DELETE')
-            <button type="submit" class="text-sm text-red-500 hover:underline">Delete post</button>
+            <button type="submit" class="text-sm text-red-500 hover:underline">{{ __('post.delete') }}</button>
         </form>
     </div>
 @endsection
 
 @push ('scripts')
+    <script>
+        (() => {
+            const root = document.querySelector('[data-post-editor]');
+                    <textarea id="post-content-fallback" data-editor-fallback class="post-editor-fallback" aria-label="{{ __('post.content') }}" placeholder="{{ __('post.start_writing') }}">{{ $editable->content->plainText(20000) }}</textarea>
+            if (!root || !fallback) return;
+            const config = JSON.parse(root.querySelector('[data-editor-config]').textContent);
+            const title = root.querySelector('[name="title"]');
+            const status = root.querySelector('[data-save-status]');
+            let timer;
+            const saveFallback = async () => {
+                const paragraphs = fallback.value.split(/\n+/).map((text) => ({ type: 'paragraph', ...(text ? { content: [{ type: 'text', text }] } : {}) }));
+                status.textContent = 'Saving.';
+                try {
+                    const response = await fetch(config.draftUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                        body: JSON.stringify({ title: title.value, content: { type: 'doc', content: paragraphs } }),
+                    });
+                    if (!response.ok) throw new Error('Could not save the post content.');
+                    status.textContent = 'Draft saved';
+                } catch (error) { status.textContent = error.message; status.classList.add('text-red-500'); }
+            };
+            const schedule = () => { status.textContent = 'Unsaved changes'; clearTimeout(timer); timer = setTimeout(saveFallback, 900); };
+            fallback.addEventListener('input', schedule);
+            title.addEventListener('input', schedule);
+        })();
+    </script>
     <script>
         (function () {
             const title = document.getElementById('title');
@@ -281,6 +223,16 @@
                 edited = true;
             });
         })();
+    </script>
+    <script>
+        document.querySelector('[data-post-visibility]')?.addEventListener('change', async (event) => {
+            const value = event.target.value;
+            if (value === 'DRAFT') {
+                const form = document.createElement('form'); form.method = 'POST'; form.action = {{ Illuminate\Support\Js::from(route('blogs.posts.status', [$blog->id, $post->id])) }};
+                form.innerHTML = '<input name="_token" value="{{ csrf_token() }}"><input name="_method" value="PATCH"><input name="status" value="DRAFT">'; document.body.append(form); form.submit(); return;
+            }
+            if (value === 'PUBLIC') document.querySelector('[data-publish-form]')?.requestSubmit();
+        });
     </script>
     @vite ('app/Presentation/Js/post-editor.js')
 @endpush

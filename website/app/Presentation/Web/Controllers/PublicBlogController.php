@@ -6,6 +6,7 @@ namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
+use App\Application\Content\Contracts\PostRepository;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\ValueObjects\TiptapDocument;
 use App\Domain\Templates\TemplateLayouts;
@@ -22,6 +23,7 @@ final class PublicBlogController extends Controller
         ViewPublicBlogService $viewBlog,
         MediaAssetRepository $media,
         TiptapHtmlRenderer $renderer,
+        PostRepository $posts,
     ): View {
         try {
             $page = $viewBlog->execute($slug, $request->user() ? (int) $request->user()->id : null);
@@ -40,6 +42,12 @@ final class PublicBlogController extends Controller
             foreach ($content['mediaIds'] ?? [] as $id) {
                 if (($asset = $media->find((int) $id)) !== null) {
                     $mediaUrls[(int) $id] = $asset->secureUrl;
+                }
+            }
+            foreach ($content['slides'] ?? [] as $slide) {
+                $slideMediaId = (int) ($slide['mediaId'] ?? 0);
+                if ($slideMediaId > 0 && ($asset = $media->find($slideMediaId)) !== null) {
+                    $mediaUrls[$slideMediaId] = $asset->secureUrl;
                 }
             }
             if (
@@ -67,8 +75,11 @@ final class PublicBlogController extends Controller
             default => 'public.blog-home',
         };
 
+        $publicPosts = $posts->publicSummariesForBlog($page->blog->id, 24);
+
         return view($view, [
             'page' => $page,
+            'publicPosts' => $publicPosts,
             'mediaUrls' => $mediaUrls,
             'documentHtml' => $documentHtml,
             'screen' => in_array($request->route('screen'), ['posts', 'about', 'contact'], true)

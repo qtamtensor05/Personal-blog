@@ -5,7 +5,7 @@
     $description = $staticPage->seoDescription ?? $staticPage->content->plainText(160);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $settings->locale }}">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,11 +33,14 @@
             class="px-4 py-2 text-center text-sm"
             style="background: var(--d-accent); color: var(--d-text)"
         >
-            Bạn đang xem với tư cách chủ blog. Khách truy cập chỉ thấy nội dung đã xuất bản.
+            {{ __('public.owner_preview') }}
         </div>
     @endif
+    <div class="container-custom flex justify-end pt-3">
+        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+    </div>
 
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="Loading content">
+    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_content') }}">
         <main class="container-custom max-w-3xl py-10">
             <a
                 href="{{ route('public.blog', $blog->slug) }}"
