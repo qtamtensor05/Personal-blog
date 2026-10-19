@@ -295,13 +295,28 @@
                     }}
                 </h2>
                 <p>{{ $contact['description'] ?? '' }}</p>
-                @if (!empty($contact['ctaLabel']))
-                    <a
-                        href="{{ $contact['ctaUrl'] ?? 'mailto:hello@example.com' }}"
-                        >{{ $contact['ctaLabel'] }}</a
-                    >
-                @endif
+                <a href="{{ $screenUrl('contact') }}">{{
+                    $contact['ctaLabel'] ??
+                        'Xem thông tin liên hệ'
+                }}</a>
             </section>
+        </main>
+        <section id="contact" class="le-contact">
+            <p class="le-mark">✤</p>
+            <h2>
+                {{
+                    $contact['title'] ??
+                        "Let me know what's on your mind"
+                }}
+            </h2>
+            <p>{{ $contact['description'] ?? '' }}</p>
+            @if (!empty($contact['ctaLabel']))
+                <a
+                    href="{{ $contact['ctaUrl'] ?? 'mailto:hello@example.com' }}"
+                    >{{ $contact['ctaLabel'] }}</a
+                >
+            @endif
+        </section>
         </main>
     @else
         @include ('public.templates.lifestyle-editorial.screens.' . $screen,
