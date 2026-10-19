@@ -30,33 +30,48 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
         return $id;
     }
 
-    public function paginateForRecipient(int $recipientUserId, int $page, int $perPage): NotificationPage
-    {
+    public function paginateForRecipient(
+        int $recipientUserId,
+        int $page,
+        int $perPage,
+    ): NotificationPage {
         $query = DB::table('notifications')->where('recipient_user_id', $recipientUserId);
         $total = (clone $query)->count();
-        $items = $query->orderByDesc('created_at')->orderByDesc('id')
-            ->offset(($page - 1) * $perPage)->limit($perPage)->get()
-            ->map(fn (object $row): NotificationRecord => $this->map($row))->all();
+        $items = $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get()
+            ->map(fn (object $row): NotificationRecord => $this->map($row))
+            ->all();
 
         return new NotificationPage($items, $total, $page, $perPage);
     }
 
     public function unreadCount(int $recipientUserId): int
     {
-        return DB::table('notifications')->where('recipient_user_id', $recipientUserId)->whereNull('read_at')->count();
+        return DB::table('notifications')
+            ->where('recipient_user_id', $recipientUserId)
+            ->whereNull('read_at')
+            ->count();
     }
 
     public function markReadForRecipient(string $id, int $recipientUserId): bool
     {
-        $notification = DB::table('notifications')->where('id', $id)
-            ->where('recipient_user_id', $recipientUserId)->first(['read_at']);
+        $notification = DB::table('notifications')
+            ->where('id', $id)
+            ->where('recipient_user_id', $recipientUserId)
+            ->first(['read_at']);
 
         if ($notification === null) {
             return false;
         }
 
         if ($notification->read_at === null) {
-            DB::table('notifications')->where('id', $id)->where('recipient_user_id', $recipientUserId)
+            DB::table('notifications')
+                ->where('id', $id)
+                ->where('recipient_user_id', $recipientUserId)
                 ->update(['read_at' => now(), 'updated_at' => now()]);
         }
 
@@ -67,7 +82,9 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
     {
         $now = now();
 
-        return DB::table('notifications')->where('recipient_user_id', $recipientUserId)->whereNull('read_at')
+        return DB::table('notifications')
+            ->where('recipient_user_id', $recipientUserId)
+            ->whereNull('read_at')
             ->update(['read_at' => $now, 'updated_at' => $now]);
     }
 

@@ -35,7 +35,11 @@ final class QueryBuilderPageRepository implements PageRepository
 
     public function forBlog(int $blogId): array
     {
-        return $this->base($blogId)->orderBy('title')->get()->map(fn ($row) => $this->toDomain($row))->all();
+        return $this->base($blogId)
+            ->orderBy('title')
+            ->get()
+            ->map(fn ($row) => $this->toDomain($row))
+            ->all();
     }
 
     public function publishedForBlog(int $blogId): array
@@ -60,11 +64,19 @@ final class QueryBuilderPageRepository implements PageRepository
 
     public function pageKeyExists(int $blogId, string $pageKey): bool
     {
-        return DB::table(self::TABLE)->where('blog_id', $blogId)->where('page_key', $pageKey)->exists();
+        return DB::table(self::TABLE)
+            ->where('blog_id', $blogId)
+            ->where('page_key', $pageKey)
+            ->exists();
     }
 
-    public function create(int $blogId, int $actorId, string $slug, string $pageKey, PostDraft $draft): int
-    {
+    public function create(
+        int $blogId,
+        int $actorId,
+        string $slug,
+        string $pageKey,
+        PostDraft $draft,
+    ): int {
         $now = now();
 
         return (int) DB::table(self::TABLE)->insertGetId([
@@ -84,26 +96,47 @@ final class QueryBuilderPageRepository implements PageRepository
 
     public function saveDraft(int $blogId, int $id, PostDraft $draft, int $updatedBy): void
     {
-        $values = ['draft_data' => json_encode($draft), 'updated_by' => $updatedBy, 'updated_at' => now()];
-        $row = $this->base($blogId)->where('id', $id)->first(['status', 'published_at']);
+        $values = [
+            'draft_data' => json_encode($draft),
+            'updated_by' => $updatedBy,
+            'updated_at' => now(),
+        ];
+        $row = $this->base($blogId)
+            ->where('id', $id)
+            ->first(['status', 'published_at']);
 
         // Never published: no live version to protect.
-        if ($row !== null && $row->published_at === null && $row->status === PostStatus::Draft->value) {
-            $values += ['title' => $draft->title, 'content_json' => json_encode($draft->content->toArray())];
+        if (
+            $row !== null &&
+            $row->published_at === null &&
+            $row->status === PostStatus::Draft->value
+        ) {
+            $values += [
+                'title' => $draft->title,
+                'content_json' => json_encode($draft->content->toArray()),
+            ];
         }
 
         $this->base($blogId)->where('id', $id)->update($values);
     }
 
-    public function updateMeta(int $blogId, int $id, string $slug, ?string $seoTitle, ?string $seoDescription, int $updatedBy): void
-    {
-        $this->base($blogId)->where('id', $id)->update([
-            'slug' => $slug,
-            'seo_title' => $seoTitle,
-            'seo_description' => $seoDescription,
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+    public function updateMeta(
+        int $blogId,
+        int $id,
+        string $slug,
+        ?string $seoTitle,
+        ?string $seoDescription,
+        int $updatedBy,
+    ): void {
+        $this->base($blogId)
+            ->where('id', $id)
+            ->update([
+                'slug' => $slug,
+                'seo_title' => $seoTitle,
+                'seo_description' => $seoDescription,
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 
     public function publish(int $blogId, int $id, int $updatedBy): void
@@ -138,20 +171,24 @@ final class QueryBuilderPageRepository implements PageRepository
 
     public function setStatus(int $blogId, int $id, PostStatus $status, int $updatedBy): void
     {
-        $this->base($blogId)->where('id', $id)->update([
-            'status' => $status->value,
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+        $this->base($blogId)
+            ->where('id', $id)
+            ->update([
+                'status' => $status->value,
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 
     public function softDelete(int $blogId, int $id, int $updatedBy): void
     {
-        $this->base($blogId)->where('id', $id)->update([
-            'deleted_at' => now(),
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+        $this->base($blogId)
+            ->where('id', $id)
+            ->update([
+                'deleted_at' => now(),
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 
     private function base(int $blogId): Builder
@@ -168,7 +205,9 @@ final class QueryBuilderPageRepository implements PageRepository
             slug: $row->slug,
             pageKey: $row->page_key,
             content: TiptapDocument::fromArray(json_decode($row->content_json, true) ?? []),
-            draft: $row->draft_data !== null ? PostDraft::fromArray(json_decode($row->draft_data, true)) : null,
+            draft: $row->draft_data !== null
+                ? PostDraft::fromArray(json_decode($row->draft_data, true))
+                : null,
             status: PostStatus::from($row->status),
             seoTitle: $row->seo_title,
             seoDescription: $row->seo_description,

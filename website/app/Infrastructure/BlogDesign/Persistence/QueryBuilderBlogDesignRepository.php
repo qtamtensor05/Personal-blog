@@ -24,7 +24,9 @@ final class QueryBuilderBlogDesignRepository implements BlogDesignRepository
         return new BlogDesignRecord(
             blogId: (int) $row->blog_id,
             templateId: $row->template_id !== null ? (int) $row->template_id : null,
-            draftTemplateId: $row->draft_template_id !== null ? (int) $row->draft_template_id : null,
+            draftTemplateId: $row->draft_template_id !== null
+                ? (int) $row->draft_template_id
+                : null,
             publishedData: $row->published_data !== null
                 ? BlogDesignData::fromArray(json_decode($row->published_data, true))
                 : null,
@@ -79,12 +81,14 @@ final class QueryBuilderBlogDesignRepository implements BlogDesignRepository
 
         $published = $published->withSlotContent($content);
 
-        DB::table(self::TABLE)->where('blog_id', $blogId)->update([
-            'template_id' => $draft->templateId,
-            'published_data' => json_encode($published),
-            'published_at' => now(),
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+        DB::table(self::TABLE)
+            ->where('blog_id', $blogId)
+            ->update([
+                'template_id' => $draft->templateId,
+                'published_data' => json_encode($published),
+                'published_at' => now(),
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 }

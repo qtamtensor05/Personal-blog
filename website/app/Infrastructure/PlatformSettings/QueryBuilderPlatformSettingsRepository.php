@@ -26,7 +26,11 @@ final class QueryBuilderPlatformSettingsRepository implements PlatformSettingsRe
         int $expectedRevision,
         int $updatedBy,
     ): PlatformSettingsRecord {
-        return DB::transaction(function () use ($settings, $expectedRevision, $updatedBy): PlatformSettingsRecord {
+        return DB::transaction(function () use (
+            $settings,
+            $expectedRevision,
+            $updatedBy,
+        ): PlatformSettingsRecord {
             $row = DB::table('platform_settings')->where('id', 1)->lockForUpdate()->first();
             $now = now();
 
@@ -44,7 +48,12 @@ final class QueryBuilderPlatformSettingsRepository implements PlatformSettingsRe
                     'updated_at' => $now,
                 ]);
 
-                return new PlatformSettingsRecord($settings, 1, $updatedBy, $now->toDateTimeString());
+                return new PlatformSettingsRecord(
+                    $settings,
+                    1,
+                    $updatedBy,
+                    $now->toDateTimeString(),
+                );
             }
 
             if ((int) $row->revision !== $expectedRevision) {
@@ -52,21 +61,30 @@ final class QueryBuilderPlatformSettingsRepository implements PlatformSettingsRe
             }
 
             $revision = $expectedRevision + 1;
-            DB::table('platform_settings')->where('id', 1)->update([
-                'config_json' => json_encode($settings->toArray(), JSON_THROW_ON_ERROR),
-                'revision' => $revision,
-                'updated_by' => $updatedBy,
-                'updated_at' => $now,
-            ]);
+            DB::table('platform_settings')
+                ->where('id', 1)
+                ->update([
+                    'config_json' => json_encode($settings->toArray(), JSON_THROW_ON_ERROR),
+                    'revision' => $revision,
+                    'updated_by' => $updatedBy,
+                    'updated_at' => $now,
+                ]);
 
-            return new PlatformSettingsRecord($settings, $revision, $updatedBy, $now->toDateTimeString());
+            return new PlatformSettingsRecord(
+                $settings,
+                $revision,
+                $updatedBy,
+                $now->toDateTimeString(),
+            );
         }, 3);
     }
 
     private function toRecord(object $row): PlatformSettingsRecord
     {
         return new PlatformSettingsRecord(
-            data: PlatformSettingsData::fromArray(json_decode($row->config_json, true, flags: JSON_THROW_ON_ERROR)),
+            data: PlatformSettingsData::fromArray(
+                json_decode($row->config_json, true, flags: JSON_THROW_ON_ERROR),
+            ),
             revision: (int) $row->revision,
             updatedBy: $row->updated_by !== null ? (int) $row->updated_by : null,
             updatedAt: (string) $row->updated_at,

@@ -96,9 +96,15 @@ final class QueryBuilderPostRepository implements PostRepository
         ];
 
         // A post never published has no live version to protect: keep live columns in sync.
-        $row = $this->base($blogId)->where('id', $id)->first(['status', 'published_at']);
+        $row = $this->base($blogId)
+            ->where('id', $id)
+            ->first(['status', 'published_at']);
 
-        if ($row !== null && $row->published_at === null && $row->status === PostStatus::Draft->value) {
+        if (
+            $row !== null &&
+            $row->published_at === null &&
+            $row->status === PostStatus::Draft->value
+        ) {
             $values += [
                 'title' => $draft->title,
                 'excerpt' => $draft->excerpt,
@@ -123,34 +129,64 @@ final class QueryBuilderPostRepository implements PostRepository
         int $updatedBy,
     ): void {
         DB::transaction(function () use (
-            $blogId, $id, $slug, $coverMediaId, $ogMediaId, $seoTitle, $seoDescription,
-            $isFeatured, $categoryIds, $tagIds, $updatedBy
+            $blogId,
+            $id,
+            $slug,
+            $coverMediaId,
+            $ogMediaId,
+            $seoTitle,
+            $seoDescription,
+            $isFeatured,
+            $categoryIds,
+            $tagIds,
+            $updatedBy,
         ): void {
             $now = now();
 
-            $this->base($blogId)->where('id', $id)->update([
-                'slug' => $slug,
-                'cover_media_id' => $coverMediaId,
-                'og_media_id' => $ogMediaId,
-                'seo_title' => $seoTitle,
-                'seo_description' => $seoDescription,
-                'is_featured' => $isFeatured,
-                'updated_by' => $updatedBy,
-                'updated_at' => $now,
-            ]);
+            $this->base($blogId)
+                ->where('id', $id)
+                ->update([
+                    'slug' => $slug,
+                    'cover_media_id' => $coverMediaId,
+                    'og_media_id' => $ogMediaId,
+                    'seo_title' => $seoTitle,
+                    'seo_description' => $seoDescription,
+                    'is_featured' => $isFeatured,
+                    'updated_by' => $updatedBy,
+                    'updated_at' => $now,
+                ]);
 
             // Composite FKs (blog_id, post_id) / (blog_id, category_id) keep links inside the blog.
-            DB::table('post_categories')->where('blog_id', $blogId)->where('post_id', $id)->delete();
-            DB::table('post_categories')->insert(array_map(fn (int $categoryId) => [
-                'blog_id' => $blogId, 'post_id' => $id, 'category_id' => $categoryId,
-                'created_at' => $now, 'updated_at' => $now,
-            ], $categoryIds));
+            DB::table('post_categories')
+                ->where('blog_id', $blogId)
+                ->where('post_id', $id)
+                ->delete();
+            DB::table('post_categories')->insert(
+                array_map(
+                    fn (int $categoryId) => [
+                        'blog_id' => $blogId,
+                        'post_id' => $id,
+                        'category_id' => $categoryId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    $categoryIds,
+                ),
+            );
 
             DB::table('post_tags')->where('blog_id', $blogId)->where('post_id', $id)->delete();
-            DB::table('post_tags')->insert(array_map(fn (int $tagId) => [
-                'blog_id' => $blogId, 'post_id' => $id, 'tag_id' => $tagId,
-                'created_at' => $now, 'updated_at' => $now,
-            ], $tagIds));
+            DB::table('post_tags')->insert(
+                array_map(
+                    fn (int $tagId) => [
+                        'blog_id' => $blogId,
+                        'post_id' => $id,
+                        'tag_id' => $tagId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    $tagIds,
+                ),
+            );
         });
     }
 
@@ -187,20 +223,24 @@ final class QueryBuilderPostRepository implements PostRepository
 
     public function setStatus(int $blogId, int $id, PostStatus $status, int $updatedBy): void
     {
-        $this->base($blogId)->where('id', $id)->update([
-            'status' => $status->value,
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+        $this->base($blogId)
+            ->where('id', $id)
+            ->update([
+                'status' => $status->value,
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 
     public function softDelete(int $blogId, int $id, int $updatedBy): void
     {
-        $this->base($blogId)->where('id', $id)->update([
-            'deleted_at' => now(),
-            'updated_by' => $updatedBy,
-            'updated_at' => now(),
-        ]);
+        $this->base($blogId)
+            ->where('id', $id)
+            ->update([
+                'deleted_at' => now(),
+                'updated_by' => $updatedBy,
+                'updated_at' => now(),
+            ]);
     }
 
     private function base(int $blogId): Builder
@@ -220,7 +260,9 @@ final class QueryBuilderPostRepository implements PostRepository
             slug: $row->slug,
             excerpt: $row->excerpt,
             content: TiptapDocument::fromArray(json_decode($row->content_json, true) ?? []),
-            draft: $row->draft_data !== null ? PostDraft::fromArray(json_decode($row->draft_data, true)) : null,
+            draft: $row->draft_data !== null
+                ? PostDraft::fromArray(json_decode($row->draft_data, true))
+                : null,
             status: PostStatus::from($row->status),
             coverMediaId: $row->cover_media_id !== null ? (int) $row->cover_media_id : null,
             ogMediaId: $row->og_media_id !== null ? (int) $row->og_media_id : null,
@@ -230,10 +272,18 @@ final class QueryBuilderPostRepository implements PostRepository
             publishedAt: $row->published_at,
             updatedAt: (string) $row->updated_at,
             categoryIds: $withTaxonomy
-                ? DB::table('post_categories')->where('post_id', $id)->pluck('category_id')->map(fn ($v) => (int) $v)->all()
+                ? DB::table('post_categories')
+                    ->where('post_id', $id)
+                    ->pluck('category_id')
+                    ->map(fn ($v) => (int) $v)
+                    ->all()
                 : [],
             tagIds: $withTaxonomy
-                ? DB::table('post_tags')->where('post_id', $id)->pluck('tag_id')->map(fn ($v) => (int) $v)->all()
+                ? DB::table('post_tags')
+                    ->where('post_id', $id)
+                    ->pluck('tag_id')
+                    ->map(fn ($v) => (int) $v)
+                    ->all()
                 : [],
         );
     }

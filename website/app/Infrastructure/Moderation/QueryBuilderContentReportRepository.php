@@ -34,14 +34,21 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
         return DB::table('content_reports')
             ->where('reporter_user_id', $reporterId)
             ->where('blog_id', $blogId)
-            ->when($postId === null, fn ($q) => $q->whereNull('post_id'), fn ($q) => $q->where('post_id', $postId))
+            ->when(
+                $postId === null,
+                fn ($q) => $q->whereNull('post_id'),
+                fn ($q) => $q->where('post_id', $postId),
+            )
             ->whereIn('status', self::PENDING)
             ->exists();
     }
 
     public function search(?ReportStatus $status, int $page, int $perPage): array
     {
-        $builder = $this->joined()->when($status !== null, fn ($q) => $q->where('r.status', $status->value));
+        $builder = $this->joined()->when(
+            $status !== null,
+            fn ($q) => $q->where('r.status', $status->value),
+        );
         $total = (clone $builder)->count();
 
         $items = $builder
@@ -64,25 +71,33 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
         DB::table('content_reports')
             ->where('id', $id)
             ->where('status', ReportStatus::Open->value)
-            ->update(['status' => ReportStatus::Reviewing->value, 'assigned_to' => $adminId, 'updated_at' => now()]);
+            ->update([
+                'status' => ReportStatus::Reviewing->value,
+                'assigned_to' => $adminId,
+                'updated_at' => now(),
+            ]);
     }
 
     public function close(int $id, ReportStatus $status, int $adminId, ?string $note): void
     {
         $now = now();
 
-        DB::table('content_reports')->where('id', $id)->update([
-            'status' => $status->value,
-            'resolved_by' => $adminId,
-            'resolution_note' => $note,
-            'resolved_at' => $now,
-            'updated_at' => $now,
-        ]);
+        DB::table('content_reports')
+            ->where('id', $id)
+            ->update([
+                'status' => $status->value,
+                'resolved_by' => $adminId,
+                'resolution_note' => $note,
+                'resolved_at' => $now,
+                'updated_at' => $now,
+            ]);
     }
 
     public function suspendBlog(int $blogId): void
     {
-        DB::table('blogs')->where('id', $blogId)->update(['status' => 'SUSPENDED', 'updated_at' => now()]);
+        DB::table('blogs')
+            ->where('id', $blogId)
+            ->update(['status' => 'SUSPENDED', 'updated_at' => now()]);
     }
 
     public function liftBlogSuspension(int $blogId): string
@@ -114,8 +129,13 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
             ->leftJoin('users as u', 'u.id', '=', 'r.reporter_user_id')
             ->select([
                 'r.*',
-                'b.name as blog_name', 'b.slug as blog_slug', 'b.status as blog_status', 'b.owner_user_id',
-                'p.title as post_title', 'p.slug as post_slug', 'p.status as post_status',
+                'b.name as blog_name',
+                'b.slug as blog_slug',
+                'b.status as blog_status',
+                'b.owner_user_id',
+                'p.title as post_title',
+                'p.slug as post_slug',
+                'p.status as post_status',
                 'u.email as reporter_email',
             ]);
     }

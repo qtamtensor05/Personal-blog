@@ -37,8 +37,13 @@ final class QueryBuilderTaxonomyRepository implements TaxonomyRepository
             ->exists();
     }
 
-    public function createCategory(int $blogId, string $name, string $slug, ?string $description, ?int $parentId): int
-    {
+    public function createCategory(
+        int $blogId,
+        string $name,
+        string $slug,
+        ?string $description,
+        ?int $parentId,
+    ): int {
         $now = now();
 
         return (int) DB::table('categories')->insertGetId([
@@ -76,13 +81,19 @@ final class QueryBuilderTaxonomyRepository implements TaxonomyRepository
 
     public function categoryHasChildren(int $blogId, int $id): bool
     {
-        return DB::table('categories')->where('blog_id', $blogId)->where('parent_id', $id)->exists();
+        return DB::table('categories')
+            ->where('blog_id', $blogId)
+            ->where('parent_id', $id)
+            ->exists();
     }
 
     public function deleteCategory(int $blogId, int $id): void
     {
         DB::transaction(function () use ($blogId, $id): void {
-            DB::table('post_categories')->where('blog_id', $blogId)->where('category_id', $id)->delete();
+            DB::table('post_categories')
+                ->where('blog_id', $blogId)
+                ->where('category_id', $id)
+                ->delete();
             DB::table('categories')->where('blog_id', $blogId)->where('id', $id)->delete();
         });
     }
