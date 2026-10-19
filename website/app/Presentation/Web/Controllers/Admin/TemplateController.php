@@ -253,6 +253,40 @@ final class TemplateController extends Controller
             return $this->parseTemplateData($raw);
         }
 
+        $layout = $request->validated('layout');
+        $layout = is_string($layout) ? $layout : ($base?->layout ?? TemplateStarters::blog()->layout);
+        $slotProps = $request->validated('slot_props', []);
+
+        if ($layout === 'lifestyle-editorial') {
+            $starter = $base?->layout === 'lifestyle-editorial'
+                ? $base
+                : TemplateStarters::lifestyleEditorial();
+            $sections = array_map(
+                function (TemplateSectionConfig $slot) use ($slotProps): TemplateSectionConfig {
+                    $submitted = is_array($slotProps[$slot->key] ?? null) ? $slotProps[$slot->key] : [];
+                    $allowed = array_flip(TemplateSlotCatalog::fields($slot->section));
+                    $props = array_replace($slot->props, array_intersect_key($submitted, $allowed));
+
+                    return new TemplateSectionConfig(
+                        key: $slot->key,
+                        section: $slot->section,
+                        props: $props,
+                        region: $slot->region,
+                        label: $slot->label,
+                        visible: $slot->visible,
+                    );
+                },
+                $starter->sections,
+            );
+
+            return new TemplateData(
+                $sections,
+                $starter->designTokens,
+                $starter->postLayout,
+                $layout,
+            );
+        }
+
         $starter = $base ?? TemplateStarters::blog();
         $requested = array_values(
             array_unique(array_filter($request->validated('sections', []), 'is_string')),
@@ -292,13 +326,11 @@ final class TemplateController extends Controller
             throw new InvalidArgumentException('Select at least one supported component.');
         }
 
-        $layout = $request->validated('layout');
-
         return new TemplateData(
             $sections,
             $starter->designTokens,
             $starter->postLayout,
-            is_string($layout) ? $layout : $starter->layout,
+            $layout,
         );
     }
 

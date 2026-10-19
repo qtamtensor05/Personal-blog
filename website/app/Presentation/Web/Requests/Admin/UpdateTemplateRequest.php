@@ -63,6 +63,9 @@ final class UpdateTemplateRequest extends FormRequest
             'slot_visibility.*' => ['nullable', 'boolean'],
             'slot_order' => ['nullable', 'array'],
             'slot_order.*' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'slot_props' => ['nullable', 'array'],
+            'slot_props.*' => ['array'],
+            'slot_props.*.*' => ['nullable'],
         ];
     }
 }

@@ -98,6 +98,14 @@
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a
+                                            href="{{ route('templates.preview', $template->slug) }}"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="text-accent-primary text-sm hover:underline"
+                                        >
+                                            Xem template
+                                        </a>
+                                        <a
                                             href="{{ route('admin.templates.edit', $template->id) }}"
                                             class="text-accent-primary text-sm hover:underline"
                                         >
