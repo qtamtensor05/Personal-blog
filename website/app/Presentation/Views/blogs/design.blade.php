@@ -8,7 +8,7 @@
     $current = $draft ?? $live;
     $hasUnpublished = $draft !== null && ($live === null || json_encode($draft) !== json_encode($live));
     $regionLabels = [
-        'body' => 'Trang chủ / Body',
+        'body' => 'Home page / Body',
         'header' => 'Header',
         'sidebar' => 'Sidebar',
         'footer' => 'Footer',
@@ -136,19 +136,19 @@
                         ->filter(fn($section) => $section->visible)
                         ->groupBy('region');
                     $fieldLabels = [
-                        'eyebrow' => 'Nhãn nhỏ',
-                        'title' => 'Tiêu đề',
-                        'description' => 'Mô tả',
-                        'archiveTitle' => 'Tiêu đề trang bài viết',
-                        'archiveDescription' => 'Mô tả trang bài viết',
+                        'eyebrow' => 'Eyebrow',
+                        'title' => 'Title',
+                        'description' => 'Description',
+                        'archiveTitle' => 'Posts page title',
+                        'archiveDescription' => 'Posts page description',
                         'mediaId' => 'Media ID',
-                        'mediaIds' => 'Media IDs (phân cách dấu phẩy)',
-                        'alt' => 'Mô tả ảnh',
-                        'ctaLabel' => 'Nhãn CTA',
-                        'ctaUrl' => 'Liên kết CTA',
-                        'categoryId' => 'Category ID lọc bài mới',
-                        'categoryIds' => 'Category IDs ghim',
-                        'limit' => 'Số lượng bài mới nhất',
+                        'mediaIds' => 'Media IDs (comma-separated)',
+                        'alt' => 'Image description',
+                        'ctaLabel' => 'CTA label',
+                        'ctaUrl' => 'CTA link',
+                        'categoryId' => 'Category ID to filter latest posts',
+                        'categoryIds' => 'Pinned category IDs',
+                        'limit' => 'Number of latest posts',
                         'copyright' => 'Copyright',
                     ];
                 @endphp
@@ -157,14 +157,14 @@
                         <div>
                             <p class="text-accent-primary text-xs font-semibold tracking-wider uppercase">{{ $regionLabels[$activeRegion] }}</p>
                             <h2 class="text-primary mt-1 text-lg font-semibold">
-                                Chỉnh nội dung {{ $regionLabels[$activeRegion] }}
+                                Edit {{ $regionLabels[$activeRegion] }} content
                             </h2>
-                            <p class="text-secondary mt-1 text-sm">Chỉ các slot thuộc vùng này được hiển thị. Bố cục và vị trí đã được template khóa.</p>
+                            <p class="text-secondary mt-1 text-sm">Only slots in this region are shown. The layout and positions are locked by the template.</p>
                         </div>
                         <a
                             href="{{ route('blogs.show', $blog->id) }}"
                             class="btn-ghost px-3 py-2 text-sm"
-                            >← Chọn vùng khác</a
+                            >← Choose another region</a
                         >
                     </div>
                     <form
@@ -176,10 +176,10 @@
                         @method ('PUT')
                         <input type="hidden" name="region" value="{{ $activeRegion }}" />
                         @foreach ([
-                                'body' => 'Trang chủ',
-                                'header' => 'Header dùng chung',
+                                'body' => 'Home page',
+                                'header' => 'Shared header',
                                 'sidebar' => 'Sidebar',
-                                'footer' => 'Footer dùng chung'
+                                'footer' => 'Shared footer'
                             ]
                             as $region => $regionLabel)
                             @if ($region === $activeRegion && $studioRegions->get($region, collect())->isNotEmpty())
@@ -226,7 +226,7 @@
                                                                         name="slot_content[{{ $section->key }}][{{ $field }}]"
                                                                     >
                                                                         <option value="">
-                                                                            Chọn từ Media của blog
+                                                                            Choose from the blog's Media
                                                                         </option>
                                                                         @foreach ($mediaAssets as $asset)
                                                                             <option
@@ -236,7 +236,7 @@
                                                                                 #{{ $asset->id }} · {{
                                                                                     $asset->resourceType === 'video'
                                                                                         ? 'Video'
-                                                                                        : 'Ảnh'
+                                                                                        : 'Image'
                                                                                 }} · {{ $asset->altText ?: $asset->originalName }}
                                                                             </option>
                                                                         @endforeach
@@ -244,8 +244,8 @@
                                                                     <a
                                                                         href="{{ route('blogs.media.index', $blog->id) }}"
                                                                         class="text-accent-primary inline-block text-xs hover:underline"
-                                                                        >Thêm hình ảnh hoặc video
-                                                                        vào thư viện →</a
+                                                                        >Add images or videos
+                                                                        to the library →</a
                                                                     >
                                                                 </div>
                                                             @elseif (in_array($field, ['categoryId', 'limit'], true))
@@ -261,14 +261,14 @@
                                                                     :name="$inputName"
                                                                     :label="$fieldLabels[$field]"
                                                                     :value="is_array($value) ? implode(',', $value) : $value"
-                                                                    hint="Nhập các ID cách nhau bằng dấu phẩy."
+                                                                    hint="Enter IDs separated by commas."
                                                                 />
                                                             @elseif ($field === 'ctaUrl')
                                                                 <x-input
                                                                     :name="$inputName"
                                                                     :label="$fieldLabels[$field]"
                                                                     :value="$value"
-                                                                    hint="Chấp nhận https://, đường dẫn /..., #section hoặc mailto:."
+                                                                    hint="Accepts https://, paths starting with /, #section, or mailto:."
                                                                 />
                                                             @else
                                                                 <x-input
@@ -285,23 +285,23 @@
                                     </div>
                                 </details>
                             @elseif ($region === $activeRegion)
-                                <x-empty-state message="Template chưa có {{ $regionLabel }}">
-                                    Admin cần thêm component vào vùng này trong template trước khi
-                                    blogger có thể nhập nội dung.
+                                <x-empty-state message="The template has no {{ $regionLabel }}">
+                                    An admin needs to add a component to this region in the template
+                                    before bloggers can enter content.
                                 </x-empty-state>
                             @endif
                         @endforeach
                         <div class="flex flex-wrap gap-3">
                             <button type="submit" class="btn-secondary px-4 py-2">
-                                Lưu nháp {{ $regionLabels[$activeRegion] }}
+                                Save {{ $regionLabels[$activeRegion] }} draft
                             </button>
                             <button
                                 type="submit"
                                 name="publish"
                                 value="1"
-                                class="btn-primary px-4 py-2"
+                                class="btn-primary px-4 py-2 rounded-md"
                             >
-                                Lưu và xuất bản {{ $regionLabels[$activeRegion] }}
+                                Save and publish {{ $regionLabels[$activeRegion] }}
                             </button>
                         </div>
                     </form>
