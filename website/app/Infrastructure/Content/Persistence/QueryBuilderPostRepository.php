@@ -53,12 +53,20 @@ final class QueryBuilderPostRepository implements PostRepository
             ->all();
     }
 
-    public function publicSummariesForBlog(int $blogId, int $limit): array
+    public function publicSummariesForBlog(int $blogId, ?int $limit, ?string $search = null): array
     {
-        return $this->base($blogId)
-            ->where('status', PostStatus::Published->value)
+        $query = $this->base($blogId)->where('status', PostStatus::Published->value);
+
+        if ($search !== null && $search !== '') {
+            $term = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
+            $query->where(function (Builder $builder) use ($term): void {
+                $builder->where('title', 'like', $term)->orWhere('excerpt', 'like', $term);
+            });
+        }
+
+        return $query
             ->orderByDesc('published_at')
-            ->limit($limit)
+            ->when($limit !== null, fn (Builder $builder) => $builder->limit(max(0, $limit)))
             ->get()
             ->map(fn ($row) => $this->toDomain($row))
             ->all();

@@ -36,7 +36,8 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
-    <div class="container-custom flex justify-end pt-3">
+    <div class="container-custom flex items-center justify-between gap-4 pt-3">
+        @include('public.partials.platform-home-link', ['blog' => $blog])
         @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 

@@ -91,9 +91,6 @@
                             {{ __('template.manage_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </a>
-                        <a href="{{ route('public.blog.section', [$blog->slug, 'posts']) }}" class="text-accent-primary inline-flex items-center gap-2 hover:underline">
-                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>{{ __('template.view_site') }}
-                        </a>
                     </div>
                 </article>
                 <a
@@ -142,14 +139,14 @@
                         <div>
                             <label for="blog-status" class="text-primary mb-1 block text-sm font-medium">{{ __('template.status') }}</label>
                             <select id="blog-status" name="status" class="input">
-                                @foreach (['DRAFT', 'PRIVATE', 'PUBLIC'] as $status)
-                                    <option value="{{ $status }}" @selected(old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === $status)>{{ __('template.status_'.$status) }}</option>
+                                @foreach (['DRAFT', 'PUBLISHED'] as $status)
+                                    <option value="{{ $status }}" @selected(old('status', $blog->status->value) === $status)>{{ __('blog.status_'.$status) }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <input type="hidden" name="visibility" value="{{ old('status', $blog->status->value === 'DRAFT' ? 'DRAFT' : ($blog->visibility->value === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC')) === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC' }}">
+                        <input type="hidden" name="visibility" value="{{ old('visibility', $blog->visibility->value) }}">
                         <input type="hidden" name="discoverable" value="{{ $blog->discoverable ? 1 : 0 }}">
-                        @if ($errors->any()) <p class="text-sm text-red-500">{{ $errors->first() }}</p> @endif
+                        @if ($errors->hasAny(['name', 'slug', 'description', 'status', 'visibility', 'discoverable'])) <p class="text-sm text-red-500">{{ $errors->first() }}</p> @endif
                         <button type="submit" class="btn-primary">{{ __('template.save_changes') }}</button>
                     </form>
                 </section>

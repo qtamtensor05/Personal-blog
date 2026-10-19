@@ -14,12 +14,12 @@
     @endphp
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
         <script type="application/json" data-editor-config>
-            {{ Illuminate\Support\Js::encode($editorConfig) }}
+            {!! Illuminate\Support\Js::encode($editorConfig) !!}
         </script>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <a href="{{ route('blogs.posts.index', $blog->id) }}" class="btn-ghost" aria-label="{{ __('post.editor_back') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('post.editor_back') }}</a>
+                <a onclick="window.history.back(); return false;" href="{{ route('blogs.posts.index', $blog->id) }}" class="btn-ghost" aria-label="{{ __('post.editor_back') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('post.editor_back') }}</a>
                 <span class="text-secondary text-sm" data-save-status aria-live="polite">{{ __('post.saved') }}</span>
             </div>
         </div>
@@ -68,6 +68,8 @@
                         @foreach ([
                             'bold' => [__('post.toolbar.bold'), 'fa-bold'], 'italic' => [__('post.toolbar.italic'), 'fa-italic'],
                             'h2' => [__('post.toolbar.heading2'), 'fa-heading'], 'h3' => [__('post.toolbar.heading3'), 'fa-heading'],
+                            'alignLeft' => [__('post.toolbar.align_left'), 'fa-align-left'], 'alignCenter' => [__('post.toolbar.align_center'), 'fa-align-center'],
+                            'alignRight' => [__('post.toolbar.align_right'), 'fa-align-right'], 'alignJustify' => [__('post.toolbar.align_justify'), 'fa-align-justify'],
                             'bulletList' => [__('post.toolbar.bullet_list'), 'fa-list-ul'], 'orderedList' => [__('post.toolbar.numbered_list'), 'fa-list-ol'],
                             'blockquote' => [__('post.toolbar.quote'), 'fa-quote-left'], 'codeBlock' => [__('post.toolbar.code'), 'fa-code'],
                             'link' => [__('post.toolbar.link'), 'fa-link'], 'image' => [__('post.toolbar.image'), 'fa-image']
@@ -77,6 +79,12 @@
                             </button>
                         @endforeach
                         <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" data-image-input />
+                        <span class="text-secondary flex items-center gap-2 px-2 text-xs" data-image-upload-status
+                            data-uploading-label="{{ __('post.image_uploading') }}"
+                            data-uploaded-label="{{ __('post.image_uploaded') }}"
+                            data-failed-label="{{ __('post.image_upload_failed') }}"
+                            data-not-inserted-label="{{ __('post.image_not_inserted') }}"
+                            role="status" aria-live="polite"></span>
                     </div>
                     <input type="hidden" name="content" data-post-content value="{{ json_encode($editable->content->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}" />
                     <div id="post-content-editor" data-editor tabindex="0" role="textbox" aria-multiline="true" aria-label="{{ __('post.content') }}"></div>

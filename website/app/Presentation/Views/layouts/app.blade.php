@@ -53,7 +53,9 @@
                     href="{{ url('/') }}"
                     class="text-primary hover:text-accent-primary flex items-center gap-2 text-lg font-semibold transition-colors"
                 >
-                    <i class="fa-solid fa-book-open h-8 w-8" aria-hidden="true"></i>
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center">
+                        <i class="fa-solid fa-book-open text-xl leading-none" aria-hidden="true"></i>
+                    </span>
                     <span>{{ config('app.name', 'Blog') }}</span>
                 </a>
 
@@ -69,7 +71,7 @@
                         href="{{ url('/posts') }}"
                         class="text-sm font-medium hover:text-accent-primary transition-colors {{ request()->is('posts*') ? 'text-accent-primary' : '' }}"
                     >
-                        {{ __('ui.articles') }}
+                        {{ __('ui.community_articles') }}
                     </a>
                     @auth
                         <a
@@ -184,12 +186,6 @@
                                 >
                                     {{ __('ui.my_blogs') }}
                                 </a>
-                                <a
-                                    href="{{ route('blogs.create') }}"
-                                    class="text-accent-primary hover:bg-surface-secondary block px-4 py-2 text-sm font-medium"
-                                >
-                                    {{ __('ui.create_blog') }}
-                                </a>
                                 <hr class="border-default my-1" />
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -247,7 +243,7 @@
                         href="{{ url('/posts') }}"
                         class="hover:text-accent-primary text-sm font-medium transition-colors"
                     >
-                        {{ __('ui.articles') }}
+                        {{ __('ui.community_articles') }}
                     </a>
                     @auth
                         <a
@@ -255,12 +251,6 @@
                             class="hover:text-accent-primary text-sm font-medium transition-colors"
                         >
                             {{ __('ui.my_blogs') }}
-                        </a>
-                        <a
-                            href="{{ route('blogs.create') }}"
-                            class="text-accent-primary hover:text-accent-primary text-sm font-medium transition-colors"
-                        >
-                            {{ __('ui.create_blog') }}
                         </a>
                         <div class="border-default border-t pt-3"></div>
                         <a
@@ -331,7 +321,7 @@
                             <a
                                 href="{{ url('/posts') }}"
                                 class="hover:text-accent-primary transition-colors"
-                                >{{ __('ui.articles') }}</a
+                                >{{ __('ui.community_articles') }}</a
                             >
                         </li>
                         @auth
@@ -340,13 +330,6 @@
                                     href="{{ route('blogs.index') }}"
                                     class="hover:text-accent-primary transition-colors"
                                     >{{ __('ui.my_blogs') }}</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="{{ route('blogs.create') }}"
-                                    class="hover:text-accent-primary transition-colors"
-                                    >{{ __('ui.create_blog') }}</a
                                 >
                             </li>
                         @endauth

@@ -5,7 +5,7 @@
 @section ('content')
     <div class="container-custom section-spacing max-w-3xl">
         <div class="mb-8">
-            <a
+            <a onclick="window.history.back(); return false;"
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
                 >← {{ $blog->name }}</a

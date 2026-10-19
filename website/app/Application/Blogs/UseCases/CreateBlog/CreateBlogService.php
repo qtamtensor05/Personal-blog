@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Blogs\UseCases\CreateBlog;
 
 use App\Application\Blogs\Contracts\BlogRepository;
+use App\Application\Blogs\Exceptions\BlogAlreadyExists;
 use App\Application\Blogs\Exceptions\BlogSlugTaken;
 use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
@@ -22,6 +23,12 @@ final readonly class CreateBlogService implements CreateBlogUseCase
         BlogVisibility $visibility = BlogVisibility::Public,
         bool $discoverable = true,
     ): int {
+        $ownedBlogs = $this->blogs->ownedBy($ownerUserId);
+
+        if ($ownedBlogs !== []) {
+            throw new BlogAlreadyExists($ownedBlogs[0]->id);
+        }
+
         if ($this->blogs->slugExists($slug)) {
             throw new BlogSlugTaken;
         }

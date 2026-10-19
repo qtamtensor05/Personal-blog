@@ -10,6 +10,8 @@ use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\DTOs\PostRecord;
 use App\Application\Media\Contracts\MediaAssetRepository;
+use App\Application\Profile\Contracts\ProfileRepository;
+use App\Application\Profile\DTOs\ProfileRecord;
 
 /**
  * A single PUBLISHED post. Blog visibility rules are reused from ViewPublicBlogService,
@@ -21,10 +23,11 @@ final readonly class ViewPublicPostService
         private ViewPublicBlogService $blogs,
         private PostRepository $posts,
         private MediaAssetRepository $media,
+        private ProfileRepository $profiles,
     ) {}
 
     /**
-     * @return array{page: PublicBlogView, post: PostRecord, media: array<int, array{url: string, width: ?int, height: ?int}>}
+     * @return array{page: PublicBlogView, post: PostRecord, media: array<int, array{url: string, width: ?int, height: ?int}>, author: ?ProfileRecord}
      */
     public function execute(string $blogSlug, string $postSlug, ?int $viewerId): array
     {
@@ -44,6 +47,7 @@ final readonly class ViewPublicPostService
         return [
             'page' => $page,
             'post' => $post,
+            'author' => $this->profiles->find($page->blog->ownerUserId),
             // Only READY media of this blog is resolved; anything else is not rendered.
             'media' => $this->media->readyAssetsForBlog(
                 $page->blog->id,

@@ -27,7 +27,7 @@ interface PostRepository
     public function publishedForBlog(int $blogId, int $limit): array;
 
     /** @return list<PostRecord> */
-    public function publicSummariesForBlog(int $blogId, int $limit): array;
+    public function publicSummariesForBlog(int $blogId, ?int $limit, ?string $search = null): array;
 
     public function countForBlog(int $blogId): int;
 

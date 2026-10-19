@@ -41,23 +41,20 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
-    <div class="container-custom flex justify-end pt-3">
-        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
-    </div>
-
     <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_post') }}">
         <main class="container-custom {{ $contentWidthClass }} py-10">
-            @if ($layout->showBlogName)
-                <a
-                    href="{{ route('public.blog', $blog->slug) }}"
-                    class="text-sm"
-                    style="color: var(--d-primary)"
-                    >&larr; {{ $blog->name }}</a
-                >
-            @endif
+            <a
+                href="{{ route('public.blog', $blog->slug) }}"
+                onclick="window.history.back(); return false;"
+                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
+                style="color: var(--d-primary); border-color: var(--d-secondary)"
+            >
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                {{ __('post.back_previous') }}
+            </a>
 
             <article
-                class="{{ $layout->showBlogName ? 'mt-6' : '' }} {{ $articleClass }}"
+                class="mt-6 {{ $articleClass }}"
                 @if ($layout->variant === 'card') style="border-color: var(--d-secondary)" @endif
             >
                 <header class="mb-8 {{ $layout->variant === 'card' ? 'text-center' : '' }}">
@@ -67,6 +64,20 @@
                     >
                         {{ $post->title }}
                     </h1>
+                    <a
+                        href="{{ route('public.blog', $blog->slug) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-secondary inline-flex items-center gap-2 text-sm hover:underline"
+                        aria-label="{{ $author?->name ?? $blog->name }}"
+                    >
+                        @if ($author?->avatarUrl)
+                            <img src="{{ $author->avatarUrl }}" alt="" class="h-8 w-8 rounded-full object-cover" />
+                        @else
+                            <span class="bg-accent-primary text-surface flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">{{ strtoupper(substr($author?->name ?? $blog->name, 0, 1)) }}</span>
+                        @endif
+                        <span>{{ $author?->name ?? $blog->name }}</span>
+                    </a>
                     @if ($layout->showPublishedDate && $post->publishedAt)
                         <time
                             datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"

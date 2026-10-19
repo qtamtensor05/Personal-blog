@@ -19,10 +19,6 @@
         !empty($hero['mediaId']) && isset($mediaUrls[$hero['mediaId']])
             ? $mediaUrls[$hero['mediaId']]
             : $images . '/hero.svg';
-    $aboutImage =
-        !empty($about['mediaId']) && isset($mediaUrls[$about['mediaId']])
-            ? $mediaUrls[$about['mediaId']]
-            : $images . '/portrait.svg';
     $galleryMedia = collect($gallery['mediaIds'] ?? [])
         ->map(fn($id) => $mediaUrls[$id] ?? null)
         ->filter()
@@ -31,6 +27,7 @@
 
     $screen = $screen ?? 'home';
     $templatePreview = $templatePreview ?? false;
+    $search = $search ?? '';
     $homeUrl = $templatePreview
         ? route('templates.preview', $blog->slug)
         : route('public.blog', $blog->slug);
@@ -60,6 +57,10 @@
             {{ __('public.owner_preview') }}
         </div>
     @endif
+
+    <div class="container-custom flex pt-3">
+        @include('public.partials.platform-home-link', ['blog' => $blog])
+    </div>
 
     <header class="le-header">
         <a class="le-brand" href="{{ $homeUrl }}">
@@ -140,23 +141,12 @@
                                     <time>{{ $post->publishedAt ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y') : '' }}</time>
                                     <h2><a href="{{ route('public.post', [$blog->slug, $post->slug]) }}">{{ $post->title }}</a></h2>
                                     <p>{{ $post->excerpt ?? $post->content->plainText(150) }}</p>
-                                    <a class="le-read-more" href="{{ route('public.post', [$blog->slug, $post->slug]) }}">{{ __('public.read_post') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                                 </article>
                             @empty
                                 <p class="le-kicker">{{ __('public.no_posts') }}</p>
                             @endforelse
                         </div>
                         <a class="le-all-posts" href="{{ $screenUrl('posts') }}">{{ __('public.view_all_posts') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
-                    </section>
-
-                    <section id="about" class="le-about">
-                        <img src="{{ $aboutImage }}" alt="">
-                        <div>
-                            <p class="le-kicker">{{ __('public.about_story') }}</p>
-                            <h2>{{ $about['title'] ?? __('public.about_me') }}</h2>
-                            <p>{{ $about['description'] ?? $blog->description }}</p>
-                            <a class="le-page-cta" href="{{ $screenUrl('about') }}">{{ __('public.about_me') }} <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
-                        </div>
                     </section>
 
                     <section class="le-gallery">

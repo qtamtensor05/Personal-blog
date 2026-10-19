@@ -5,7 +5,7 @@
 @section ('content')
     <div class="container-custom section-spacing max-w-4xl">
         <div class="mb-8">
-            <div class="mb-5 flex items-center gap-3"><a href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost" aria-label="{{ __('blog.back_to_blog') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('blog.back_to_blog') }}</a><h1 class="text-hero">{{ __('blog.manage_title', ['name' => $blog->name]) }}</h1></div>
+            <div class="mb-5 flex items-center gap-3"><a onclick="window.history.back(); return false;" href="{{ route('blogs.show', $blog->id) }}" class="btn-ghost" aria-label="{{ __('blog.back_to_blog') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ __('blog.back_to_blog') }}</a><h1 class="text-hero">{{ __('blog.manage_title', ['name' => $blog->name]) }}</h1></div>
             <p class="text-secondary">{{ __('blog.manage_help') }}</p>
         </div>
 
@@ -113,7 +113,7 @@
                     <button type="submit" class="btn-primary rounded-md px-4 py-2">
                         {{ __('blog.save_changes') }}
                     </button>
-                    <a href="{{ route('blogs.show', $blog->id) }}" class="btn-secondary">{{ __('blog.back') }}</a>
+                    <a onclick="window.history.back(); return false;" href="{{ route('blogs.show', $blog->id) }}" class="btn-secondary">{{ __('blog.back') }}</a>
                 </div>
             </form>
         </div>

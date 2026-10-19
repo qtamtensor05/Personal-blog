@@ -32,6 +32,25 @@ it('redirects a newly created blog to the admin template picker', function (): v
         ->assertSee('Tạp chí tối giản');
 });
 
+it('creates a new draft post when the optional slug field is omitted', function (): void {
+    $userId = (int) DB::table('users')
+        ->where('status', 'ACTIVE')
+        ->whereNull('deleted_at')
+        ->value('id');
+    $user = new GenericUser((array) DB::table('users')->where('id', $userId)->first());
+    $blogId = (int) DB::table('blogs')
+        ->where('owner_user_id', $userId)
+        ->whereNull('deleted_at')
+        ->value('id');
+    expect($blogId)->toBeGreaterThan(0);
+
+    $this->actingAs($user)
+        ->post(route('blogs.posts.store', $blogId), ['title' => 'New Article'])
+        ->assertRedirect();
+
+    expect(DB::table('posts')->where('blog_id', $blogId)->where('slug', 'new-article')->exists())->toBeTrue();
+});
+
 it('updates blog publication status and visibility as separate values', function (): void {
     $userId = (int) DB::table('users')
         ->where('status', 'ACTIVE')
