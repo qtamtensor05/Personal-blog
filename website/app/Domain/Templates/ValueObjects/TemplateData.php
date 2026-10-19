@@ -45,7 +45,10 @@ final readonly class TemplateData implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'sections' => array_map(fn (TemplateSectionConfig $s) => $s->jsonSerialize(), $this->sections),
+            'sections' => array_map(
+                fn (TemplateSectionConfig $s) => $s->jsonSerialize(),
+                $this->sections,
+            ),
             'designTokens' => $this->designTokens->jsonSerialize(),
             'postLayout' => $this->postLayout->jsonSerialize(),
             'layout' => $this->layout,

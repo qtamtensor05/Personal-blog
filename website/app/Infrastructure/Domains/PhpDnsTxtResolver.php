@@ -20,9 +20,10 @@ final class PhpDnsTxtResolver implements DnsTxtResolver
 
         foreach ($records as $record) {
             // Long TXT values may be split into several strings.
-            $value = isset($record['entries']) && is_array($record['entries'])
-                ? implode('', $record['entries'])
-                : ($record['txt'] ?? null);
+            $value =
+                isset($record['entries']) && is_array($record['entries'])
+                    ? implode('', $record['entries'])
+                    : $record['txt'] ?? null;
 
             if (is_string($value)) {
                 $values[] = trim($value);

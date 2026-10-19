@@ -39,7 +39,10 @@ final readonly class TemplateSectionConfig implements JsonSerializable
             throw new InvalidArgumentException("Unknown section type: {$section}");
         }
 
-        if (TemplateRegion::tryFrom($region) === null || ! in_array($region, TemplateSlotCatalog::allowedRegions($section), true)) {
+        if (
+            TemplateRegion::tryFrom($region) === null ||
+            ! in_array($region, TemplateSlotCatalog::allowedRegions($section), true)
+        ) {
             throw new InvalidArgumentException("Section {$section} cannot be placed in {$region}.");
         }
     }

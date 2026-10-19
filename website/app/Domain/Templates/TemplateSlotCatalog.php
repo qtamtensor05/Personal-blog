@@ -18,7 +18,9 @@ final class TemplateSlotCatalog
         return match (TemplateSection::from($section)) {
             TemplateSection::Header, TemplateSection::Navigation => TemplateRegion::Header,
             TemplateSection::Footer => TemplateRegion::Footer,
-            TemplateSection::Profile, TemplateSection::SidebarPosts, TemplateSection::Newsletter => TemplateRegion::Sidebar,
+            TemplateSection::Profile,
+            TemplateSection::SidebarPosts,
+            TemplateSection::Newsletter => TemplateRegion::Sidebar,
             default => TemplateRegion::Body,
         };
     }
@@ -29,8 +31,13 @@ final class TemplateSlotCatalog
         return match (TemplateSection::from($section)) {
             TemplateSection::Header, TemplateSection::Navigation => [TemplateRegion::Header->value],
             TemplateSection::Footer => [TemplateRegion::Footer->value],
-            TemplateSection::Profile, TemplateSection::SidebarPosts => [TemplateRegion::Sidebar->value],
-            TemplateSection::Newsletter => [TemplateRegion::Body->value, TemplateRegion::Sidebar->value],
+            TemplateSection::Profile, TemplateSection::SidebarPosts => [
+                TemplateRegion::Sidebar->value,
+            ],
+            TemplateSection::Newsletter => [
+                TemplateRegion::Body->value,
+                TemplateRegion::Sidebar->value,
+            ],
             default => [TemplateRegion::Body->value],
         };
     }
@@ -40,13 +47,33 @@ final class TemplateSlotCatalog
     {
         return match (TemplateSection::from($section)) {
             TemplateSection::Header => ['title', 'description', 'mediaId', 'ctaLabel', 'ctaUrl'],
-            TemplateSection::Hero => ['eyebrow', 'title', 'description', 'mediaId', 'ctaLabel', 'ctaUrl'],
-            TemplateSection::Image, TemplateSection::ImageText => ['title', 'description', 'mediaId', 'alt', 'ctaLabel', 'ctaUrl'],
+            TemplateSection::Hero => [
+                'eyebrow',
+                'title',
+                'description',
+                'mediaId',
+                'ctaLabel',
+                'ctaUrl',
+            ],
+            TemplateSection::Image, TemplateSection::ImageText => [
+                'title',
+                'description',
+                'mediaId',
+                'alt',
+                'ctaLabel',
+                'ctaUrl',
+            ],
             TemplateSection::Gallery => ['title', 'mediaIds'],
             TemplateSection::About, TemplateSection::Profile => ['title', 'description', 'mediaId'],
             TemplateSection::Cta => ['title', 'description', 'ctaLabel', 'ctaUrl'],
             TemplateSection::Newsletter => ['title', 'description', 'ctaLabel'],
-            TemplateSection::RecentPosts => ['title', 'archiveTitle', 'archiveDescription', 'categoryId', 'limit'],
+            TemplateSection::RecentPosts => [
+                'title',
+                'archiveTitle',
+                'archiveDescription',
+                'categoryId',
+                'limit',
+            ],
             TemplateSection::Categories => ['title', 'categoryIds', 'limit'],
             TemplateSection::FeaturedPost => ['title'],
             TemplateSection::Footer => ['copyright', 'description'],

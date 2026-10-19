@@ -13,8 +13,12 @@ final readonly class LocalMediaStorage implements MediaStorage
 {
     public function __construct(private string $disk = 'public') {}
 
-    public function upload(string $localPath, string $folder, string $publicId, ?string $mimeType = null): StoredMedia
-    {
+    public function upload(
+        string $localPath,
+        string $folder,
+        string $publicId,
+        ?string $mimeType = null,
+    ): StoredMedia {
         $contents = file_get_contents($localPath);
 
         if ($contents === false) {
@@ -46,7 +50,10 @@ final readonly class LocalMediaStorage implements MediaStorage
 
     public function destroy(string $publicId, string $resourceType = 'image'): void
     {
-        if (Storage::disk($this->disk)->exists($publicId) && ! Storage::disk($this->disk)->delete($publicId)) {
+        if (
+            Storage::disk($this->disk)->exists($publicId) &&
+            ! Storage::disk($this->disk)->delete($publicId)
+        ) {
             throw new MediaStorageFailed('The local media could not be deleted.');
         }
     }

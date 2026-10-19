@@ -51,8 +51,12 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         return $this->cloudName;
     }
 
-    public function upload(string $localPath, string $folder, string $publicId, ?string $mimeType = null): StoredMedia
-    {
+    public function upload(
+        string $localPath,
+        string $folder,
+        string $publicId,
+        ?string $mimeType = null,
+    ): StoredMedia {
         $params = $this->sign([
             'folder' => $folder,
             'public_id' => $publicId,
@@ -69,7 +73,13 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         try {
             $response = Http::timeout(60)
                 ->attach('file', $handle, basename($localPath))
-                ->post($this->endpoint('upload', str_starts_with((string) $mimeType, 'video/') ? 'video' : 'image'), $params);
+                ->post(
+                    $this->endpoint(
+                        'upload',
+                        str_starts_with((string) $mimeType, 'video/') ? 'video' : 'image',
+                    ),
+                    $params,
+                );
         } catch (ConnectionException $exception) {
             throw new MediaStorageFailed('Cloudinary is unreachable.', previous: $exception);
         } finally {
@@ -104,7 +114,9 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         ]);
 
         try {
-            $response = Http::asForm()->timeout(30)->post($this->endpoint('destroy', $resourceType), $params);
+            $response = Http::asForm()
+                ->timeout(30)
+                ->post($this->endpoint('destroy', $resourceType), $params);
         } catch (ConnectionException $exception) {
             throw new MediaStorageFailed('Cloudinary is unreachable.', previous: $exception);
         }
@@ -124,11 +136,14 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
     {
         ksort($params);
 
-        $toSign = implode('&', array_map(
-            fn (string $key, string $value) => "{$key}={$value}",
-            array_keys($params),
-            $params,
-        ));
+        $toSign = implode(
+            '&',
+            array_map(
+                fn (string $key, string $value) => "{$key}={$value}",
+                array_keys($params),
+                $params,
+            ),
+        );
 
         return $params + [
             'api_key' => $this->apiKey,
@@ -146,7 +161,8 @@ final readonly class CloudinaryMediaStorage implements MediaStorage
         if ($response->failed()) {
             // Cloudinary error messages never contain the secret, but keep them out of user output.
             throw new MediaStorageFailed(
-                'Cloudinary request failed: '.($response->json('error.message') ?? $response->status()),
+                'Cloudinary request failed: '.
+                    ($response->json('error.message') ?? $response->status()),
             );
         }
     }

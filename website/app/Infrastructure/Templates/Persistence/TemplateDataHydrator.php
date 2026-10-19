@@ -115,7 +115,11 @@ final class TemplateDataHydrator
         $homepage = (string) ($data['navigation']['homepage'] ?? 'home');
 
         foreach ($pages as $page) {
-            if (is_array($page) && ($page['id'] ?? null) === $homepage && is_array($page['sections'] ?? null)) {
+            if (
+                is_array($page) &&
+                ($page['id'] ?? null) === $homepage &&
+                is_array($page['sections'] ?? null)
+            ) {
                 return array_values($page['sections']);
             }
         }
