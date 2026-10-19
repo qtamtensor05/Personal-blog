@@ -6,7 +6,10 @@
     <div class="container-custom section-spacing max-w-5xl">
         <div class="mb-8">
             <a
-                onclick="window.history.back(); return false;"
+                onclick="
+                    window.history.back();
+                    return false;
+                "
                 href="{{ route('blogs.show', $blog->id) }}"
                 class="text-secondary hover:text-accent-primary text-sm"
             >
@@ -23,7 +26,8 @@
 
         @if ($errors->has('general'))
             <x-alert type="error" dismissible class="mb-6">
-                {{ $errors->first('general') }} Kiểm tra slug bị trùng hoặc quan hệ chuyên mục cha rồi thử lại.
+                {{ $errors->first('general') }} Kiểm tra slug bị trùng hoặc quan hệ chuyên mục cha
+                rồi thử lại.
             </x-alert>
         @endif
 
@@ -67,7 +71,9 @@
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
-                        @if ($errors->has('parent_id')) <p class="text-sm text-red-500">{{ $errors->first('parent_id') }} Chọn chuyên mục cha thuộc blog này.</p> @endif
+                        @if ($errors->has('parent_id'))
+                            <p class="text-sm text-red-500">{{ $errors->first('parent_id') }} Chọn chuyên mục cha thuộc blog này.</p>
+                        @endif
                     </div>
                     <button type="submit" class="btn-primary rounded-md px-4 py-2 text-sm">
                         {{ __('taxonomy.add_category') }}

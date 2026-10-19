@@ -105,7 +105,6 @@
                             <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i
                             >{{ __('template.view_site') }}
                         </a>
-
                     </div>
                 </article>
                 <a
@@ -206,7 +205,7 @@
                                 @foreach (['DRAFT', 'PUBLISHED'] as $status)
                                     <option
                                         value="{{ $status }}"
-                                        @selected(old('status', $blog->status->value) === $status)
+                                        @selected (old('status', $blog->status->value) === $status)
                                     >
                                         {{ __('blog.status_' . $status) }}
                                     </option>

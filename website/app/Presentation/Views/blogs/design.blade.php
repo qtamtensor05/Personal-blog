@@ -15,39 +15,45 @@
     ];
 @endphp
 
-@section('content')
-<div class="container-custom section-spacing">
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-            <a
-                onclick="window.history.back(); return false;"
-                href="{{ route('blogs.show', $blog->id) }}"
-                class="text-sm text-secondary hover:text-accent-primary"
-            >← {{ $blog->name }}</a>
-            <p class="mt-3 text-sm font-semibold uppercase tracking-wider text-accent-primary">
-                {{ __('template.studio') }}
-            </p>
-            <h1 class="text-hero mt-2">
-                {{ $current
-                    ? __('template.edit_content', ['region' => $regionLabels[$activeRegion]])
-                    : __('template.choose_template') }}
-            </h1>
-            @if ($hasUnpublished)
-                <x-badge variant="highlight" class="mt-2">
-                    {{ __('template.unpublished_changes') }}
-                </x-badge>
+@section ('content')
+    <div class="container-custom section-spacing">
+        <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <a
+                    onclick="
+                        window.history.back();
+                        return false;
+                    "
+                    href="{{ route('blogs.show', $blog->id) }}"
+                    class="text-secondary hover:text-accent-primary text-sm"
+                    >← {{ $blog->name }}</a
+                >
+                <p class="text-accent-primary mt-3 text-sm font-semibold tracking-wider uppercase">
+                    {{ __('template.studio') }}
+                </p>
+                <h1 class="text-hero mt-2">
+                    {{
+                        $current
+                            ? __('template.edit_content', ['region' => $regionLabels[$activeRegion]])
+                            : __('template.choose_template')
+                    }}
+                </h1>
+                @if ($hasUnpublished)
+                    <x-badge variant="highlight" class="mt-2">
+                        {{ __('template.unpublished_changes') }}
+                    </x-badge>
+                @endif
+            </div>
+            @if ($current)
+                <a
+                    href="{{ route('public.blog', $blog->slug) }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn-secondary"
+                >
+                    {{ __('template.open_blog') }} ↗
+                </a>
             @endif
-        </div>
-        @if ($current)
-            <a
-                href="{{ route('public.blog', $blog->slug) }}"
-                target="_blank"
-                rel="noopener"
-                class="btn-secondary"
-            >
-                {{ __('template.open_blog') }} ↗
-            </a>
-        @endif
         </div>
 
         @if (session('status'))

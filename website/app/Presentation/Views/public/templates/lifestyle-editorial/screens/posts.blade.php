@@ -14,9 +14,7 @@
     </header>
 
     <form method="GET" action="{{ $screenUrl('posts') }}" class="le-archive-search">
-        <label for="blog-post-search" class="sr-only">
-            {{ __('posts.search_label') }}
-        </label>
+        <label for="blog-post-search" class="sr-only"> {{ __('posts.search_label') }} </label>
 
         <input
             id="blog-post-search"
@@ -33,9 +31,7 @@
         </button>
 
         @if ($search !== '')
-            <a href="{{ $screenUrl('posts') }}">
-                {{ __('posts.clear_search') }}
-            </a>
+            <a href="{{ $screenUrl('posts') }}"> {{ __('posts.clear_search') }} </a>
         @endif
     </form>
 
@@ -43,11 +39,7 @@
         @forelse ($publicPosts as $post)
             <article>
                 @if ($post->coverMediaId && isset($mediaUrls[$post->coverMediaId]))
-                    <img
-                        src="{{ $mediaUrls[$post->coverMediaId] }}"
-                        alt=""
-                        loading="lazy"
-                    />
+                    <img src="{{ $mediaUrls[$post->coverMediaId] }}" alt="" loading="lazy" />
                 @else
                     <div class="le-archive-placeholder" aria-hidden="true">
                         <i class="fa-solid fa-book-open"></i>
@@ -83,7 +75,11 @@
         @empty
             <div class="le-archive-empty">
                 <p>
-                    {{ $search !== '' ? __('posts.none_match') : __('public.no_posts') }}
+                    {{
+                        $search !== ''
+                            ? __('posts.none_match')
+                            : __('public.no_posts')
+                    }}
                 </p>
             </div>
         @endforelse

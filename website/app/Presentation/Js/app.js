@@ -313,15 +313,27 @@ function initHeroCarousels() {
 
                 if (thumbnailStrip.scrollHeight > thumbnailStrip.clientHeight) {
                     if (thumbRect.top < stripRect.top) {
-                        thumbnailStrip.scrollTo({ top: thumbnailStrip.scrollTop - (stripRect.top - thumbRect.top), behavior: 'smooth' });
+                        thumbnailStrip.scrollTo({
+                            top: thumbnailStrip.scrollTop - (stripRect.top - thumbRect.top),
+                            behavior: 'smooth',
+                        });
                     } else if (thumbRect.bottom > stripRect.bottom) {
-                        thumbnailStrip.scrollTo({ top: thumbnailStrip.scrollTop + (thumbRect.bottom - stripRect.bottom), behavior: 'smooth' });
+                        thumbnailStrip.scrollTo({
+                            top: thumbnailStrip.scrollTop + (thumbRect.bottom - stripRect.bottom),
+                            behavior: 'smooth',
+                        });
                     }
                 } else if (thumbnailStrip.scrollWidth > thumbnailStrip.clientWidth) {
                     if (thumbRect.left < stripRect.left) {
-                        thumbnailStrip.scrollTo({ left: thumbnailStrip.scrollLeft - (stripRect.left - thumbRect.left), behavior: 'smooth' });
+                        thumbnailStrip.scrollTo({
+                            left: thumbnailStrip.scrollLeft - (stripRect.left - thumbRect.left),
+                            behavior: 'smooth',
+                        });
                     } else if (thumbRect.right > stripRect.right) {
-                        thumbnailStrip.scrollTo({ left: thumbnailStrip.scrollLeft + (thumbRect.right - stripRect.right), behavior: 'smooth' });
+                        thumbnailStrip.scrollTo({
+                            left: thumbnailStrip.scrollLeft + (thumbRect.right - stripRect.right),
+                            behavior: 'smooth',
+                        });
                     }
                 }
             }

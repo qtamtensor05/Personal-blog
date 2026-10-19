@@ -398,19 +398,23 @@ a:hover {
     background: var(--color-surface);
 }
 
-[data-image-upload-status][data-loading="true"]::before {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: 0 0 auto;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 9999px;
-  content: "";
-  animation: image-upload-spin 0.7s linear infinite;
+[data-image-upload-status][data-loading='true']::before {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex: 0 0 auto;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+    content: '';
+    animation: image-upload-spin 0.7s linear infinite;
 }
 
 @keyframes image-upload-spin {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .post-editor-loading {
     display: grid;
     min-height: 26rem;

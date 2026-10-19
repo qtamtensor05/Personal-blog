@@ -17,9 +17,10 @@
     $contact = $slots->get('contact', []);
     $footer = $slots->get('site-footer', []);
     $images = asset('images/templates/lifestyle-editorial');
-    $aboutImage = !empty($about['mediaId']) && isset($mediaUrls[$about['mediaId']])
-        ? $mediaUrls[$about['mediaId']]
-        : $images . '/card-field.svg';
+    $aboutImage =
+        !empty($about['mediaId']) && isset($mediaUrls[$about['mediaId']])
+            ? $mediaUrls[$about['mediaId']]
+            : $images . '/card-field.svg';
     $heroImage =
         !empty($hero['mediaId']) && isset($mediaUrls[$hero['mediaId']])
             ? $mediaUrls[$hero['mediaId']]
@@ -65,7 +66,7 @@
     @endif
 
     <div class="container-custom flex pt-3">
-        @include('public.partials.platform-home-link', ['blog' => $blog])
+        @include ('public.partials.platform-home-link', ['blog' => $blog])
     </div>
 
     <header class="le-header">
@@ -229,11 +230,13 @@
                                         src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : $images.'/'.$fallbackCards[$loop->index % 3] }}"
                                         alt=""
                                     />
-                                    <time>{{
+                                    <time
+                                        >{{
                                         $post->publishedAt
                                             ? \\Illuminate\\Support\\Carbon::parse($post->publishedAt)->format('d.m.Y')
                                             : ''
-                                    }}</time>
+                                    }}</time
+                                    >
                                     <h2>
                                         <a
                                             href="{{ route('public.post', [$blog->slug, $post->slug]) }}"

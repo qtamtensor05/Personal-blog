@@ -274,7 +274,9 @@
 .le-hero-thumb:hover {
     transform: translateY(-4px);
 }
-.le-hero-thumb:hover { transform: translateX(-4px); }
+.le-hero-thumb:hover {
+    transform: translateX(-4px);
+}
 .le-hero-thumb.is-active {
     border-color: #fff;
     box-shadow:
@@ -969,9 +971,18 @@
         scroll-snap-type: x mandatory;
         padding: 0.45rem 0 0.75rem;
     }
-    .le-hero-thumb { width: 118px; flex: 0 0 118px; height: 72px; }
-    .le-hero-thumb:hover { transform: translateY(-4px); }
-    .le-hero-controls { top: 1rem; right: 1rem; }
+    .le-hero-thumb {
+        width: 118px;
+        flex: 0 0 118px;
+        height: 72px;
+    }
+    .le-hero-thumb:hover {
+        transform: translateY(-4px);
+    }
+    .le-hero-controls {
+        top: 1rem;
+        right: 1rem;
+    }
     .le-hero-copy {
         width: min(650px, 100%);
     }

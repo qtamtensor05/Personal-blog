@@ -56,7 +56,7 @@ final class PostController extends Controller
             'slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
         ]);
 
-        $baseSlug = ($data['slug'] ?? null) ?: Str::slug($data['title']);
+        $baseSlug = $data['slug'] ?? null ?: Str::slug($data['title']);
         $baseSlug = $baseSlug !== '' ? $baseSlug : 'post';
         $slug = Str::limit($baseSlug, 150, '');
         $suffix = 2;
@@ -86,7 +86,10 @@ final class PostController extends Controller
         $response = redirect()->route('blogs.posts.edit', [$blog, $id]);
 
         return $slugWasAdjusted
-            ? $response->with('status', "Slug '{$baseSlug}' đã được dùng hoặc thuộc bài đã xóa; đường dẫn mới là '{$slug}'.")
+            ? $response->with(
+                'status',
+                "Slug '{$baseSlug}' đã được dùng hoặc thuộc bài đã xóa; đường dẫn mới là '{$slug}'.",
+            )
             : $response;
     }
 
@@ -203,32 +206,35 @@ final class PostController extends Controller
         Request $request,
         ManagePostsService $service,
     ): RedirectResponse {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:160'],
-            'excerpt' => ['nullable', 'string', 'max:1000'],
-            'content' => ['required', 'json'],
-            'slug' => self::SLUG,
-            'cover_media_id' => ['nullable', 'integer', 'min:1'],
-            'og_media_id' => ['nullable', 'integer', 'min:1'],
-            'seo_title' => ['nullable', 'string', 'max:255'],
-            'seo_description' => ['nullable', 'string', 'max:500'],
-            'is_featured' => ['required', 'boolean'],
-            'category_ids' => ['nullable', 'array'],
-            'category_ids.*' => ['integer', 'min:1'],
-            'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer', 'min:1'],
-        ], [
-            'title.required' => 'Vui lòng nhập tiêu đề bài viết ở ô Tiêu đề phía trên.',
-            'title.max' => 'Tiêu đề tối đa 160 ký tự. Hãy rút gọn tiêu đề rồi thử lại.',
-            'content.required' => 'Chưa nhận được nội dung bài viết. Hãy nhập nội dung trong khung soạn thảo rồi thử xuất bản lại.',
-            'content.json' => 'Nội dung chưa được đồng bộ từ trình soạn thảo. Hãy nhập lại nội dung hoặc tải lại trang rồi thử lại.',
-            'slug.required' => 'Vui lòng nhập đường dẫn bài viết ở trường Đường dẫn.',
-            'slug.regex' => 'Đường dẫn chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: bai-viet-moi.',
-            'slug.max' => 'Đường dẫn tối đa 160 ký tự. Hãy rút gọn rồi thử lại.',
-            'is_featured.required' => 'Không nhận được lựa chọn bài viết nổi bật. Hãy tải lại trang rồi thử xuất bản lại.',
-            'category_ids.array' => 'Danh sách chuyên mục không hợp lệ. Hãy chọn lại chuyên mục.',
-            'tag_ids.array' => 'Danh sách thẻ không hợp lệ. Hãy chọn lại thẻ.',
-        ]);
+        $data = $request->validate(
+            [
+                'title' => ['required', 'string', 'max:160'],
+                'excerpt' => ['nullable', 'string', 'max:1000'],
+                'content' => ['required', 'json'],
+                'slug' => self::SLUG,
+                'cover_media_id' => ['nullable', 'integer', 'min:1'],
+                'og_media_id' => ['nullable', 'integer', 'min:1'],
+                'seo_title' => ['nullable', 'string', 'max:255'],
+                'seo_description' => ['nullable', 'string', 'max:500'],
+                'is_featured' => ['required', 'boolean'],
+                'category_ids' => ['nullable', 'array'],
+                'category_ids.*' => ['integer', 'min:1'],
+                'tag_ids' => ['nullable', 'array'],
+                'tag_ids.*' => ['integer', 'min:1'],
+            ],
+            [
+                'title.required' => 'Vui lòng nhập tiêu đề bài viết ở ô Tiêu đề phía trên.',
+                'title.max' => 'Tiêu đề tối đa 160 ký tự. Hãy rút gọn tiêu đề rồi thử lại.',
+                'content.required' => 'Chưa nhận được nội dung bài viết. Hãy nhập nội dung trong khung soạn thảo rồi thử xuất bản lại.',
+                'content.json' => 'Nội dung chưa được đồng bộ từ trình soạn thảo. Hãy nhập lại nội dung hoặc tải lại trang rồi thử lại.',
+                'slug.required' => 'Vui lòng nhập đường dẫn bài viết ở trường Đường dẫn.',
+                'slug.regex' => 'Đường dẫn chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: bai-viet-moi.',
+                'slug.max' => 'Đường dẫn tối đa 160 ký tự. Hãy rút gọn rồi thử lại.',
+                'is_featured.required' => 'Không nhận được lựa chọn bài viết nổi bật. Hãy tải lại trang rồi thử xuất bản lại.',
+                'category_ids.array' => 'Danh sách chuyên mục không hợp lệ. Hãy chọn lại chuyên mục.',
+                'tag_ids.array' => 'Danh sách thẻ không hợp lệ. Hãy chọn lại thẻ.',
+            ],
+        );
 
         try {
             $document = TiptapDocument::fromArray(
@@ -236,7 +242,9 @@ final class PostController extends Controller
             );
         } catch (InvalidArgumentException|\JsonException) {
             return back()
-                ->withErrors(['content' => 'Nội dung bài viết không hợp lệ. Hãy nhập lại trong khung soạn thảo rồi thử xuất bản.'])
+                ->withErrors([
+                    'content' => 'Nội dung bài viết không hợp lệ. Hãy nhập lại trong khung soạn thảo rồi thử xuất bản.',
+                ])
                 ->withInput();
         }
 
@@ -252,11 +260,7 @@ final class PostController extends Controller
                 $actorId,
                 $blog,
                 $post,
-                new PostDraft(
-                    $data['title'],
-                    $data['excerpt'] ?? null,
-                    $document,
-                ),
+                new PostDraft($data['title'], $data['excerpt'] ?? null, $document),
             );
             $service->updateMeta(
                 $actorId,

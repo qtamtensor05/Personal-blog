@@ -34,8 +34,8 @@
     @endif
 
     <div class="container-custom flex items-center justify-between gap-4 pt-3">
-        @include('public.partials.platform-home-link', ['blog' => $blog])
-        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+        @include ('public.partials.platform-home-link', ['blog' => $blog])
+        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
     @if ($page->pages !== [])
@@ -53,7 +53,7 @@
         </nav>
     @endif
 
-    @php ($regions = collect($page->sections)->filter(fn ($section) => $section->visible)->groupBy('region'))
+    @php ($regions = collect($page->sections) ->filter(fn($section) => $section->visible) ->groupBy('region'))
     <header data-animate="page" class="container-custom max-w-6xl space-y-4 pt-6">
         @foreach ($regions->get('header', []) as $section)
             @includeIf ('blogs.design-sections.' . $section->section,

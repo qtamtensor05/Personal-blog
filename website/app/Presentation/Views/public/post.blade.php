@@ -47,12 +47,20 @@
         @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
-    <phantom-ui loading animation="shimmer" reveal="0.2" aria-label="{{ __('public.loading_post') }}">
+    <phantom-ui
+        loading
+        animation="shimmer"
+        reveal="0.2"
+        aria-label="{{ __('public.loading_post') }}"
+    >
         <main data-animate="page" class="container-custom {{ $contentWidthClass }} py-10">
             @if ($layout->showBlogName)
                 <a
                     href="{{ route('public.blog', $blog->slug) }}"
-                    onclick="window.history.back(); return false;"
+                    onclick="
+                        window.history.back();
+                        return false;
+                    "
                     class="inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
                     style="color: var(--d-primary); border-color: var(--d-secondary)"
                 >
@@ -81,9 +89,21 @@
                         aria-label="{{ $author?->name ?? $blog->name }}"
                     >
                         @if ($author?->avatarUrl)
-                            <img src="{{ $author->avatarUrl }}" alt="" class="h-8 w-8 rounded-full object-cover" />
+                            <img
+                                src="{{ $author->avatarUrl }}"
+                                alt=""
+                                class="h-8 w-8 rounded-full object-cover"
+                            />
                         @else
-                            <span class="bg-accent-primary text-surface flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">{{ strtoupper(substr($author?->name ?? $blog->name, 0, 1)) }}</span>
+                            <span
+                                class="bg-accent-primary text-surface flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+                                aria-hidden="true"
+                                >{{
+                                    strtoupper(
+                                        substr($author?->name ?? $blog->name, 0, 1),
+                                    )
+                                }}</span
+                            >
                         @endif
                         <span>{{ $author?->name ?? $blog->name }}</span>
                     </a>
@@ -93,7 +113,11 @@
                             datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"
                             class="text-sm opacity-70"
                         >
-                            {{ \Carbon\Carbon::parse($post->publishedAt)->timezone($settings->timezone)->format('d/m/Y') }}
+                            {{
+                                \Carbon\Carbon::parse($post->publishedAt)
+                                    ->timezone($settings->timezone)
+                                    ->format('d/m/Y')
+                            }}
                         </time>
                     @endif
                 </header>

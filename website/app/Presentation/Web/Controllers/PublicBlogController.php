@@ -92,12 +92,17 @@ final class PublicBlogController extends Controller
             $search !== '' ? $search : null,
         );
 
-        $coverMediaIds = array_values(array_unique(array_filter(array_map(
-            static fn ($post): ?int => $post->coverMediaId,
-            $publicPosts,
-        ))));
+        $coverMediaIds = array_values(
+            array_unique(
+                array_filter(
+                    array_map(static fn ($post): ?int => $post->coverMediaId, $publicPosts),
+                ),
+            ),
+        );
         if ($coverMediaIds !== []) {
-            foreach ($media->readyAssetsForBlog($page->blog->id, $coverMediaIds) as $mediaId => $asset) {
+            foreach (
+                $media->readyAssetsForBlog($page->blog->id, $coverMediaIds) as $mediaId => $asset
+            ) {
                 $mediaUrls[(int) $mediaId] = $asset['url'];
             }
         }

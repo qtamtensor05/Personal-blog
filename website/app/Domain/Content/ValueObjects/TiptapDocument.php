@@ -229,7 +229,7 @@ final readonly class TiptapDocument
         if (in_array($type, ['paragraph', 'heading'], true)) {
             $textAlign = $node['attrs']['textAlign'] ?? null;
             if (in_array($textAlign, ['left', 'center', 'right', 'justify'], true)) {
-                $result['attrs'] = [...($result['attrs'] ?? []), 'textAlign' => $textAlign];
+                $result['attrs'] = [...$result['attrs'] ?? [], 'textAlign' => $textAlign];
             }
         }
 

@@ -54,8 +54,11 @@
                     href="{{ url('/') }}"
                     class="hover:text-accent-primary flex items-center justify-center gap-2 text-lg font-semibold transition-colors"
                 >
-<span class="flex h-8 w-8 shrink-0 items-center justify-center">
-                        <i class="fa-solid fa-book-open text-xl leading-none" aria-hidden="true"></i>
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center">
+                        <i
+                            class="fa-solid fa-book-open text-xl leading-none"
+                            aria-hidden="true"
+                        ></i>
                     </span>
                     <span>{{ config('app.name', 'Blog') }}</span>
                 </a>

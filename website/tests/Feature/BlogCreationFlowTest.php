@@ -48,7 +48,9 @@ it('creates a new draft post when the optional slug field is omitted', function 
         ->post(route('blogs.posts.store', $blogId), ['title' => 'New Article'])
         ->assertRedirect();
 
-    expect(DB::table('posts')->where('blog_id', $blogId)->where('slug', 'new-article')->exists())->toBeTrue();
+    expect(
+        DB::table('posts')->where('blog_id', $blogId)->where('slug', 'new-article')->exists(),
+    )->toBeTrue();
 });
 
 it('updates blog publication status and visibility as separate values', function (): void {
@@ -71,15 +73,19 @@ it('updates blog publication status and visibility as separate values', function
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($user)->put(route('blogs.update', $blogId), [
-        'name' => 'Blog After Update',
-        'slug' => $slug,
-        'description' => '',
-        'status' => 'PUBLISHED',
-        'visibility' => 'PUBLIC',
-        'discoverable' => '0',
-    ])->assertRedirect(route('blogs.show', $blogId));
+    $this->actingAs($user)
+        ->put(route('blogs.update', $blogId), [
+            'name' => 'Blog After Update',
+            'slug' => $slug,
+            'description' => '',
+            'status' => 'PUBLISHED',
+            'visibility' => 'PUBLIC',
+            'discoverable' => '0',
+        ])
+        ->assertRedirect(route('blogs.show', $blogId));
 
-    expect(DB::table('blogs')->where('id', $blogId)->value('status'))->toBe('PUBLISHED')
-        ->and(DB::table('blogs')->where('id', $blogId)->value('visibility'))->toBe('PUBLIC');
+    expect(DB::table('blogs')->where('id', $blogId)->value('status'))
+        ->toBe('PUBLISHED')
+        ->and(DB::table('blogs')->where('id', $blogId)->value('visibility'))
+        ->toBe('PUBLIC');
 });

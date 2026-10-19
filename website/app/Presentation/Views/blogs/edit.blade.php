@@ -7,7 +7,10 @@
         <div class="mb-8">
             <div class="mb-5 flex items-center gap-3">
                 <a
-                    onclick="window.history.back(); return false;"
+                    onclick="
+                        window.history.back();
+                        return false;
+                    "
                     href="{{ route('blogs.show', $blog->id) }}"
                     class="btn-ghost"
                     aria-label="{{ __('blog.back_to_blog') }}"
@@ -17,7 +20,11 @@
                 </a>
 
                 <h1 class="text-hero">
-                    {{ __('blog.manage_title', ['name' => $blog->name]) }}
+                    {{
+                        __('blog.manage_title', [
+                            'name' => $blog->name,
+                        ])
+                    }}
                 </h1>
             </div>
 
@@ -66,15 +73,17 @@
                 @method ('PUT')
 
                 @if ($errors->has('general'))
-                    <x-alert type="error" dismissible>
-                        {{ $errors->first('general') }}
-                    </x-alert>
+                    <x-alert type="error" dismissible> {{ $errors->first('general') }} </x-alert>
                 @endif
 
                 @if ($errors->has('status') || $errors->has('visibility') || $errors->has('discoverable'))
                     <x-alert type="error" dismissible>
-                        {{ $errors->first('status') ?: ($errors->first('visibility') ?: $errors->first('discoverable')) }}
-                        Hãy chọn trạng thái DRAFT hoặc PUBLISHED; quyền hiển thị được thiết lập riêng.
+                        {{
+                            $errors->first('status') ?:
+                                ($errors->first('visibility') ?:
+                                    $errors->first('discoverable'))
+                        }} Hãy chọn trạng thái DRAFT hoặc PUBLISHED; quyền hiển thị được thiết lập
+                        riêng.
                     </x-alert>
                 @endif
 
@@ -100,12 +109,16 @@
                     :label="__('blog.description')"
                     rows="3"
                     :error="$errors->first('description')"
-                >{{ old('description', $blog->description) }}</x-textarea>
+                    >{{
+                        old(
+                            'description',
+                            $blog->description,
+                        )
+                    }}</x-textarea
+                >
 
                 <div class="border-default border-t pt-5">
-                    <h2 class="text-primary mb-4 text-lg font-semibold">
-                        {{ __('blog.access') }}
-                    </h2>
+                    <h2 class="text-primary mb-4 text-lg font-semibold">{{ __('blog.access') }}</h2>
 
                     <div class="space-y-4">
                         <div>
@@ -117,7 +130,11 @@
                                 @foreach (['DRAFT', 'PUBLISHED'] as $status)
                                     <option
                                         value="{{ $status }}"
-                                        {{ old('status', $blog->status->value) === $status ? 'selected' : '' }}
+                                        {{
+                                            old('status', $blog->status->value) === $status
+                                                ? 'selected'
+                                                : ''
+                                        }}
                                     >
                                         {{ __('template.status_' . $status) }}
                                     </option>
@@ -131,9 +148,7 @@
                             value="{{ old('visibility', $blog->visibility->value) }}"
                         />
 
-                        <p class="text-secondary text-xs">
-                            {{ __('blog.status_help') }}
-                        </p>
+                        <p class="text-secondary text-xs">{{ __('blog.status_help') }}</p>
 
                         <div class="flex items-center gap-2">
                             <input type="hidden" name="discoverable" value="0" />
@@ -143,7 +158,11 @@
                                 name="discoverable"
                                 value="1"
                                 id="discoverable"
-                                {{ old('discoverable', $blog->discoverable) ? 'checked' : '' }}
+                                {{
+                                    old('discoverable', $blog->discoverable)
+                                        ? 'checked'
+                                        : ''
+                                }}
                                 class="border-default h-4 w-4 rounded"
                             />
 
@@ -160,7 +179,10 @@
                     </button>
 
                     <a
-                        onclick="window.history.back(); return false;"
+                        onclick="
+                            window.history.back();
+                            return false;
+                        "
                         href="{{ route('blogs.show', $blog->id) }}"
                         class="btn-secondary"
                     >

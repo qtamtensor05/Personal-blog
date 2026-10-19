@@ -5,24 +5,29 @@ import Image from '@tiptap/extension-image';
 const TextAlign = Extension.create({
     name: 'textAlign',
     addGlobalAttributes() {
-        return [{
-            types: ['paragraph', 'heading'],
-            attributes: {
-                textAlign: {
-                    default: null,
-                    parseHTML: (element) => element.style.textAlign || null,
-                    renderHTML: (attributes) => attributes.textAlign
-                        ? { style: `text-align: ${attributes.textAlign}` }
-                        : {},
+        return [
+            {
+                types: ['paragraph', 'heading'],
+                attributes: {
+                    textAlign: {
+                        default: null,
+                        parseHTML: (element) => element.style.textAlign || null,
+                        renderHTML: (attributes) =>
+                            attributes.textAlign
+                                ? { style: `text-align: ${attributes.textAlign}` }
+                                : {},
+                    },
                 },
             },
-        }];
+        ];
     },
     addCommands() {
         return {
-            setTextAlign: (textAlign) => ({ commands }) =>
-                commands.updateAttributes('paragraph', { textAlign }) ||
-                commands.updateAttributes('heading', { textAlign }),
+            setTextAlign:
+                (textAlign) =>
+                ({ commands }) =>
+                    commands.updateAttributes('paragraph', { textAlign }) ||
+                    commands.updateAttributes('heading', { textAlign }),
         };
     },
 });
@@ -98,23 +103,40 @@ function initPostEditor(root) {
             contentInput.value = JSON.stringify(editor.getJSON());
             root.querySelector('[data-publish-title]').value = titleInput.value;
             root.querySelector('[data-publish-excerpt]').value = excerptInput?.value ?? '';
-            root.querySelector('[data-publish-slug]').value = root.querySelector('[data-publish-slug-source]')?.value ?? '';
-            root.querySelector('[data-publish-cover]').value = root.querySelector('[data-cover-media-id]')?.value ?? '';
-            root.querySelector('[data-publish-featured]').value = root.querySelector('[data-publish-featured-source]')?.checked ? '1' : '0';
+            root.querySelector('[data-publish-slug]').value =
+                root.querySelector('[data-publish-slug-source]')?.value ?? '';
+            root.querySelector('[data-publish-cover]').value =
+                root.querySelector('[data-cover-media-id]')?.value ?? '';
+            root.querySelector('[data-publish-featured]').value = root.querySelector(
+                '[data-publish-featured-source]',
+            )?.checked
+                ? '1'
+                : '0';
             root.querySelectorAll('[data-publish-category-source]').forEach((input) => {
                 const hidden = root.querySelector(`[data-publish-category="${input.value}"]`);
                 if (input.checked && !hidden) {
-                    const field = document.createElement('input'); field.type = 'hidden'; field.name = 'category_ids[]'; field.value = input.value; field.dataset.publishCategory = input.value; publishForm.append(field);
+                    const field = document.createElement('input');
+                    field.type = 'hidden';
+                    field.name = 'category_ids[]';
+                    field.value = input.value;
+                    field.dataset.publishCategory = input.value;
+                    publishForm.append(field);
                 } else if (!input.checked) hidden?.remove();
             });
             root.querySelectorAll('[data-publish-tag-source]').forEach((input) => {
                 const hidden = root.querySelector(`[data-publish-tag="${input.value}"]`);
                 if (input.checked && !hidden) {
-                    const field = document.createElement('input'); field.type = 'hidden'; field.name = 'tag_ids[]'; field.value = input.value; field.dataset.publishTag = input.value; publishForm.append(field);
+                    const field = document.createElement('input');
+                    field.type = 'hidden';
+                    field.name = 'tag_ids[]';
+                    field.value = input.value;
+                    field.dataset.publishTag = input.value;
+                    publishForm.append(field);
                 } else if (!input.checked) hidden?.remove();
             });
             const seoTitle = root.querySelector('[name="seo_title_editor"]')?.value ?? '';
-            const seoDescription = root.querySelector('[name="seo_description_editor"]')?.value ?? '';
+            const seoDescription =
+                root.querySelector('[name="seo_description_editor"]')?.value ?? '';
             publishForm.querySelector('[name="seo_title"]').value = seoTitle;
             publishForm.querySelector('[name="seo_description"]').value = seoDescription;
         });
@@ -126,11 +148,15 @@ function initPostEditor(root) {
     previewToggle?.addEventListener('click', () => {
         const previewing = previewToggle.getAttribute('aria-pressed') !== 'true';
         previewToggle.setAttribute('aria-pressed', String(previewing));
-        previewToggle.textContent = previewing ? previewToggle.dataset.editLabel : previewToggle.dataset.previewLabel;
+        previewToggle.textContent = previewing
+            ? previewToggle.dataset.editLabel
+            : previewToggle.dataset.previewLabel;
         editor.setEditable(!previewing);
         if (toolbar) toolbar.hidden = previewing;
         editor.view.dom.classList.toggle('post-content', previewing);
-        status.textContent = previewing ? 'Đang xem trước nội dung bài viết.' : 'Đang chỉnh sửa bài viết.';
+        status.textContent = previewing
+            ? 'Đang xem trước nội dung bài viết.'
+            : 'Đang chỉnh sửa bài viết.';
     });
     root.querySelector('[data-editor-fallback]').hidden = true;
     root.querySelector('[data-editor-loading]')?.setAttribute('hidden', '');
@@ -329,7 +355,11 @@ function initPostEditor(root) {
             const body = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setImageUploadStatus(body.message ?? imageUploadStatus.dataset.failedLabel, false, true);
+                setImageUploadStatus(
+                    body.message ?? imageUploadStatus.dataset.failedLabel,
+                    false,
+                    true,
+                );
                 return;
             }
 

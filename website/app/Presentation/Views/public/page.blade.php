@@ -10,7 +10,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-        {{ $staticPage->seoTitle ?? $staticPage->title }} — {{ $blog->name }}
+        {{
+            $staticPage->seoTitle ??
+                $staticPage->title
+        }} — {{ $blog->name }}
     </title>
     @if ($description !== '')
         <meta name="description" content="{{ $description }}" />
@@ -36,8 +39,8 @@
     @endif
 
     <div class="container-custom flex items-center justify-between gap-4 pt-3">
-        @include('public.partials.platform-home-link', ['blog' => $blog])
-        @include('layouts.partials.interface-language-switcher', ['id' => 'public'])
+        @include ('public.partials.platform-home-link', ['blog' => $blog])
+        @include ('layouts.partials.interface-language-switcher', ['id' => 'public'])
     </div>
 
     <main data-animate="page" class="container-custom max-w-3xl py-10">

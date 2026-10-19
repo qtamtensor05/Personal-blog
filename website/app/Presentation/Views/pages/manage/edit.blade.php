@@ -22,7 +22,10 @@
         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <a
-                    onclick="window.history.back(); return false;"
+                    onclick="
+                        window.history.back();
+                        return false;
+                    "
                     href="{{ route('blogs.pages.index', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
                 >

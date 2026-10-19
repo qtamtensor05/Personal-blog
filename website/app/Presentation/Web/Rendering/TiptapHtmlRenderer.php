@@ -42,7 +42,12 @@ final class TiptapHtmlRenderer
             'hardBreak' => '<br>',
             'horizontalRule' => '<hr>',
             'paragraph' => '<p'.$this->alignment($node).'>'.$inner().'</p>',
-            'heading' => sprintf('<h%1$d%2$s>%3$s</h%1$d>', $node['attrs']['level'], $this->alignment($node), $inner()),
+            'heading' => sprintf(
+                '<h%1$d%2$s>%3$s</h%1$d>',
+                $node['attrs']['level'],
+                $this->alignment($node),
+                $inner(),
+            ),
             'bulletList' => '<ul>'.$inner().'</ul>',
             'orderedList' => sprintf('<ol start="%d">%s</ol>', $node['attrs']['start'], $inner()),
             'listItem' => '<li>'.$inner().'</li>',
