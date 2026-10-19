@@ -134,7 +134,7 @@
                     <section id="latest-posts" class="le-posts">
                         <p class="le-kicker">{{ $latest['title'] ?? __('public.latest_posts') }}</p>
                         <div class="le-post-grid">
-                            @forelse (array_slice($publicPosts, 0, (int) ($latest['limit'] ?? 3)) as $post)
+                            @forelse (array_slice($publicPosts ?? [], 0, (int) ($latest['limit'] ?? 3)) as $post)
                                 <article>
                                     <img src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : $images.'/'.$fallbackCards[$loop->index % 3] }}" alt="">
                                     <time>{{ $post->publishedAt ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y') : '' }}</time>

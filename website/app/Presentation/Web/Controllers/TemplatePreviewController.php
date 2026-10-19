@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Controllers;
 
+use App\Application\Content\Contracts\PostRepository;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Application\Templates\Contracts\TemplateRepository;
 use App\Domain\Content\ValueObjects\TiptapDocument;
@@ -20,6 +21,7 @@ final class TemplatePreviewController extends Controller
         Request $request,
         TemplateRepository $templates,
         MediaAssetRepository $media,
+        PostRepository $posts,
         TiptapHtmlRenderer $renderer,
     ): View {
         $template = collect($templates->all())->firstWhere('slug', $slug);
@@ -78,6 +80,7 @@ final class TemplatePreviewController extends Controller
                     'noIndex' => true,
                     'isOwnerPreview' => false,
                 ],
+                'publicPosts' => [],
                 'mediaUrls' => $mediaUrls,
                 'documentHtml' => $documentHtml,
                 'screen' => in_array($request->query('screen'), ['posts', 'about', 'contact'], true)
