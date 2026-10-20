@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register Presentation layer view paths
-        $this->app['view']->addLocation(app_path('Presentation/Views'));
+        View::addLocation(app_path('Presentation/Views'));
     }
 }
