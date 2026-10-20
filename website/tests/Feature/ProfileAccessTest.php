@@ -88,6 +88,27 @@ it('uploads a profile image to local storage', function (): void {
         ->and($asset->status)
         ->toBe('READY');
     Storage::disk('public')->assertExists($asset->cloudinary_public_id);
+
+    file_put_contents(
+        $source,
+        base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+            true,
+        ),
+    );
+
+    $this->actingAs(profileTestUser($userId))
+        ->put(route('profile.update'), [
+            'name' => (string) DB::table('users')->where('id', $userId)->value('name'),
+            'remove_avatar' => '0',
+            'avatar' => new UploadedFile($source, 'avatar-copy.png', 'image/png', null, true),
+        ])
+        ->assertRedirect();
+
+    expect((int) DB::table('users')->where('id', $userId)->value('avatar_media_id'))
+        ->toBe((int) $mediaId)
+        ->and(DB::table('media_assets')->where('uploaded_by', $userId)->count())
+        ->toBe(1);
 });
 
 it('saves name avatar and password in one request', function (): void {
