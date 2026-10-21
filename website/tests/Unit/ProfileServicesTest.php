@@ -8,6 +8,7 @@ use App\Application\Identity\Contracts\PasswordHasher;
 use App\Application\Media\DTOs\MediaAssetRecord;
 use App\Application\Profile\Contracts\ProfileRepository;
 use App\Application\Profile\DTOs\ProfileRecord;
+use App\Application\Profile\DTOs\PublicProfileRecord;
 use App\Application\Profile\UseCases\ChangeProfilePasswordService;
 use App\Application\Profile\UseCases\UpdateProfileAvatarService;
 use App\Application\Profile\UseCases\UpdateProfileNameService;
@@ -110,6 +111,11 @@ final class FakeProfileRepository implements ProfileRepository
     public function find(int $userId): ?ProfileRecord
     {
         return new ProfileRecord($userId, 'User', 'user@example.com', null, null);
+    }
+
+    public function findPublic(int $userId): ?PublicProfileRecord
+    {
+        return new PublicProfileRecord($userId, 'User', null);
     }
 
     public function passwordHash(int $userId): ?string
