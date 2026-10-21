@@ -26,6 +26,7 @@ use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\PublicPostIndexController;
+use App\Presentation\Web\Controllers\PublicProfileController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -39,6 +40,8 @@ Route::get('/', HomeController::class)->name('home');
 Route::post('/interface-locale', InterfaceLocaleController::class)->name('interface-locale.update');
 
 Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
+
+Route::get('/users/{user}', PublicProfileController::class)->whereNumber('user')->name('profiles.show');
 
 Route::get('/posts/{slug}', function ($slug) {
     // Mock post data - Replace with PostRepository->findBySlug($slug)
@@ -197,15 +200,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/bookmarks', BookmarkedPostsController::class)->name('bookmarks.index');
 
     Route::put('/b/{slug}/{post}/like', [PostInteractionController::class, 'like'])
+        ->middleware('throttle:post-interactions')
         ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->name('public.post.like');
     Route::delete('/b/{slug}/{post}/like', [PostInteractionController::class, 'unlike'])
+        ->middleware('throttle:post-interactions')
         ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->name('public.post.unlike');
     Route::put('/b/{slug}/{post}/bookmark', [PostInteractionController::class, 'bookmark'])
+        ->middleware('throttle:post-interactions')
         ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->name('public.post.bookmark');
     Route::delete('/b/{slug}/{post}/bookmark', [PostInteractionController::class, 'unbookmark'])
+        ->middleware('throttle:post-interactions')
         ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
         ->name('public.post.unbookmark');
 
@@ -295,6 +302,7 @@ Route::middleware('auth')->group(function () {
         ->name('blogs.posts.')
         ->group(function () {
             Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/{post}/likers', [PostController::class, 'likers'])->name('likers');
             Route::post('/', [PostController::class, 'store'])->name('store');
             Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
             Route::put('/{post}/draft', [PostController::class, 'saveDraft'])

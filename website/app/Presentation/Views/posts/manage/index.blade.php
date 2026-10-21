@@ -54,6 +54,8 @@
                             <th class="text-primary px-4 py-3 text-left font-semibold">
                                 {{ __('post.status') }}
                             </th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('post.likes_count') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('post.views_count') }}</th>
                             <th class="text-primary px-4 py-3 text-left font-semibold">
                                 {{ __('post.updated') }}
                             </th>
@@ -79,6 +81,13 @@
                                         )
                                     }}
                                 </td>
+                                <td class="text-secondary px-4 py-3">
+                                    <div class="flex items-center gap-2 whitespace-nowrap">
+                                        <span>{{ $engagement[$post->id]->likes }}</span>
+                                        <button type="button" data-likers-open data-likers-url="{{ route('blogs.posts.likers', [$blog->id, $post->id]) }}" data-likers-count="{{ $engagement[$post->id]->likes }}" class="text-accent-primary underline-offset-2 hover:underline focus-visible:underline" aria-label="{{ __('post.likers_for', ['title' => $post->editable()->title]) }}">{{ __('post.likers') }}</button>
+                                    </div>
+                                </td>
+                                <td class="text-secondary px-4 py-3">{{ $engagement[$post->id]->views }}</td>
                                 <td class="text-secondary px-4 py-3">
                                     {{
                                         \Illuminate\Support\Carbon::parse($post->updatedAt)->format(
@@ -145,5 +154,6 @@
                 </ul>
             </section>
         @endif
+        @include ('posts.manage.likers-dialog')
     </div>
 @endsection

@@ -351,14 +351,80 @@ function initHeroCarousels() {
     });
 }
 
+function initPostLikersDialog() {
+    const dialog = document.querySelector('[data-likers-dialog]');
+    if (!dialog) return;
+
+    const content = dialog.querySelector('[data-likers-content]');
+    const count = dialog.querySelector('[data-likers-count-value]');
+    const closeButton = dialog.querySelector('[data-likers-close]');
+    let opener = null;
+    let requestId = 0;
+
+    const updateCount = (value) => {
+        const total = Number(value);
+        if (!Number.isSafeInteger(total) || total < 0) return;
+        count.textContent = String(total);
+        if (opener) {
+            opener.dataset.likersCount = String(total);
+            const buttonCount = opener.querySelector('[data-likers-count-value]');
+            if (buttonCount) buttonCount.textContent = String(total);
+        }
+    };
+
+    const load = async (url) => {
+        const currentRequest = ++requestId;
+        content.removeAttribute('role');
+        content.textContent = dialog.dataset.loadingMessage;
+        try {
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                headers: { Accept: 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (!response.ok || response.redirected) throw new Error('Liker list unavailable');
+            const html = await response.text();
+            if (currentRequest !== requestId || !dialog.open) return;
+            content.innerHTML = html;
+            const total = content.querySelector('[data-likers-total]');
+            if (total) updateCount(total.dataset.likersTotal);
+        } catch {
+            if (currentRequest !== requestId || !dialog.open) return;
+            content.setAttribute('role', 'alert');
+            content.textContent = dialog.dataset.errorMessage;
+        }
+    };
+
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-likers-open]');
+        if (!trigger) return;
+        opener = trigger;
+        updateCount(trigger.dataset.likersCount);
+        dialog.showModal();
+        closeButton.focus();
+        load(trigger.dataset.likersUrl);
+    });
+
+    content.addEventListener('click', (event) => {
+        const pageButton = event.target.closest('[data-likers-page-url]');
+        if (pageButton) load(pageButton.dataset.likersPageUrl);
+    });
+    closeButton.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+        requestId++;
+        opener?.focus();
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initPasswordToggles();
         initErrorModal();
         initHeroCarousels();
+        initPostLikersDialog();
     });
 } else {
     initPasswordToggles();
     initErrorModal();
     initHeroCarousels();
+    initPostLikersDialog();
 }

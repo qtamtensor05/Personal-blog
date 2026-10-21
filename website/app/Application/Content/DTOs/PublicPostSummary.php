@@ -15,6 +15,7 @@ final readonly class PublicPostSummary
         public ?string $coverUrl,
         public ?string $publishedAt,
         public string $authorName,
+        public int $authorUserId,
         public bool $isFeatured,
     ) {}
 }

@@ -311,11 +311,17 @@
 
                 <aside class="le-sidebar">
                     <section>
-                        <img
-                            class="le-avatar"
-                            src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}"
-                            alt=""
-                        />
+                        @if (! $templatePreview)
+                            <a href="{{ route('profiles.show', $blog->ownerUserId) }}" aria-label="{{ __('profile.view_public', ['name' => $blog->name]) }}" class="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                        @endif
+                            <img
+                                class="le-avatar"
+                                src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}"
+                                alt=""
+                            />
+                        @if (! $templatePreview)
+                            </a>
+                        @endif
                         <h2>
                             {{
                                 $profile['title'] ??

@@ -140,20 +140,16 @@
                             @endif
                         </a>
                         @include ('layouts.partials.theme-toggle')
-                        <div class="relative hidden md:block" x-data="{ open: false }">
-                            <button
-                                @click="open = !open"
-                                @click.away="open = false"
-                                class="hover:text-accent-primary flex items-center gap-2 text-sm font-medium transition-colors"
-                            >
+                        <div class="relative hidden items-center gap-2 md:flex" x-data="{ open: false }" @click.away="open = false">
+                            <a href="{{ route('profiles.show', auth()->id()) }}" aria-label="{{ __('profile.view_public', ['name' => auth()->user()->name]) }}" class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
                                 @if ($profileAvatarUrl)
                                     <img
                                         src="{{ $profileAvatarUrl }}"
-                                        alt="{{ auth()->user()->name }}"
+                                        alt=""
                                         class="h-8 w-8 rounded-full object-cover"
                                     />
                                 @else
-                                    <div
+                                    <span
                                         class="bg-accent-primary text-surface flex h-8 w-8 items-center justify-center rounded-full font-semibold"
                                     >
                                         {{
@@ -161,8 +157,16 @@
                                                 mb_substr(auth()->user()->name, 0, 1),
                                             )
                                         }}
-                                    </div>
+                                    </span>
                                 @endif
+                            </a>
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                :aria-expanded="open.toString()"
+                                aria-haspopup="true"
+                                class="hover:text-accent-primary flex items-center gap-2 text-sm font-medium transition-colors"
+                            >
                                 <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
                                 <i class="fa-solid fa-chevron-down h-4 w-4" aria-hidden="true"></i>
                             </button>

@@ -71,9 +71,7 @@
                     </h1>
 
                     <a
-                        href="{{ route('public.blog', $blog->slug) }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="{{ route('profiles.show', $author?->id ?? $blog->ownerUserId) }}"
                         class="text-secondary inline-flex items-center gap-2 text-sm hover:underline"
                         aria-label="{{ $author?->name ?? $blog->name }}"
                     >
@@ -99,13 +97,13 @@
 
                     @if ($layout->showPublishedDate && $post->publishedAt)
                         <time
-                            datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->toAtomString() }}"
+                            datetime="{{ \Carbon\Carbon::parse($post->publishedAt)->timezone($settings->timezone)->toAtomString() }}"
                             class="text-sm opacity-70"
                         >
                             {{
                                 \Carbon\Carbon::parse($post->publishedAt)
                                     ->timezone($settings->timezone)
-                                    ->format('d/m/Y')
+                                    ->format('H:i d/m/Y')
                             }}
                         </time>
                     @endif
@@ -151,9 +149,24 @@
                                 {{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}
                             </button>
                         </form>
-                        <a href="{{ route('bookmarks.index') }}" class="text-sm text-sky-700 underline-offset-2 hover:underline">
+                        <a href="{{ route('bookmarks.index') }}" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition-colors hover:border-sky-300 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
                             {{ __('post.view_bookmarks') }}
                         </a>
+                        @if ($ownerEngagement)
+                            <button
+                                type="button"
+                                data-likers-open
+                                data-likers-url="{{ route('blogs.posts.likers', [$blog->id, $post->id]) }}"
+                                data-likers-count="{{ $ownerEngagement->likes }}"
+                                class="ml-auto inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+                                aria-label="{{ __('post.likers_for', ['title' => $post->title]) }}"
+                            >
+                                <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" class="text-rose-600" aria-hidden="true">
+                                    <path d="M12 21 3.5 12.4a5.5 5.5 0 0 1 7.8-7.8L12 5.3l.7-.7a5.5 5.5 0 0 1 7.8 7.8L12 21Z" />
+                                </svg>
+                                <span data-likers-count-value>{{ $ownerEngagement->likes }}</span>
+                            </button>
+                        @endif
                     @else
                         <a href="{{ route('login') }}" class="text-sm text-rose-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_like') }}</a>
                         <a href="{{ route('login') }}" class="text-sm text-sky-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_bookmark') }}</a>
@@ -174,6 +187,7 @@
 
                 {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
                 <div class="post-content">{!! $html !!}</div>
+
             </article>
 
             <div class="mt-12 border-t pt-6" style="border-color: var(--d-secondary)">
@@ -181,5 +195,8 @@
             </div>
         </main>
     </phantom-ui>
+    @if ($ownerEngagement)
+        @include ('posts.manage.likers-dialog')
+    @endif
 </body>
 </html>
