@@ -8,6 +8,9 @@
             <div>
                 <h1 class="text-hero mb-2">{{ __('profile.your_profile') }}</h1>
                 <p class="text-secondary">{{ __('profile.manage_help') }}</p>
+                <a href="{{ route('bookmarks.index') }}" class="text-accent-primary mt-2 inline-block font-medium hover:underline">
+                    {{ __('post.view_bookmarks') }}
+                </a>
             </div>
             <button
                 type="submit"

@@ -111,6 +111,55 @@
                     @endif
                 </header>
 
+                <div
+                    class="mb-8 flex flex-wrap items-center gap-3"
+                    role="group"
+                    aria-label="{{ __('post.actions') }}"
+                >
+                    @auth
+                        <form
+                            method="POST"
+                            action="{{ $interactionState->liked ? route('public.post.unlike', [$blog->slug, $post->slug]) : route('public.post.like', [$blog->slug, $post->slug]) }}"
+                        >
+                            @csrf
+                            <input type="hidden" name="_method" value="{{ $interactionState->liked ? 'DELETE' : 'PUT' }}" />
+                            <button
+                                type="submit"
+                                aria-pressed="{{ $interactionState->liked ? 'true' : 'false' }}"
+                                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 {{ $interactionState->liked ? 'border-rose-300 bg-rose-50 text-rose-600' : 'border-slate-300 text-slate-700 hover:border-rose-300 hover:text-rose-600' }}"
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="{{ $interactionState->liked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-8.3 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                                </svg>
+                                {{ $interactionState->liked ? __('post.unlike') : __('post.like') }}
+                            </button>
+                        </form>
+                        <form
+                            method="POST"
+                            action="{{ $interactionState->bookmarked ? route('public.post.unbookmark', [$blog->slug, $post->slug]) : route('public.post.bookmark', [$blog->slug, $post->slug]) }}"
+                        >
+                            @csrf
+                            <input type="hidden" name="_method" value="{{ $interactionState->bookmarked ? 'DELETE' : 'PUT' }}" />
+                            <button
+                                type="submit"
+                                aria-pressed="{{ $interactionState->bookmarked ? 'true' : 'false' }}"
+                                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 {{ $interactionState->bookmarked ? 'border-sky-300 bg-sky-50 text-sky-700' : 'border-slate-300 text-slate-700 hover:border-sky-300 hover:text-sky-700' }}"
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="{{ $interactionState->bookmarked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />
+                                </svg>
+                                {{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}
+                            </button>
+                        </form>
+                        <a href="{{ route('bookmarks.index') }}" class="text-sm text-sky-700 underline-offset-2 hover:underline">
+                            {{ __('post.view_bookmarks') }}
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm text-rose-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_like') }}</a>
+                        <a href="{{ route('login') }}" class="text-sm text-sky-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_bookmark') }}</a>
+                    @endauth
+                </div>
+
                 @if ($layout->showCover && $cover)
                     <div data-image-frame class="media-frame mb-8 overflow-hidden rounded-md">
                         <img
