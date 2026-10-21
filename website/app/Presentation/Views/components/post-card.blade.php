@@ -5,8 +5,8 @@
     'image' => null,
     'date' => null,
     'author' => null,
+    'authorId' => null,
     'category' => null,
-    'readTime' => 5,
     'isFeatured' => false,
 ])
 
@@ -39,16 +39,11 @@
             @endif
 
             @if ($category)
-                <span class="text-border">•</span>
+                @if ($date)
+                    <span class="text-border">•</span>
+                @endif
                 <x-badge variant="primary" size="sm">{{ $category }}</x-badge>
             @endif
-
-            <span class="text-border">•</span>
-            <span>{{
-                __('post.minutes_read', [
-                    'minutes' => $readTime,
-                ])
-            }}</span>
         </div>
 
         <!-- Title -->
@@ -67,11 +62,13 @@
         <div class="flex items-center justify-between pt-2">
             @if ($author)
                 <div class="flex items-center gap-2">
-                    <div
-                        class="bg-accent-primary text-surface flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold"
-                    >
-                        {{ strtoupper(substr($author, 0, 1)) }}
-                    </div>
+                    @if ($authorId)
+                        <a href="{{ route('profiles.show', $authorId) }}" aria-label="{{ __('profile.view_public', ['name' => $author]) }}" class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                            <span class="bg-accent-primary text-surface flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">{{ mb_strtoupper(mb_substr($author, 0, 1)) }}</span>
+                        </a>
+                    @else
+                        <span class="bg-accent-primary text-surface flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold" aria-hidden="true">{{ mb_strtoupper(mb_substr($author, 0, 1)) }}</span>
+                    @endif
                     <span class="text-secondary text-xs">{{ $author }}</span>
                 </div>
             @else

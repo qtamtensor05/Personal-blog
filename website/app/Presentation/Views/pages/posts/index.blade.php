@@ -65,6 +65,7 @@
                         :image="$post->coverUrl"
                         :date="$post->publishedAt"
                         :author="$post->authorName"
+                        :author-id="$post->authorUserId"
                         :is-featured="$post->isFeatured"
                     />
                 @empty

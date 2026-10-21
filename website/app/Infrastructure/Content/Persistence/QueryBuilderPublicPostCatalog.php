@@ -21,6 +21,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
         'p.is_featured',
         'b.slug as blog_slug',
         'u.name as author_name',
+        'u.id as author_user_id',
         'm.secure_url as cover_url',
     ];
 
@@ -113,6 +114,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             coverUrl: $row->cover_url,
             publishedAt: $row->published_at,
             authorName: $row->author_name,
+            authorUserId: (int) $row->author_user_id,
             isFeatured: (bool) $row->is_featured,
         );
     }

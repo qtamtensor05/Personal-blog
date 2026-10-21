@@ -14,7 +14,7 @@
         @else
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($posts as $item)
-                    <article class="card p-6">
+                    <article class="card flex h-full flex-col p-6">
                         <p class="text-secondary mb-2 text-sm">{{ $item['blog']->name }}</p>
                         <h2 class="text-primary text-xl font-semibold">
                             <a
@@ -25,6 +25,12 @@
                         @if ($item['post']->excerpt)
                             <p class="text-secondary mt-3 line-clamp-3 text-sm">{{ $item['post']->excerpt }}</p>
                         @endif
+                        <div class="border-default mt-auto flex justify-end border-t pt-4">
+                            <span class="text-secondary inline-flex items-center gap-1.5 text-xs">
+                                <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                                {{ __('post.views_count') }}: {{ $item['views'] }}
+                            </span>
+                        </div>
                     </article>
                 @endforeach
             </div>

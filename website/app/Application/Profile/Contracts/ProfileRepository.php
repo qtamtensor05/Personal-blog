@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Profile\Contracts;
 
 use App\Application\Profile\DTOs\ProfileRecord;
+use App\Application\Profile\DTOs\PublicProfileRecord;
 
 interface ProfileRepository
 {
     public function find(int $userId): ?ProfileRecord;
+
+    public function findPublic(int $userId): ?PublicProfileRecord;
 
     public function passwordHash(int $userId): ?string;
 

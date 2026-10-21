@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementService;
 use App\Application\Content\UseCases\ManagePostInteractions\PostInteractionsService;
+use App\Application\Content\UseCases\ManagePostInteractions\RecordPostViewService;
 use App\Application\Content\UseCases\ViewPublicPost\ViewPublicPostService;
 use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use Illuminate\Http\Request;
@@ -20,6 +22,8 @@ final class PublicPostController extends Controller
         Request $request,
         ViewPublicPostService $viewPost,
         PostInteractionsService $interactions,
+        PostEngagementService $engagement,
+        RecordPostViewService $views,
         TiptapHtmlRenderer $renderer,
     ): View {
         try {
@@ -33,6 +37,10 @@ final class PublicPostController extends Controller
         }
 
         $record = $result['post'];
+        $views->execute($record->id, $result['page']->blog->ownerUserId, $request->user()?->id, $request->session()->getId());
+        $ownerEngagement = (int) $request->user()?->id === $result['page']->blog->ownerUserId
+            ? $engagement->forOwnedPosts((int) $request->user()->id, $result['page']->blog->id, [$record])[$record->id]
+            : null;
 
         return view('public.post', [
             'page' => $result['page'],
@@ -45,6 +53,7 @@ final class PublicPostController extends Controller
             'interactionState' => $request->user()
                 ? $interactions->state((int) $request->user()->id, $record->id)
                 : null,
+            'ownerEngagement' => $ownerEngagement,
         ]);
     }
 }

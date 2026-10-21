@@ -332,6 +332,7 @@
                             :image="$post->coverUrl"
                             :date="$post->publishedAt"
                             :author="$post->authorName"
+                            :author-id="$post->authorUserId"
                             :isFeatured="$post->isFeatured"
                         />
                     @endforeach
@@ -371,6 +372,7 @@
                         :image="$post->coverUrl"
                         :date="$post->publishedAt"
                         :author="$post->authorName"
+                        :author-id="$post->authorUserId"
                     />
                 @endforeach
             </div>
