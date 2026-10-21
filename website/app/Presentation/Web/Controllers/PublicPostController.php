@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Content\UseCases\ManagePostInteractions\PostInteractionsService;
 use App\Application\Content\UseCases\ViewPublicPost\ViewPublicPostService;
 use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ final class PublicPostController extends Controller
         string $post,
         Request $request,
         ViewPublicPostService $viewPost,
+        PostInteractionsService $interactions,
         TiptapHtmlRenderer $renderer,
     ): View {
         try {
@@ -40,6 +42,9 @@ final class PublicPostController extends Controller
                     ? $result['media'][$record->coverMediaId] ?? null
                     : null,
             'author' => $result['author'],
+            'interactionState' => $request->user()
+                ? $interactions->state((int) $request->user()->id, $record->id)
+                : null,
         ]);
     }
 }

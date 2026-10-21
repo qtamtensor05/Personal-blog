@@ -10,6 +10,7 @@ use App\Presentation\Web\Controllers\BlogController;
 use App\Presentation\Web\Controllers\BlogDesignController;
 use App\Presentation\Web\Controllers\BlogDomainController;
 use App\Presentation\Web\Controllers\BlogSettingsController;
+use App\Presentation\Web\Controllers\BookmarkedPostsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\HomeController;
@@ -19,6 +20,7 @@ use App\Presentation\Web\Controllers\MediaController;
 use App\Presentation\Web\Controllers\NotificationController;
 use App\Presentation\Web\Controllers\PageController;
 use App\Presentation\Web\Controllers\PostController;
+use App\Presentation\Web\Controllers\PostInteractionController;
 use App\Presentation\Web\Controllers\ProfileController;
 use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
@@ -192,6 +194,20 @@ Route::get('/email/verified', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/bookmarks', BookmarkedPostsController::class)->name('bookmarks.index');
+
+    Route::put('/b/{slug}/{post}/like', [PostInteractionController::class, 'like'])
+        ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->name('public.post.like');
+    Route::delete('/b/{slug}/{post}/like', [PostInteractionController::class, 'unlike'])
+        ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->name('public.post.unlike');
+    Route::put('/b/{slug}/{post}/bookmark', [PostInteractionController::class, 'bookmark'])
+        ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->name('public.post.bookmark');
+    Route::delete('/b/{slug}/{post}/bookmark', [PostInteractionController::class, 'unbookmark'])
+        ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->name('public.post.unbookmark');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name(
         'notifications.index',
