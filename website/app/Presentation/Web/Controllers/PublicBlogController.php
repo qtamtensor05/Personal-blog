@@ -7,6 +7,7 @@ namespace App\Presentation\Web\Controllers;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
 use App\Application\Content\Contracts\PostRepository;
+use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementUseCase;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\ValueObjects\TiptapDocument;
 use App\Domain\Templates\TemplateLayouts;
@@ -24,6 +25,7 @@ final class PublicBlogController extends Controller
         MediaAssetRepository $media,
         TiptapHtmlRenderer $renderer,
         PostRepository $posts,
+        PostEngagementUseCase $engagement,
     ): View {
         try {
             $page = $viewBlog->execute($slug, $request->user() ? (int) $request->user()->id : null);
@@ -95,7 +97,7 @@ final class PublicBlogController extends Controller
         $coverMediaIds = array_values(
             array_unique(
                 array_filter(
-                    array_map(static fn ($post): ?int => $post->coverMediaId, $publicPosts),
+                    array_map(static fn ($post): ?int => $post->coverMediaId, array_merge($publicPosts, $page->posts)),
                 ),
             ),
         );
@@ -110,6 +112,7 @@ final class PublicBlogController extends Controller
         return view($view, [
             'page' => $page,
             'publicPosts' => $publicPosts,
+            'engagement' => $engagement->forVisiblePosts(array_merge($publicPosts, $page->posts)),
             'search' => $search,
             'mediaUrls' => $mediaUrls,
             'documentHtml' => $documentHtml,

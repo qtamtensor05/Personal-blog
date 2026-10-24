@@ -14,23 +14,28 @@
             <div class="grid gap-3 sm:grid-cols-2">
                 @foreach ($shownPosts as $post)
                     <article
-                        class="rounded-md border bg-white/70 p-4"
+                        class="overflow-hidden rounded-md border bg-white/70"
                         style="border-color: var(--d-secondary)"
                     >
+                        <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="block h-full p-4 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary">
+                            <img src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : asset('images/illustrations/post-cover.svg') }}" alt="" class="aspect-video w-full object-cover" loading="lazy" />
                         <h3
-                            class="font-semibold"
+                            class="mt-3 font-semibold"
                             style="font-family: var(--d-heading-font), sans-serif"
                         >
-                            <a
-                                href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                                style="color: var(--d-text)"
-                                >{{ $post->title }}</a
-                            >
+                            <span style="color: var(--d-text)">{{ $post->title }}</span>
                         </h3>
                         <p class="text-sm opacity-70">{{
                             $post->excerpt ??
                                 $post->content->plainText(160)
                         }}</p>
+                        @if (isset($engagement[$post->id]))
+                            <div class="mt-3 flex items-center gap-4 text-xs opacity-70">
+                                <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.likes_count') }}: {{ $engagement[$post->id]->likes }}"><i class="fa-regular fa-heart" aria-hidden="true"></i>{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
+                                <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.views_count') }}: {{ $engagement[$post->id]->views }}"><i class="fa-regular fa-eye" aria-hidden="true"></i>{{ $engagement[$post->id]->views }}</span>
+                            </div>
+                        @endif
+                        </a>
                     </article>
                 @endforeach
             </div>

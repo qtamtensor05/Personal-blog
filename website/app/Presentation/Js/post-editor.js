@@ -393,7 +393,8 @@ function initPostEditor(root) {
         form.append('file', file);
         form.append('scope', 'BLOG');
         form.append('blog_id', config.blogId);
-        coverStatus.textContent = 'Đang tải ảnh đại diện...';
+        coverStatus.classList.remove('text-red-500');
+        coverStatus.textContent = coverStatus.dataset.uploadingLabel;
         try {
             const response = await fetch(config.mediaUrl, {
                 method: 'POST',
@@ -414,7 +415,7 @@ function initPostEditor(root) {
             image.alt = '';
             image.className = 'mb-2 aspect-video w-full rounded-md object-cover';
             preview.replaceChildren(image);
-            coverStatus.textContent = 'Đã tải ảnh. Nhấn “Lưu thông tin” để áp dụng.';
+            coverStatus.textContent = coverStatus.dataset.uploadedLabel;
         } catch (error) {
             coverStatus.textContent = error.message;
             coverStatus.classList.add('text-red-500');

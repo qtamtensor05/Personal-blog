@@ -28,7 +28,7 @@ it('shows the signed-in users profile', function (): void {
         ->assertSee($user->name)
         ->assertSee($user->email)
         ->assertSee(route('blogs.index'), false)
-        ->assertSee(route('blogs.create'), false)
+        ->assertSee(route('bookmarks.index'), false)
         ->assertDontSee('/my-posts', false);
 });
 

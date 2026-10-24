@@ -37,14 +37,30 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
     ): NotificationPage {
         $query = DB::table('notifications')->where('recipient_user_id', $recipientUserId);
         $total = (clone $query)->count();
-        $items = $query
+        $rows = $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
-            ->get()
-            ->map(fn (object $row): NotificationRecord => $this->map($row))
-            ->all();
+            ->get();
+        $actorIds = $rows->map(function (object $row): ?int {
+            if ($row->type !== 'post.liked') {
+                return null;
+            }
+            $data = json_decode((string) $row->data, true);
+
+            return is_array($data) && isset($data['liker_user_id']) ? (int) $data['liker_user_id'] : null;
+        })->filter()->unique()->all();
+        $avatars = $actorIds === [] ? collect() : DB::table('users as users')
+            ->leftJoin('media_assets as avatar', function ($join): void {
+                $join->on('avatar.id', '=', 'users.avatar_media_id')
+                    ->where('avatar.scope', 'USER')
+                    ->where('avatar.status', 'READY')
+                    ->whereNull('avatar.deleted_at');
+            })
+            ->whereIn('users.id', $actorIds)->whereNull('users.deleted_at')
+            ->pluck('avatar.secure_url', 'users.id');
+        $items = $rows->map(fn (object $row): NotificationRecord => $this->map($row, $avatars->all()))->all();
 
         return new NotificationPage($items, $total, $page, $perPage);
     }
@@ -96,7 +112,8 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
             ->delete() > 0;
     }
 
-    private function map(object $row): NotificationRecord
+    /** @param array<int, string|null> $avatars */
+    private function map(object $row, array $avatars): NotificationRecord
     {
         $data = json_decode((string) $row->data, true, flags: JSON_THROW_ON_ERROR);
 
@@ -107,6 +124,7 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
             is_array($data) ? $data : [],
             $row->read_at !== null ? (string) $row->read_at : null,
             (string) $row->created_at,
+            isset($data['liker_user_id']) ? ($avatars[(int) $data['liker_user_id']] ?? null) : null,
         );
     }
 }

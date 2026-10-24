@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(DatabaseTransactions::class);
 
-it('redirects a newly created blog to the admin template picker', function (): void {
+it('redirects a newly created blog to its management page', function (): void {
     $userId = (int) DB::table('users')
         ->where('status', 'ACTIVE')
         ->whereNull('deleted_at')
@@ -28,21 +28,20 @@ it('redirects a newly created blog to the admin template picker', function (): v
     $this->actingAs($user)
         ->get(route('blogs.show', $blogId))
         ->assertOk()
-        ->assertSee('Choose an admin template')
-        ->assertSee('Tạp chí tối giản');
+        ->assertSee(__('template.home_and_layout'))
+        ->assertSee(__('template.manage_posts'));
 });
 
 it('creates a new draft post when the optional slug field is omitted', function (): void {
-    $userId = (int) DB::table('users')
-        ->where('status', 'ACTIVE')
-        ->whereNull('deleted_at')
-        ->value('id');
-    $user = new GenericUser((array) DB::table('users')->where('id', $userId)->first());
-    $blogId = (int) DB::table('blogs')
-        ->where('owner_user_id', $userId)
-        ->whereNull('deleted_at')
-        ->value('id');
+    $blog = DB::table('blogs as b')
+        ->join('users as u', 'u.id', '=', 'b.owner_user_id')
+        ->where('u.status', 'ACTIVE')
+        ->whereNull('u.deleted_at')
+        ->whereNull('b.deleted_at')
+        ->first(['b.id', 'b.owner_user_id']);
+    $blogId = (int) ($blog->id ?? 0);
     expect($blogId)->toBeGreaterThan(0);
+    $user = new GenericUser((array) DB::table('users')->where('id', $blog->owner_user_id)->first());
 
     $this->actingAs($user)
         ->post(route('blogs.posts.store', $blogId), ['title' => 'New Article'])

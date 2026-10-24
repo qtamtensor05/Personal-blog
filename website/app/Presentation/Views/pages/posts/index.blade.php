@@ -66,6 +66,8 @@
                         :date="$post->publishedAt"
                         :author="$post->authorName"
                         :is-featured="$post->isFeatured"
+                        :likes="$engagement[$post->id]->likes"
+                        :views="$engagement[$post->id]->views"
                     />
                 @empty
                     <div class="col-span-full">

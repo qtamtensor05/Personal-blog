@@ -351,14 +351,177 @@ function initHeroCarousels() {
     });
 }
 
+function initPostLikersDialog() {
+    const dialog = document.querySelector('[data-likers-dialog]');
+    if (!dialog) return;
+
+    const content = dialog.querySelector('[data-likers-content]');
+    const count = dialog.querySelector('[data-likers-count-value]');
+    const closeButton = dialog.querySelector('[data-likers-close]');
+    let opener = null;
+    let requestId = 0;
+
+    const formatCount = (total) => {
+        if (total < 1000) return String(total);
+        const divisor = total >= 1000000 ? 1000000 : 1000;
+        const whole = Math.floor(total / divisor);
+        const decimal = Math.floor((total % divisor) / (divisor / 10));
+        return `${whole}${decimal ? `.${decimal}` : ''}${divisor === 1000000 ? 'M' : 'k'}`;
+    };
+
+    const updateCount = (value) => {
+        const total = Number(value);
+        if (!Number.isSafeInteger(total) || total < 0) return;
+        count.textContent = formatCount(total);
+        if (opener) {
+            opener.dataset.likersCount = String(total);
+            const buttonCount = opener.querySelector('[data-likers-count-value]');
+            if (buttonCount) buttonCount.textContent = formatCount(total);
+        }
+    };
+
+    const pageButton = (label, page) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'text-accent-primary hover:underline';
+        button.dataset.likersPage = String(page);
+        button.textContent = label;
+        return button;
+    };
+
+    const render = (data) => {
+        if (
+            !Number.isSafeInteger(data.total) || data.total < 0 ||
+            !Number.isSafeInteger(data.page) || data.page < 1 ||
+            !Number.isSafeInteger(data.lastPage) || data.lastPage < 1 ||
+            !Array.isArray(data.likers)
+        ) throw new Error('Invalid liker list');
+
+        const fragment = document.createDocumentFragment();
+        if (data.likers.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'text-secondary py-6 text-center';
+            empty.textContent = dialog.dataset.emptyMessage;
+            fragment.append(empty);
+        } else {
+            const list = document.createElement('ul');
+            list.className = 'divide-default divide-y';
+            list.setAttribute('aria-label', dialog.getAttribute('aria-label'));
+
+            for (const liker of data.likers) {
+                if (typeof liker.name !== 'string') throw new Error('Invalid liker');
+
+                const item = document.createElement('li');
+                item.className = 'flex items-center gap-3 py-3';
+                const profile = document.createElement('span');
+                profile.className = 'shrink-0';
+
+                let avatarUrl = null;
+                if (typeof liker.avatarUrl === 'string') {
+                    try {
+                        const candidate = new URL(liker.avatarUrl, window.location.origin);
+                        if (candidate.protocol === 'https:' || candidate.protocol === 'http:') avatarUrl = candidate.href;
+                    } catch { /* Invalid URLs use the initials avatar. */ }
+                }
+                if (avatarUrl) {
+                    const avatar = document.createElement('img');
+                    avatar.src = avatarUrl;
+                    avatar.alt = '';
+                    avatar.className = 'h-11 w-11 rounded-full object-cover';
+                    profile.append(avatar);
+                } else {
+                    const initial = document.createElement('span');
+                    initial.className = 'bg-accent-primary text-surface flex h-11 w-11 items-center justify-center rounded-full font-semibold';
+                    initial.setAttribute('aria-hidden', 'true');
+                    initial.textContent = liker.avatarInitial;
+                    profile.append(initial);
+                }
+
+                const name = document.createElement('span');
+                name.className = 'text-primary min-w-0 flex-1 truncate font-medium';
+                name.textContent = liker.name;
+                const time = document.createElement('time');
+                time.className = 'text-secondary ml-auto text-sm tabular-nums';
+                time.dateTime = liker.likedAt;
+                time.title = liker.likedAtTitle;
+                time.textContent = liker.likedAtTime;
+                item.append(profile, name, time);
+                list.append(item);
+            }
+            fragment.append(list);
+        }
+
+        if (data.lastPage > 1) {
+            const pagination = document.createElement('nav');
+            pagination.className = 'border-default mt-4 flex items-center justify-between border-t pt-4 text-sm';
+            pagination.setAttribute('aria-label', dialog.dataset.paginationLabel);
+            pagination.append(data.page > 1 ? pageButton(dialog.dataset.previousLabel, data.page - 1) : document.createElement('span'));
+            const position = document.createElement('span');
+            position.className = 'text-secondary';
+            position.textContent = `${data.page} / ${data.lastPage}`;
+            pagination.append(position);
+            pagination.append(data.page < data.lastPage ? pageButton(dialog.dataset.nextLabel, data.page + 1) : document.createElement('span'));
+            fragment.append(pagination);
+        }
+
+        content.replaceChildren(fragment);
+        updateCount(data.total);
+    };
+
+    const load = async (page = 1) => {
+        const currentRequest = ++requestId;
+        content.removeAttribute('role');
+        content.textContent = dialog.dataset.loadingMessage;
+        try {
+            const url = new URL(opener.dataset.likersUrl, window.location.origin);
+            if (url.origin !== window.location.origin) throw new Error('Invalid liker URL');
+            url.searchParams.set('page', String(page));
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (!response.ok || response.redirected) throw new Error('Liker list unavailable');
+            const data = await response.json();
+            if (currentRequest !== requestId || !dialog.open) return;
+            render(data);
+        } catch {
+            if (currentRequest !== requestId || !dialog.open) return;
+            content.setAttribute('role', 'alert');
+            content.textContent = dialog.dataset.errorMessage;
+        }
+    };
+
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-likers-open]');
+        if (!trigger) return;
+        opener = trigger;
+        updateCount(trigger.dataset.likersCount);
+        dialog.showModal();
+        closeButton.focus();
+        load();
+    });
+
+    content.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-likers-page]');
+        if (button) load(Number(button.dataset.likersPage));
+    });
+    closeButton.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+        requestId++;
+        opener?.focus();
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initPasswordToggles();
         initErrorModal();
         initHeroCarousels();
+        initPostLikersDialog();
     });
 } else {
     initPasswordToggles();
     initErrorModal();
     initHeroCarousels();
+    initPostLikersDialog();
 }

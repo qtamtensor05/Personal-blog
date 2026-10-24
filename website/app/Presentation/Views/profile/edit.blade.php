@@ -8,6 +8,9 @@
             <div>
                 <h1 class="text-hero mb-2">{{ __('profile.your_profile') }}</h1>
                 <p class="text-secondary">{{ __('profile.manage_help') }}</p>
+                <a href="{{ route('bookmarks.index') }}" class="text-accent-primary mt-2 inline-block font-medium hover:underline">
+                    {{ __('post.view_bookmarks') }}
+                </a>
             </div>
             <button
                 type="submit"
@@ -37,23 +40,22 @@
                         {{ __('profile.information') }}
                     </h2>
                     <div class="mb-6 flex items-center gap-4">
-                        @if ($profile->avatarUrl)
-                            <img
-                                src="{{ $profile->avatarUrl }}"
-                                alt="{{ $profile->name }}"
-                                class="h-20 w-20 rounded-full object-cover ring-2 ring-[var(--color-border)]"
-                            />
-                        @else
-                            <div
-                                class="bg-accent-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-semibold text-white"
-                            >
-                                {{
-                                    mb_strtoupper(
-                                        mb_substr($profile->name, 0, 1),
-                                    )
-                                }}
-                            </div>
-                        @endif
+                        <span class="shrink-0">
+                            @if ($profile->avatarUrl)
+                                <img
+                                    src="{{ $profile->avatarUrl }}"
+                                    alt=""
+                                    class="h-20 w-20 rounded-full object-cover ring-2 ring-[var(--color-border)]"
+                                />
+                            @else
+                                <span
+                                    class="bg-accent-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-semibold text-white"
+                                    aria-hidden="true"
+                                >
+                                    {{ mb_strtoupper(mb_substr($profile->name, 0, 1)) }}
+                                </span>
+                            @endif
+                        </span>
                         <div>
                             <p class="text-primary font-semibold">{{ $profile->name }}</p>
                             <p class="text-secondary text-sm">{{ $profile->email }}</p>

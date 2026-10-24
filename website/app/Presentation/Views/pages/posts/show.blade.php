@@ -70,15 +70,6 @@
                             )
                         }}
                     </div>
-                    <div class="text-default hidden sm:block">•</div>
-                    <div>
-                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                        {{
-                            __('post.minutes_read', [
-                                'minutes' => 5,
-                            ])
-                        }}
-                    </div>
                 </div>
             </header>
 
