@@ -221,6 +221,22 @@ it('shows an empty liker list to the owner and redirects guests to login', funct
     $this->actingAs($this->owner)->get($likers)->assertOk()->assertSee(__('post.no_likers'));
 });
 
+it('returns liker data as JSON only to the owner for safe dialog rendering', function (): void {
+    Queue::fake();
+    $name = '<img src=x onerror=alert(1)>';
+    DB::table('users')->where('id', $this->reader->id)->update(['name' => $name]);
+    $this->actingAs($this->reader)->put($this->likeUrl)->assertRedirect();
+
+    $url = route('blogs.posts.likers', [$this->blogId, $this->postId]);
+    $this->actingAs($this->owner)->getJson($url)->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('page', 1)
+        ->assertJsonPath('likers.0.name', $name)
+        ->assertJsonPath('likers.0.profilePath', route('profiles.show', $this->reader->id, false))
+        ->assertHeader('content-type', 'application/json');
+    $this->actingAs($this->other)->getJson($url)->assertNotFound();
+});
+
 it('shows the publication clock before the date on the real post page', function (): void {
     DB::table('posts')->where('id', $this->postId)->update(['published_at' => '2026-10-21 13:41:00']);
 

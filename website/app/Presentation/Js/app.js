@@ -372,21 +372,117 @@ function initPostLikersDialog() {
         }
     };
 
-    const load = async (url) => {
+    const pageButton = (label, page) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'text-accent-primary hover:underline';
+        button.dataset.likersPage = String(page);
+        button.textContent = label;
+        return button;
+    };
+
+    const render = (data) => {
+        if (
+            !Number.isSafeInteger(data.total) || data.total < 0 ||
+            !Number.isSafeInteger(data.page) || data.page < 1 ||
+            !Number.isSafeInteger(data.lastPage) || data.lastPage < 1 ||
+            !Array.isArray(data.likers)
+        ) throw new Error('Invalid liker list');
+
+        const fragment = document.createDocumentFragment();
+        if (data.likers.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'text-secondary py-6 text-center';
+            empty.textContent = dialog.dataset.emptyMessage;
+            fragment.append(empty);
+        } else {
+            const list = document.createElement('ul');
+            list.className = 'divide-default divide-y';
+            list.setAttribute('aria-label', dialog.getAttribute('aria-label'));
+
+            for (const liker of data.likers) {
+                if (typeof liker.name !== 'string' || typeof liker.profilePath !== 'string' ||
+                    !liker.profilePath.startsWith('/') || liker.profilePath.startsWith('//')) {
+                    throw new Error('Invalid liker');
+                }
+                const profileUrl = new URL(liker.profilePath, window.location.origin);
+                if (profileUrl.origin !== window.location.origin) throw new Error('Invalid profile URL');
+
+                const item = document.createElement('li');
+                item.className = 'flex items-center gap-3 py-3';
+                const profile = document.createElement('a');
+                profile.href = profileUrl.href;
+                profile.setAttribute('aria-label', liker.profileLabel);
+                profile.className = 'shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700';
+
+                let avatarUrl = null;
+                if (typeof liker.avatarUrl === 'string') {
+                    try {
+                        const candidate = new URL(liker.avatarUrl, window.location.origin);
+                        if (candidate.protocol === 'https:' || candidate.protocol === 'http:') avatarUrl = candidate.href;
+                    } catch { /* Invalid URLs use the initials avatar. */ }
+                }
+                if (avatarUrl) {
+                    const avatar = document.createElement('img');
+                    avatar.src = avatarUrl;
+                    avatar.alt = '';
+                    avatar.className = 'h-11 w-11 rounded-full object-cover';
+                    profile.append(avatar);
+                } else {
+                    const initial = document.createElement('span');
+                    initial.className = 'bg-accent-primary text-surface flex h-11 w-11 items-center justify-center rounded-full font-semibold';
+                    initial.setAttribute('aria-hidden', 'true');
+                    initial.textContent = liker.avatarInitial;
+                    profile.append(initial);
+                }
+
+                const name = document.createElement('span');
+                name.className = 'text-primary min-w-0 flex-1 truncate font-medium';
+                name.textContent = liker.name;
+                const time = document.createElement('time');
+                time.className = 'text-secondary ml-auto text-sm tabular-nums';
+                time.dateTime = liker.likedAt;
+                time.title = liker.likedAtTitle;
+                time.textContent = liker.likedAtTime;
+                item.append(profile, name, time);
+                list.append(item);
+            }
+            fragment.append(list);
+        }
+
+        if (data.lastPage > 1) {
+            const pagination = document.createElement('nav');
+            pagination.className = 'border-default mt-4 flex items-center justify-between border-t pt-4 text-sm';
+            pagination.setAttribute('aria-label', dialog.dataset.paginationLabel);
+            pagination.append(data.page > 1 ? pageButton(dialog.dataset.previousLabel, data.page - 1) : document.createElement('span'));
+            const position = document.createElement('span');
+            position.className = 'text-secondary';
+            position.textContent = `${data.page} / ${data.lastPage}`;
+            pagination.append(position);
+            pagination.append(data.page < data.lastPage ? pageButton(dialog.dataset.nextLabel, data.page + 1) : document.createElement('span'));
+            fragment.append(pagination);
+        }
+
+        content.replaceChildren(fragment);
+        updateCount(data.total);
+    };
+
+    const load = async (page = 1) => {
         const currentRequest = ++requestId;
         content.removeAttribute('role');
         content.textContent = dialog.dataset.loadingMessage;
         try {
+            const url = new URL(opener.dataset.likersUrl, window.location.origin);
+            if (url.origin !== window.location.origin) throw new Error('Invalid liker URL');
+            url.searchParams.set('page', String(page));
             const response = await fetch(url, {
                 credentials: 'same-origin',
-                headers: { Accept: 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
             if (!response.ok || response.redirected) throw new Error('Liker list unavailable');
-            const html = await response.text();
+            const data = await response.json();
             if (currentRequest !== requestId || !dialog.open) return;
-            content.innerHTML = html;
-            const total = content.querySelector('[data-likers-total]');
-            if (total) updateCount(total.dataset.likersTotal);
+            render(data);
         } catch {
             if (currentRequest !== requestId || !dialog.open) return;
             content.setAttribute('role', 'alert');
@@ -401,12 +497,12 @@ function initPostLikersDialog() {
         updateCount(trigger.dataset.likersCount);
         dialog.showModal();
         closeButton.focus();
-        load(trigger.dataset.likersUrl);
+        load();
     });
 
     content.addEventListener('click', (event) => {
-        const pageButton = event.target.closest('[data-likers-page-url]');
-        if (pageButton) load(pageButton.dataset.likersPageUrl);
+        const button = event.target.closest('[data-likers-page]');
+        if (button) load(Number(button.dataset.likersPage));
     });
     closeButton.addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => {

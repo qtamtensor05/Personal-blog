@@ -2,6 +2,10 @@
     data-likers-dialog
     data-loading-message="{{ __('ui.loading_page') }}"
     data-error-message="{{ __('post.likers_load_failed') }}"
+    data-empty-message="{{ __('post.no_likers') }}"
+    data-previous-label="{{ __('notifications.previous') }}"
+    data-next-label="{{ __('notifications.next') }}"
+    data-pagination-label="{{ __('notifications.pagination') }}"
     class="border-default bg-surface text-primary fixed inset-0 z-50 m-auto max-h-[80vh] w-[calc(100vw-2rem)] max-w-lg rounded-xl border p-0 shadow-2xl backdrop:bg-black/60"
     aria-label="{{ __('post.likers') }}"
 >

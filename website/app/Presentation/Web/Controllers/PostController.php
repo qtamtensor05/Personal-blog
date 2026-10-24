@@ -8,6 +8,7 @@ use App\Application\BlogDesign\Services\OwnedBlogGuard;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\Contracts\TaxonomyRepository;
+use App\Application\Content\DTOs\PostLiker;
 use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementService;
 use App\Application\Content\UseCases\ManagePosts\ManagePostsService;
 use App\Application\Media\Contracts\MediaAssetRepository;
@@ -19,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -56,13 +58,35 @@ final class PostController extends Controller
         Request $request,
         PostRepository $posts,
         PostEngagementService $engagement,
-    ): View {
+    ): JsonResponse|View {
         $data = $request->validate(['page' => ['nullable', 'integer', 'min:1']]);
 
         try {
             $likers = $engagement->likers((int) $request->user()->id, $blog, $post, (int) ($data['page'] ?? 1));
         } catch (BlogNotFound) {
             abort(404);
+        }
+
+        if ($request->expectsJson()) {
+            return new JsonResponse([
+                'total' => $likers->total,
+                'page' => $likers->page,
+                'lastPage' => $likers->lastPage(),
+                'likers' => array_map(static function (PostLiker $liker): array {
+                    $likedAt = Carbon::parse($liker->likedAt);
+
+                    return [
+                        'name' => $liker->name,
+                        'avatarUrl' => $liker->avatarUrl,
+                        'avatarInitial' => mb_strtoupper(mb_substr($liker->name, 0, 1)),
+                        'profilePath' => route('profiles.show', $liker->userId, false),
+                        'profileLabel' => __('profile.view_public', ['name' => $liker->name]),
+                        'likedAt' => $likedAt->toAtomString(),
+                        'likedAtTitle' => $likedAt->format('d/m/Y H:i'),
+                        'likedAtTime' => $likedAt->format('H:i'),
+                    ];
+                }, $likers->likers),
+            ]);
         }
 
         return view('posts.manage.likers', [
