@@ -361,14 +361,22 @@ function initPostLikersDialog() {
     let opener = null;
     let requestId = 0;
 
+    const formatCount = (total) => {
+        if (total < 1000) return String(total);
+        const divisor = total >= 1000000 ? 1000000 : 1000;
+        const whole = Math.floor(total / divisor);
+        const decimal = Math.floor((total % divisor) / (divisor / 10));
+        return `${whole}${decimal ? `.${decimal}` : ''}${divisor === 1000000 ? 'M' : 'k'}`;
+    };
+
     const updateCount = (value) => {
         const total = Number(value);
         if (!Number.isSafeInteger(total) || total < 0) return;
-        count.textContent = String(total);
+        count.textContent = formatCount(total);
         if (opener) {
             opener.dataset.likersCount = String(total);
             const buttonCount = opener.querySelector('[data-likers-count-value]');
-            if (buttonCount) buttonCount.textContent = String(total);
+            if (buttonCount) buttonCount.textContent = formatCount(total);
         }
     };
 
@@ -401,19 +409,12 @@ function initPostLikersDialog() {
             list.setAttribute('aria-label', dialog.getAttribute('aria-label'));
 
             for (const liker of data.likers) {
-                if (typeof liker.name !== 'string' || typeof liker.profilePath !== 'string' ||
-                    !liker.profilePath.startsWith('/') || liker.profilePath.startsWith('//')) {
-                    throw new Error('Invalid liker');
-                }
-                const profileUrl = new URL(liker.profilePath, window.location.origin);
-                if (profileUrl.origin !== window.location.origin) throw new Error('Invalid profile URL');
+                if (typeof liker.name !== 'string') throw new Error('Invalid liker');
 
                 const item = document.createElement('li');
                 item.className = 'flex items-center gap-3 py-3';
-                const profile = document.createElement('a');
-                profile.href = profileUrl.href;
-                profile.setAttribute('aria-label', liker.profileLabel);
-                profile.className = 'shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700';
+                const profile = document.createElement('span');
+                profile.className = 'shrink-0';
 
                 let avatarUrl = null;
                 if (typeof liker.avatarUrl === 'string') {

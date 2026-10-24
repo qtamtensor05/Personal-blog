@@ -6,33 +6,11 @@ namespace App\Infrastructure\Profile;
 
 use App\Application\Profile\Contracts\ProfileRepository;
 use App\Application\Profile\DTOs\ProfileRecord;
-use App\Application\Profile\DTOs\PublicProfileRecord;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 final class QueryBuilderProfileRepository implements ProfileRepository
 {
-    public function findPublic(int $userId): ?PublicProfileRecord
-    {
-        $row = DB::table('users as u')
-            ->leftJoin('media_assets as m', function ($join): void {
-                $join->on('m.id', '=', 'u.avatar_media_id')
-                    ->where('m.scope', 'USER')
-                    ->where('m.status', 'READY')
-                    ->whereNull('m.deleted_at');
-            })
-            ->where('u.id', $userId)
-            ->where('u.status', 'ACTIVE')
-            ->whereNull('u.deleted_at')
-            ->first(['u.id', 'u.name', 'm.secure_url as avatar_url']);
-
-        return $row === null ? null : new PublicProfileRecord(
-            (int) $row->id,
-            (string) $row->name,
-            $row->avatar_url !== null ? (string) $row->avatar_url : null,
-        );
-    }
-
     public function find(int $userId): ?ProfileRecord
     {
         $row = DB::table('users as u')

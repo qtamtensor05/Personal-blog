@@ -26,7 +26,6 @@ use App\Presentation\Web\Controllers\PublicBlogController;
 use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\PublicPostIndexController;
-use App\Presentation\Web\Controllers\PublicProfileController;
 use App\Presentation\Web\Controllers\RegisterUserController;
 use App\Presentation\Web\Controllers\ResendVerificationEmailController;
 use App\Presentation\Web\Controllers\ResetPasswordController;
@@ -40,8 +39,6 @@ Route::get('/', HomeController::class)->name('home');
 Route::post('/interface-locale', InterfaceLocaleController::class)->name('interface-locale.update');
 
 Route::get('/posts', PublicPostIndexController::class)->name('posts.index');
-
-Route::get('/users/{user}', PublicProfileController::class)->whereNumber('user')->name('profiles.show');
 
 Route::get('/posts/{slug}', function ($slug) {
     // Mock post data - Replace with PostRepository->findBySlug($slug)

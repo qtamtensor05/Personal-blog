@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Content\UseCases\ManagePostInteractions;
 
-use App\Application\Blogs\DTOs\BlogRecord;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\LikeNotificationDispatcher;
 use App\Application\Content\Contracts\PostInteractionRepository;
+use App\Application\Content\DTOs\BookmarkedPostItem;
 use App\Application\Content\DTOs\PostInteractionState;
-use App\Application\Content\DTOs\PostRecord;
 use App\Application\Content\UseCases\ViewPublicPost\ViewPublicPostService;
 
-final readonly class PostInteractionsService
+final readonly class PostInteractionsService implements PostInteractionsUseCase
 {
     public function __construct(
         private ViewPublicPostService $posts,
@@ -30,7 +29,7 @@ final readonly class PostInteractionsService
         $result = $this->posts->execute($blogSlug, $postSlug, $userId);
         $post = $result['post'];
         if ($this->interactions->setLike($userId, $post->id, $liked) && $userId !== $result['page']->blog->ownerUserId) {
-            $this->notifier->dispatchAfterCommit($userId, $post->id, $result['page']->blog->ownerUserId, $blogSlug, $postSlug);
+            $this->notifier->dispatchAfterCommit($userId, $post->id, $result['page']->blog->ownerUserId);
         }
     }
 
@@ -44,7 +43,7 @@ final readonly class PostInteractionsService
      * Recheck each saved post through the real public-post use case. This keeps
      * unlisted and owner-preview rules consistent with the post page.
      *
-     * @return list<array{blog: BlogRecord, post: PostRecord, views: int}>
+     * @return list<BookmarkedPostItem>
      */
     public function bookmarks(int $userId): array
     {
@@ -57,7 +56,14 @@ final readonly class PostInteractionsService
                 continue;
             }
 
-            $visible[] = ['blog' => $page['page']->blog, 'post' => $page['post']];
+            $post = $page['post'];
+            $visible[] = [
+                'blog' => $page['page']->blog,
+                'post' => $post,
+                'coverUrl' => $post->coverMediaId !== null
+                    ? ($page['media'][$post->coverMediaId]['url'] ?? null)
+                    : null,
+            ];
         }
 
         $engagement = $this->interactions->engagementForPosts(array_map(
@@ -66,7 +72,12 @@ final readonly class PostInteractionsService
         ));
 
         return array_map(
-            fn (array $item): array => [...$item, 'views' => $engagement[$item['post']->id]->views],
+            fn (array $item): BookmarkedPostItem => new BookmarkedPostItem(
+                $item['blog'],
+                $item['post'],
+                $item['coverUrl'],
+                $engagement[$item['post']->id],
+            ),
             $visible,
         );
     }

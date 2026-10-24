@@ -35,22 +35,14 @@
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div class="flex min-w-0 items-start gap-3">
                                 @if ($notification->type === 'post.liked')
-                                    @if (isset($notification->data['liker_user_id']))
-                                        <a href="{{ route('profiles.show', $notification->data['liker_user_id']) }}" aria-label="{{ __('profile.view_public', ['name' => $notification->data['liker_name'] ?? '?']) }}" class="relative shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
-                                    @else
-                                        <span class="relative shrink-0">
-                                    @endif
+                                    <span class="relative shrink-0">
                                         @if ($notification->actorAvatarUrl)
                                             <img src="{{ $notification->actorAvatarUrl }}" alt="" class="h-12 w-12 rounded-full object-cover" />
                                         @else
                                             <span class="bg-accent-primary text-surface flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold" aria-hidden="true">{{ mb_strtoupper(mb_substr($notification->data['liker_name'] ?? $notification->data['message'] ?? '?', 0, 1)) }}</span>
                                         @endif
                                         <span class="bg-rose-500 ring-surface absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-white ring-2" aria-hidden="true"><i class="fa-solid fa-heart"></i></span>
-                                    @if (isset($notification->data['liker_user_id']))
-                                        </a>
-                                    @else
-                                        </span>
-                                    @endif
+                                    </span>
                                 @endif
                                 <div class="min-w-0">
                                 <h2 class="text-primary font-semibold">
@@ -63,8 +55,8 @@
                                     $notification->data['message'] ??
                                         ''
                                 }}</p>
-                                @if ($notification->type === 'post.liked' && isset($notification->data['blog_slug'], $notification->data['post_slug']))
-                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notification->data['blog_slug'], $notification->data['post_slug']]) }}">{{ __('post.open_liked_post') }}</a>
+                                @if (isset($notificationLocations[$notification->id]))
+                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notificationLocations[$notification->id]->blogSlug, $notificationLocations[$notification->id]->postSlug]) }}">{{ __('post.open_liked_post') }}</a>
                                 @endif
                                 <time datetime="{{ \Illuminate\Support\Carbon::parse($notification->createdAt)->toAtomString() }}" class="text-secondary mt-2 block text-xs tabular-nums">{{ \Illuminate\Support\Carbon::parse($notification->createdAt)->format('H:i d/m/Y') }}</time>
                                 </div>

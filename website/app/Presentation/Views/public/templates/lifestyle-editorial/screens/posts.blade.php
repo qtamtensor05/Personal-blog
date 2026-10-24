@@ -37,14 +37,9 @@
 
     <div class="le-archive-grid">
         @forelse ($publicPosts as $post)
-            <article>
-                @if ($post->coverMediaId && isset($mediaUrls[$post->coverMediaId]))
-                    <img src="{{ $mediaUrls[$post->coverMediaId] }}" alt="" loading="lazy" />
-                @else
-                    <div class="le-archive-placeholder" aria-hidden="true">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
-                @endif
+            <article class="relative">
+                <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary" aria-label="{{ $post->title }}"></a>
+                <img src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : asset('images/illustrations/post-cover.svg') }}" alt="" loading="lazy" />
 
                 <div>
                     <time>
@@ -55,21 +50,19 @@
                         }}
                     </time>
 
-                    <h2>
-                        <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}">
-                            {{ $post->title }}
-                        </a>
-                    </h2>
+                    <h2>{{ $post->title }}</h2>
 
                     <p>{{ $post->excerpt ?? '' }}</p>
 
-                    <a
-                        class="le-read-more"
-                        href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                    >
+                    <div class="text-secondary mb-3 flex items-center gap-4 text-sm">
+                        <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.likes_count') }}: {{ $engagement[$post->id]->likes }}"><i class="fa-regular fa-heart" aria-hidden="true"></i>{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
+                        <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.views_count') }}: {{ $engagement[$post->id]->views }}"><i class="fa-regular fa-eye" aria-hidden="true"></i>{{ $engagement[$post->id]->views }}</span>
+                    </div>
+
+                    <span class="le-read-more">
                         {{ __('public.read_post') }}
                         <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
-                    </a>
+                    </span>
                 </div>
             </article>
         @empty

@@ -6,7 +6,7 @@ namespace App\Application\Content\UseCases\ManagePostInteractions;
 
 use App\Application\Content\Contracts\PostInteractionRepository;
 
-final readonly class RecordPostViewService
+final readonly class RecordPostViewService implements RecordPostViewUseCase
 {
     public function __construct(private PostInteractionRepository $interactions) {}
 

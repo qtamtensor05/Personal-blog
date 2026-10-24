@@ -7,26 +7,33 @@ namespace App\Application\Content\UseCases\ManagePostInteractions;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\LikeNotificationCooldownRepository;
 use App\Application\Content\Contracts\PostInteractionRepository;
+use App\Application\Content\Contracts\PostLocationRepository;
 use App\Application\Content\UseCases\ViewPublicPost\ViewPublicPostService;
 use App\Application\Notifications\Contracts\NotificationPublisher;
 
-final readonly class PublishLikeNotificationService
+final readonly class PublishLikeNotificationService implements PublishLikeNotificationUseCase
 {
     public function __construct(
         private ViewPublicPostService $posts,
         private PostInteractionRepository $interactions,
+        private PostLocationRepository $locations,
         private LikeNotificationCooldownRepository $cooldowns,
         private NotificationPublisher $notifications,
     ) {}
 
-    public function execute(int $likerId, int $postId, int $ownerId, string $blogSlug, string $postSlug): void
+    public function execute(int $likerId, int $postId, int $ownerId): void
     {
         if ($likerId === $ownerId || ! $this->interactions->isLiked($likerId, $postId)) {
             return;
         }
 
+        $location = $this->locations->findForPost($postId);
+        if ($location === null) {
+            return;
+        }
+
         try {
-            $result = $this->posts->execute($blogSlug, $postSlug, $likerId);
+            $result = $this->posts->execute($location->blogSlug, $location->postSlug, $likerId);
         } catch (BlogNotFound) {
             return;
         }
@@ -40,13 +47,17 @@ final readonly class PublishLikeNotificationService
             return;
         }
 
-        $this->cooldowns->publishIfDue($likerId, $postId, $ownerId, function () use ($likerId, $postId, $ownerId, $name, $blogSlug, $postSlug): bool {
+        $this->cooldowns->publishIfDue($likerId, $postId, $ownerId, function () use ($likerId, $postId, $ownerId, $name): bool {
             // A queued job can wait while a reader unlikes or the post is hidden.
             if (! $this->interactions->isLiked($likerId, $postId)) {
                 return false;
             }
+            $location = $this->locations->findForPost($postId);
+            if ($location === null) {
+                return false;
+            }
             try {
-                $current = $this->posts->execute($blogSlug, $postSlug, $likerId);
+                $current = $this->posts->execute($location->blogSlug, $location->postSlug, $likerId);
             } catch (BlogNotFound) {
                 return false;
             }
@@ -58,8 +69,8 @@ final readonly class PublishLikeNotificationService
                 'message' => $name.' đã thích bài viết "'.$current['post']->title.'".',
                 'liker_user_id' => $likerId,
                 'liker_name' => $name,
-                'blog_slug' => $blogSlug,
-                'post_slug' => $postSlug,
+                'blog_id' => $location->blogId,
+                'post_id' => $postId,
             ]);
 
             return true;

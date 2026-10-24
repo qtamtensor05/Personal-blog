@@ -314,6 +314,12 @@
                                     alt=""
                                     class="mb-2 aspect-video w-full rounded-md object-cover"
                                 />
+                            @else
+                                <img
+                                    src="{{ asset('images/illustrations/post-cover.svg') }}"
+                                    alt=""
+                                    class="mb-2 aspect-video w-full rounded-md object-cover"
+                                />
                             @endif
                         </div>
                         <input
@@ -324,7 +330,7 @@
                             data-cover-image-input
                         />
 
-                        <p class="text-secondary text-xs" data-cover-status>{{ __('post.cover_help') }}</p>
+                        <p class="text-secondary text-xs" data-cover-status data-uploading-label="{{ __('post.cover_uploading') }}" data-uploaded-label="{{ __('post.cover_uploaded') }}" aria-live="polite">{{ __('post.cover_help') }}</p>
                     </div>
                     <x-input
                         name="seo_title_editor"

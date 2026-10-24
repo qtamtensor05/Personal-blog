@@ -8,8 +8,8 @@ use App\Application\Content\Contracts\LikeNotificationDispatcher;
 
 final class QueueLikeNotificationDispatcher implements LikeNotificationDispatcher
 {
-    public function dispatchAfterCommit(int $likerId, int $postId, int $ownerId, string $blogSlug, string $postSlug): void
+    public function dispatchAfterCommit(int $likerId, int $postId, int $ownerId): void
     {
-        ProcessLikeNotification::dispatch($likerId, $postId, $ownerId, $blogSlug, $postSlug)->afterCommit();
+        ProcessLikeNotification::dispatch($likerId, $postId, $ownerId)->afterCommit();
     }
 }

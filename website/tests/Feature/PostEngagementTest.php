@@ -117,7 +117,6 @@ it('publishes one owner notification for retries and rapid unlike/re-like within
     DB::table('notifications')->where('type', 'post.liked')->update(['created_at' => '2026-10-21 13:41:00']);
     $this->actingAs($this->owner)->get(route('notifications.index'))->assertOk()
         ->assertSee('First Reader')->assertSee('Engagement Post')->assertSee($this->postUrl)
-        ->assertSee('href="'.route('profiles.show', $this->reader->id).'"', false)
         ->assertSee('13:41 21/10/2026')
         ->assertSee('src="'.$avatarUrl.'"', false);
     $notification = DB::table('notifications')->where('type', 'post.liked')->first();
@@ -134,6 +133,59 @@ it('keeps notification cooldowns independent for different readers', function ()
             ->handle($service);
     }
     expect(DB::table('notifications')->where('type', 'post.liked')->where('recipient_user_id', $this->owner->id)->count())->toBe(2);
+});
+
+it('resolves changed blog and post slugs before publishing and when opening a stored notification', function (): void {
+    Queue::fake();
+    $this->actingAs($this->reader)->put($this->likeUrl)->assertRedirect();
+    $job = new ProcessLikeNotification((int) $this->reader->id, $this->postId, (int) $this->owner->id, $this->slug, 'entry');
+
+    DB::table('blogs')->where('id', $this->blogId)->update(['slug' => 'renamed-blog']);
+    DB::table('posts')->where('id', $this->postId)->update(['slug' => 'renamed-post']);
+    $job->handle(app(PublishLikeNotificationService::class));
+
+    $notification = DB::table('notifications')->where('type', 'post.liked')->first();
+    expect($notification)->not->toBeNull();
+    $data = json_decode($notification->data, true);
+    expect($data['blog_id'])->toBe($this->blogId)
+        ->and($data['post_id'])->toBe($this->postId);
+
+    DB::table('blogs')->where('id', $this->blogId)->update(['slug' => 'latest-blog']);
+    DB::table('posts')->where('id', $this->postId)->update(['slug' => 'latest-post']);
+    $latestUrl = route('public.post', ['latest-blog', 'latest-post']);
+    $this->actingAs($this->owner)->get(route('notifications.index'))->assertOk()
+        ->assertSee($latestUrl)->assertDontSee(route('public.post', ['renamed-blog', 'renamed-post']));
+    $this->get($latestUrl)->assertOk();
+
+    DB::table('posts')->where('id', $this->postId)->update(['status' => 'DRAFT']);
+    $this->get(route('notifications.index'))->assertOk()->assertDontSee($latestUrl);
+});
+
+it('hides a stored like notification link when the post or blog is inaccessible', function (): void {
+    Queue::fake();
+    $this->actingAs($this->reader)->put($this->likeUrl)->assertRedirect();
+    (new ProcessLikeNotification((int) $this->reader->id, $this->postId, (int) $this->owner->id))
+        ->handle(app(PublishLikeNotificationService::class));
+
+    $this->actingAs($this->owner)->get(route('notifications.index'))->assertOk()->assertSee($this->postUrl);
+    DB::table('blogs')->where('id', $this->blogId)->update(['visibility' => 'PRIVATE']);
+    $this->get(route('notifications.index'))->assertOk()->assertDontSee($this->postUrl);
+    DB::table('blogs')->where('id', $this->blogId)->update(['visibility' => 'PUBLIC']);
+    DB::table('posts')->where('id', $this->postId)->update(['deleted_at' => now()]);
+    $this->get(route('notifications.index'))->assertOk()->assertDontSee($this->postUrl);
+});
+
+it('renders management engagement labels in the active English locale', function (): void {
+    $previous = app()->getLocale();
+    app()->setLocale('en');
+
+    try {
+        $this->actingAs($this->owner)->get(route('blogs.posts.index', $this->blogId))->assertOk()
+            ->assertSee(__('post.likes_count'))
+            ->assertSee(__('post.views_count'));
+    } finally {
+        app()->setLocale($previous);
+    }
 });
 
 it('shows the liker initial for notifications created before actor details were stored', function (): void {
@@ -188,31 +240,46 @@ it('shows current like and view totals and limits liker names to the owner', fun
     $this->actingAs($this->owner)->get($this->postUrl)->assertOk();
     $management = route('blogs.posts.index', $this->blogId);
     $likers = route('blogs.posts.likers', [$this->blogId, $this->postId]);
-    $this->get($management)->assertOk()->assertSee('Lượt thích')->assertSee('Lượt xem')
+    $this->get($management)->assertOk()->assertSee(__('post.likes_count'))->assertSee(__('post.views_count'))
         ->assertSee(__('post.likers'))
         ->assertSee('data-likers-url="'.$likers.'"', false)
         ->assertSee('data-likers-dialog', false)
         ->assertViewHas('engagement', fn (array $values): bool => $values[$this->postId]->likes === 2 && $values[$this->postId]->views === 1);
     $this->get($this->postUrl)->assertOk()
-        ->assertSee('href="'.route('profiles.show', $this->owner->id).'"', false)
         ->assertSee('data-likers-url="'.$likers.'"', false)
         ->assertSee('data-likers-count="2"', false)
         ->assertSeeInOrder(['data-likers-open', 'class="post-content"'], false)
         ->assertDontSee(__('post.likes_count'))
         ->assertDontSee('data-likers-post-title', false);
     $this->get($likers)->assertOk()->assertSee('First Reader')->assertSee('Second Reader')
-        ->assertSee('href="'.route('profiles.show', $this->reader->id).'"', false)
         ->assertSee('data-likers-total="2"', false)
         ->assertSee('13:41')->assertSee('21/10/2026 13:41')
         ->assertSee('src="'.$avatarUrl.'"', false)->assertDontSee('Thêm bạn bè');
     $this->actingAs($this->reader)->get($management)->assertNotFound();
-    $this->get($this->postUrl)->assertOk()->assertDontSee('data-likers-dialog', false);
+    $this->get($this->postUrl)->assertOk()
+        ->assertSee('aria-label="'.__('post.likes_count').': 2"', false)
+        ->assertDontSee('data-likers-open', false)
+        ->assertDontSee('data-likers-dialog', false);
     $this->get($likers)->assertNotFound();
     $this->delete($this->unlikeUrl)->assertRedirect();
+    $this->get($this->postUrl)->assertOk()->assertSee('aria-label="'.__('post.likes_count').': 1"', false);
     $this->actingAs($this->owner)->get($likers)->assertOk()->assertDontSee('First Reader')
         ->assertSee('data-likers-total="1"', false);
     expect(DB::table('post_views')->where('post_id', $this->postId)->count())->toBe(2)
         ->and(DB::table('post_likes')->where('post_id', $this->postId)->count())->toBe(1);
+});
+
+it('shows the public like total to guests without exposing the owner liker dialog', function (): void {
+    DB::table('post_likes')->insert([
+        'user_id' => $this->reader->id,
+        'post_id' => $this->postId,
+        'created_at' => now(),
+    ]);
+
+    $this->get($this->postUrl)->assertOk()
+        ->assertSee('aria-label="'.__('post.likes_count').': 1"', false)
+        ->assertDontSee('data-likers-open', false)
+        ->assertDontSee('data-likers-dialog', false);
 });
 
 it('shows an empty liker list to the owner and redirects guests to login', function (): void {
@@ -232,7 +299,7 @@ it('returns liker data as JSON only to the owner for safe dialog rendering', fun
         ->assertJsonPath('total', 1)
         ->assertJsonPath('page', 1)
         ->assertJsonPath('likers.0.name', $name)
-        ->assertJsonPath('likers.0.profilePath', route('profiles.show', $this->reader->id, false))
+        ->assertJsonMissingPath('likers.0.profilePath')
         ->assertHeader('content-type', 'application/json');
     $this->actingAs($this->other)->getJson($url)->assertNotFound();
 });
@@ -251,11 +318,57 @@ it('shows current views in the saved-post card for a permitted post', function (
     $this->actingAs($this->owner)->get($this->postUrl)->assertOk();
 
     $this->actingAs($this->reader)->get(route('bookmarks.index'))->assertOk()
+        ->assertSee('images/illustrations/post-cover.svg')
         ->assertSee(__('post.views_count').': 2')
-        ->assertViewHas('posts', fn (array $posts): bool => count($posts) === 1 && $posts[0]['views'] === 2);
+        ->assertViewHas('posts', fn (array $posts): bool => count($posts) === 1 && $posts[0]->engagement->views === 2);
 
     DB::table('posts')->where('id', $this->postId)->update(['status' => 'DRAFT']);
     $this->get(route('bookmarks.index'))->assertOk()->assertDontSee('Engagement Post');
+});
+
+it('shows a post cover and current engagement on catalog and saved cards', function (): void {
+    Queue::fake();
+    $coverUrl = 'https://example.test/covers/engagement-post.jpg';
+    $coverId = DB::table('media_assets')->insertGetId([
+        'scope' => 'BLOG',
+        'blog_id' => $this->blogId,
+        'uploaded_by' => $this->owner->id,
+        'cloud_name' => 'test',
+        'original_name' => 'cover.jpg',
+        'secure_url' => $coverUrl,
+        'status' => 'READY',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    DB::table('posts')->where('id', $this->postId)->update(['cover_media_id' => $coverId]);
+
+    $this->actingAs($this->reader)->put($this->likeUrl)->assertRedirect();
+    $this->put($this->bookmarkUrl)->assertRedirect();
+    $this->get($this->postUrl)->assertOk();
+
+    $this->get($this->postUrl)->assertOk()->assertSee('src="'.$coverUrl.'"', false);
+
+    foreach ([route('posts.index'), route('bookmarks.index')] as $url) {
+        $this->get($url)->assertOk()
+            ->assertSee('src="'.$coverUrl.'"', false)
+            ->assertSee('href="'.$this->postUrl.'" class="flex h-full flex-col', false)
+            ->assertSee(__('post.likes_count').': 1')
+            ->assertSee(__('post.views_count').': 1');
+    }
+});
+
+it('shows the shared placeholder inside a post without a cover and in its editor', function (): void {
+    $placeholder = 'images/illustrations/post-cover.svg';
+
+    $this->get($this->postUrl)->assertOk()->assertSee($placeholder);
+    $this->actingAs($this->owner)->get(route('blogs.posts.edit', [$this->blogId, $this->postId]))
+        ->assertOk()->assertSee($placeholder)->assertSee('data-cover-image-input', false);
+});
+
+it('retires the public user profile route without affecting private profile editing', function (): void {
+    $this->get('/users/'.$this->reader->id)->assertNotFound();
+    $this->actingAs($this->reader)->get(route('profile.edit'))->assertOk();
+    $this->get($this->postUrl)->assertOk()->assertDontSee('/users/'.$this->reader->id);
 });
 
 it('paginates the owner-only liker list at twenty names', function (): void {

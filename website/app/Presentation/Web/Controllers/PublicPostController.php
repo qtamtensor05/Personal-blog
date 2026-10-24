@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
-use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementService;
-use App\Application\Content\UseCases\ManagePostInteractions\PostInteractionsService;
-use App\Application\Content\UseCases\ManagePostInteractions\RecordPostViewService;
+use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementUseCase;
+use App\Application\Content\UseCases\ManagePostInteractions\PostInteractionsUseCase;
+use App\Application\Content\UseCases\ManagePostInteractions\RecordPostViewUseCase;
 use App\Application\Content\UseCases\ViewPublicPost\ViewPublicPostService;
 use App\Presentation\Web\Rendering\TiptapHtmlRenderer;
 use Illuminate\Http\Request;
@@ -21,9 +21,9 @@ final class PublicPostController extends Controller
         string $post,
         Request $request,
         ViewPublicPostService $viewPost,
-        PostInteractionsService $interactions,
-        PostEngagementService $engagement,
-        RecordPostViewService $views,
+        PostInteractionsUseCase $interactions,
+        PostEngagementUseCase $engagement,
+        RecordPostViewUseCase $views,
         TiptapHtmlRenderer $renderer,
     ): View {
         try {
@@ -38,9 +38,9 @@ final class PublicPostController extends Controller
 
         $record = $result['post'];
         $views->execute($record->id, $result['page']->blog->ownerUserId, $request->user()?->id, $request->session()->getId());
-        $ownerEngagement = (int) $request->user()?->id === $result['page']->blog->ownerUserId
-            ? $engagement->forOwnedPosts((int) $request->user()->id, $result['page']->blog->id, [$record])[$record->id]
-            : null;
+        $postEngagement = $engagement->forVisiblePosts([$record])[$record->id];
+        $canViewLikers = $request->user() !== null
+            && (int) $request->user()->id === $result['page']->blog->ownerUserId;
 
         return view('public.post', [
             'page' => $result['page'],
@@ -53,7 +53,8 @@ final class PublicPostController extends Controller
             'interactionState' => $request->user()
                 ? $interactions->state((int) $request->user()->id, $record->id)
                 : null,
-            'ownerEngagement' => $ownerEngagement,
+            'postEngagement' => $postEngagement,
+            'canViewLikers' => $canViewLikers,
         ]);
     }
 }

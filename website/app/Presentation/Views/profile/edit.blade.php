@@ -40,7 +40,7 @@
                         {{ __('profile.information') }}
                     </h2>
                     <div class="mb-6 flex items-center gap-4">
-                        <a href="{{ route('profiles.show', $profile->id) }}" aria-label="{{ __('profile.view_public', ['name' => $profile->name]) }}" class="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                        <span class="shrink-0">
                             @if ($profile->avatarUrl)
                                 <img
                                     src="{{ $profile->avatarUrl }}"
@@ -55,7 +55,7 @@
                                     {{ mb_strtoupper(mb_substr($profile->name, 0, 1)) }}
                                 </span>
                             @endif
-                        </a>
+                        </span>
                         <div>
                             <p class="text-primary font-semibold">{{ $profile->name }}</p>
                             <p class="text-secondary text-sm">{{ $profile->email }}</p>

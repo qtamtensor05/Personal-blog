@@ -11,8 +11,9 @@ use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\DTOs\PostEngagement;
 use App\Application\Content\DTOs\PostLikerPage;
 use App\Application\Content\DTOs\PostRecord;
+use App\Application\Content\DTOs\PublicPostSummary;
 
-final readonly class PostEngagementService
+final readonly class PostEngagementService implements PostEngagementUseCase
 {
     public function __construct(
         private OwnedBlogGuard $guard,
@@ -27,7 +28,21 @@ final readonly class PostEngagementService
     {
         $this->guard->ensure($ownerId, $blogId);
 
-        return $this->interactions->engagementForPosts(array_map(fn ($post) => $post->id, $posts));
+        return $this->forVisiblePosts($posts);
+    }
+
+    /**
+     * Counts only the posts already selected by a visibility-aware public use case.
+     *
+     * @param  list<PostRecord|PublicPostSummary>  $posts
+     * @return array<int, PostEngagement>
+     */
+    public function forVisiblePosts(array $posts): array
+    {
+        return $this->interactions->engagementForPosts(array_map(
+            static fn (PostRecord|PublicPostSummary $post): int => $post->id,
+            $posts,
+        ));
     }
 
     public function likers(int $ownerId, int $blogId, int $postId, int $page): PostLikerPage

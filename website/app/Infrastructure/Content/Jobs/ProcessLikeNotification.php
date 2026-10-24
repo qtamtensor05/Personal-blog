@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Content\Jobs;
 
-use App\Application\Content\UseCases\ManagePostInteractions\PublishLikeNotificationService;
+use App\Application\Content\UseCases\ManagePostInteractions\PublishLikeNotificationUseCase;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,12 +19,13 @@ final class ProcessLikeNotification implements ShouldQueue
         public int $likerId,
         public int $postId,
         public int $ownerId,
-        public string $blogSlug,
-        public string $postSlug,
+        // Kept optional so jobs already queued by older code can still be unserialized.
+        public ?string $blogSlug = null,
+        public ?string $postSlug = null,
     ) {}
 
-    public function handle(PublishLikeNotificationService $service): void
+    public function handle(PublishLikeNotificationUseCase $service): void
     {
-        $service->execute($this->likerId, $this->postId, $this->ownerId, $this->blogSlug, $this->postSlug);
+        $service->execute($this->likerId, $this->postId, $this->ownerId);
     }
 }

@@ -332,8 +332,9 @@
                             :image="$post->coverUrl"
                             :date="$post->publishedAt"
                             :author="$post->authorName"
-                            :author-id="$post->authorUserId"
                             :isFeatured="$post->isFeatured"
+                            :likes="$engagement[$post->id]->likes"
+                            :views="$engagement[$post->id]->views"
                         />
                     @endforeach
                 </div>
@@ -372,7 +373,8 @@
                         :image="$post->coverUrl"
                         :date="$post->publishedAt"
                         :author="$post->authorName"
-                        :author-id="$post->authorUserId"
+                        :likes="$engagement[$post->id]->likes"
+                        :views="$engagement[$post->id]->views"
                     />
                 @endforeach
             </div>

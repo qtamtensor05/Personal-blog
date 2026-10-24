@@ -6,5 +6,5 @@ namespace App\Application\Content\Contracts;
 
 interface LikeNotificationDispatcher
 {
-    public function dispatchAfterCommit(int $likerId, int $postId, int $ownerId, string $blogSlug, string $postSlug): void;
+    public function dispatchAfterCommit(int $likerId, int $postId, int $ownerId): void;
 }

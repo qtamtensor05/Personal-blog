@@ -123,7 +123,7 @@
                     @else
                         <a
                             href="{{ route('notifications.index') }}"
-                            class="btn-ghost relative p-2"
+                            class="border-default bg-surface text-secondary hover:border-accent-primary hover:text-accent-primary relative inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary"
                             aria-label="{{ __('ui.notifications') }}"
                         >
                             <i class="fa-solid fa-bell h-5 w-5" aria-hidden="true"></i>
@@ -140,8 +140,15 @@
                             @endif
                         </a>
                         @include ('layouts.partials.theme-toggle')
-                        <div class="relative hidden items-center gap-2 md:flex" x-data="{ open: false }" @click.away="open = false">
-                            <a href="{{ route('profiles.show', auth()->id()) }}" aria-label="{{ __('profile.view_public', ['name' => auth()->user()->name]) }}" class="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                        <div class="relative hidden items-center md:flex" x-data="{ open: false }" @click.away="open = false" @keydown.escape.window="open = false">
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                :aria-expanded="open.toString()"
+                                aria-haspopup="true"
+                                aria-controls="account-dropdown"
+                                class="hover:text-accent-primary flex items-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary"
+                            >
                                 @if ($profileAvatarUrl)
                                     <img
                                         src="{{ $profileAvatarUrl }}"
@@ -159,20 +166,13 @@
                                         }}
                                     </span>
                                 @endif
-                            </a>
-                            <button
-                                type="button"
-                                @click="open = !open"
-                                :aria-expanded="open.toString()"
-                                aria-haspopup="true"
-                                class="hover:text-accent-primary flex items-center gap-2 text-sm font-medium transition-colors"
-                            >
                                 <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
                                 <i class="fa-solid fa-chevron-down h-4 w-4" aria-hidden="true"></i>
                             </button>
 
                             <!-- Dropdown -->
                             <div
+                                id="account-dropdown"
                                 x-show="open"
                                 x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="opacity-0 scale-95"
@@ -180,7 +180,7 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="opacity-100 scale-100"
                                 x-transition:leave-end="opacity-0 scale-95"
-                                class="bg-surface border-default absolute right-0 mt-2 w-48 rounded-lg border py-1 shadow-lg"
+                                class="bg-surface border-default absolute top-full right-0 z-[60] mt-2 w-52 origin-top-right rounded-lg border py-1 shadow-lg"
                                 style="display: none"
                             >
                                 <a
@@ -202,6 +202,12 @@
                                     class="hover:bg-surface-secondary block px-4 py-2 text-sm"
                                 >
                                     {{ __('ui.my_blogs') }}
+                                </a>
+                                <a
+                                    href="{{ route('bookmarks.index') }}"
+                                    class="hover:bg-surface-secondary block px-4 py-2 text-sm"
+                                >
+                                    {{ __('bookmarks.title') }}
                                 </a>
                                 <hr class="border-default my-1" />
                                 <form method="POST" action="{{ route('logout') }}">
@@ -275,6 +281,12 @@
                             class="hover:text-accent-primary text-sm font-medium transition-colors"
                         >
                             {{ __('ui.profile') }}
+                        </a>
+                        <a
+                            href="{{ route('bookmarks.index') }}"
+                            class="hover:text-accent-primary text-sm font-medium transition-colors"
+                        >
+                            {{ __('bookmarks.title') }}
                         </a>
                         @if ($canAccessAdminConsole)
                             <a

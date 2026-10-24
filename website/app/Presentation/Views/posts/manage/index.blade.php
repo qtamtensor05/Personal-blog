@@ -83,7 +83,7 @@
                                 </td>
                                 <td class="text-secondary px-4 py-3">
                                     <div class="flex items-center gap-2 whitespace-nowrap">
-                                        <span>{{ $engagement[$post->id]->likes }}</span>
+                                        <span title="{{ $engagement[$post->id]->likes }}">{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
                                         <button type="button" data-likers-open data-likers-url="{{ route('blogs.posts.likers', [$blog->id, $post->id]) }}" data-likers-count="{{ $engagement[$post->id]->likes }}" class="text-accent-primary underline-offset-2 hover:underline focus-visible:underline" aria-label="{{ __('post.likers_for', ['title' => $post->editable()->title]) }}">{{ __('post.likers') }}</button>
                                     </div>
                                 </td>

@@ -9,7 +9,7 @@ use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Application\Content\DTOs\PostLiker;
-use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementService;
+use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementUseCase;
 use App\Application\Content\UseCases\ManagePosts\ManagePostsService;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\Enums\PostStatus;
@@ -34,7 +34,7 @@ final class PostController extends Controller
         Request $request,
         OwnedBlogGuard $guard,
         PostRepository $posts,
-        PostEngagementService $engagement,
+        PostEngagementUseCase $engagement,
     ): View {
         try {
             $record = $guard->ensure((int) $request->user()->id, $blog);
@@ -57,7 +57,7 @@ final class PostController extends Controller
         int $post,
         Request $request,
         PostRepository $posts,
-        PostEngagementService $engagement,
+        PostEngagementUseCase $engagement,
     ): JsonResponse|View {
         $data = $request->validate(['page' => ['nullable', 'integer', 'min:1']]);
 
@@ -79,8 +79,6 @@ final class PostController extends Controller
                         'name' => $liker->name,
                         'avatarUrl' => $liker->avatarUrl,
                         'avatarInitial' => mb_strtoupper(mb_substr($liker->name, 0, 1)),
-                        'profilePath' => route('profiles.show', $liker->userId, false),
-                        'profileLabel' => __('profile.view_public', ['name' => $liker->name]),
                         'likedAt' => $likedAt->toAtomString(),
                         'likedAtTitle' => $likedAt->format('d/m/Y H:i'),
                         'likedAtTime' => $likedAt->format('H:i'),

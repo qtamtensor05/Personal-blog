@@ -70,11 +70,7 @@
                         {{ $post->title }}
                     </h1>
 
-                    <a
-                        href="{{ route('profiles.show', $author?->id ?? $blog->ownerUserId) }}"
-                        class="text-secondary inline-flex items-center gap-2 text-sm hover:underline"
-                        aria-label="{{ $author?->name ?? $blog->name }}"
-                    >
+                    <div class="text-secondary inline-flex items-center gap-2 text-sm">
                         @if ($author?->avatarUrl)
                             <img
                                 src="{{ $author->avatarUrl }}"
@@ -93,7 +89,7 @@
                             >
                         @endif
                         <span>{{ $author?->name ?? $blog->name }}</span>
-                    </a>
+                    </div>
 
                     @if ($layout->showPublishedDate && $post->publishedAt)
                         <time
@@ -141,7 +137,7 @@
                             <button
                                 type="submit"
                                 aria-pressed="{{ $interactionState->bookmarked ? 'true' : 'false' }}"
-                                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 {{ $interactionState->bookmarked ? 'border-sky-300 bg-sky-50 text-sky-700' : 'border-slate-300 text-slate-700 hover:border-sky-300 hover:text-sky-700' }}"
+                                class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary {{ $interactionState->bookmarked ? 'border-accent-primary bg-surface-secondary text-accent-primary' : 'border-default text-secondary hover:border-accent-primary hover:text-accent-primary' }}"
                             >
                                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="{{ $interactionState->bookmarked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />
@@ -149,38 +145,43 @@
                                 {{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}
                             </button>
                         </form>
-                        <a href="{{ route('bookmarks.index') }}" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition-colors hover:border-sky-300 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+                        <a href="{{ route('bookmarks.index') }}" class="border-default text-secondary hover:border-accent-primary hover:text-accent-primary inline-flex items-center rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary">
                             {{ __('post.view_bookmarks') }}
                         </a>
-                        @if ($ownerEngagement)
-                            <button
-                                type="button"
-                                data-likers-open
-                                data-likers-url="{{ route('blogs.posts.likers', [$blog->id, $post->id]) }}"
-                                data-likers-count="{{ $ownerEngagement->likes }}"
-                                class="ml-auto inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
-                                aria-label="{{ __('post.likers_for', ['title' => $post->title]) }}"
-                            >
-                                <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" class="text-rose-600" aria-hidden="true">
-                                    <path d="M12 21 3.5 12.4a5.5 5.5 0 0 1 7.8-7.8L12 5.3l.7-.7a5.5 5.5 0 0 1 7.8 7.8L12 21Z" />
-                                </svg>
-                                <span data-likers-count-value>{{ $ownerEngagement->likes }}</span>
-                            </button>
-                        @endif
                     @else
                         <a href="{{ route('login') }}" class="text-sm text-rose-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_like') }}</a>
-                        <a href="{{ route('login') }}" class="text-sm text-sky-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_bookmark') }}</a>
+                        <a href="{{ route('login') }}" class="text-accent-primary text-sm underline-offset-2 hover:underline">{{ __('post.sign_in_to_bookmark') }}</a>
                     @endauth
+                    @if ($canViewLikers)
+                        <button
+                            type="button"
+                            data-likers-open
+                            data-likers-url="{{ route('blogs.posts.likers', [$blog->id, $post->id]) }}"
+                            data-likers-count="{{ $postEngagement->likes }}"
+                            class="border-default bg-surface-secondary text-primary hover:border-accent-primary ml-auto inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary"
+                            aria-label="{{ __('post.likers_for', ['title' => $post->title]) }}"
+                        >
+                            <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" class="text-rose-600" aria-hidden="true">
+                                <path d="M12 21 3.5 12.4a5.5 5.5 0 0 1 7.8-7.8L12 5.3l.7-.7a5.5 5.5 0 0 1 7.8 7.8L12 21Z" />
+                            </svg>
+                            <span data-likers-count-value>{{ \App\Presentation\Formatting\CompactCount::format($postEngagement->likes) }}</span>
+                        </button>
+                    @else
+                        <span class="border-default bg-surface-secondary text-primary ml-auto inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold" aria-label="{{ __('post.likes_count') }}: {{ $postEngagement->likes }}">
+                            <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" class="text-rose-600" aria-hidden="true"><path d="M12 21 3.5 12.4a5.5 5.5 0 0 1 7.8-7.8L12 5.3l.7-.7a5.5 5.5 0 0 1 7.8 7.8L12 21Z" /></svg>
+                            <span>{{ \App\Presentation\Formatting\CompactCount::format($postEngagement->likes) }}</span>
+                        </span>
+                    @endif
                 </div>
 
-                @if ($layout->showCover && $cover)
+                @if ($layout->showCover)
                     <div data-image-frame class="media-frame mb-8 overflow-hidden rounded-md">
                         <img
-                            src="{{ $cover['url'] }}"
+                            src="{{ $cover['url'] ?? asset('images/illustrations/post-cover.svg') }}"
                             alt=""
-                            class="media-image block h-auto w-full rounded-md"
+                            class="media-image block aspect-video w-full rounded-md object-cover"
                             data-image-reveal
-                            @if ($cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
+                            @if ($cover && $cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
                         />
                     </div>
                 @endif
@@ -195,7 +196,7 @@
             </div>
         </main>
     </phantom-ui>
-    @if ($ownerEngagement)
+    @if ($canViewLikers)
         @include ('posts.manage.likers-dialog')
     @endif
 </body>
