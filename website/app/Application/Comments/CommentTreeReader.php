@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Comments;
 
+use App\Application\Comments\Contracts\CommentReader;
 use App\Domain\Comments\Enums\CommentStatus;
 use Illuminate\Support\Facades\DB;
 
-final readonly class CommentTreeReader
+final readonly class CommentTreeReader implements CommentReader
 {
     public function __construct(private CommentPermissions $permissions) {}
 
@@ -21,6 +22,47 @@ final readonly class CommentTreeReader
         abort_unless(DB::table('comments')->where('id', $parentId)->where('post_id', $postId)->exists(), 404);
 
         return $this->read($postId, $ownerId, $parentId, $viewer, $page, 10);
+    }
+
+    public function find(int $postId, int $ownerId, int $commentId, ?object $viewer): ?array
+    {
+        $lineage = $this->readableLineage($postId);
+        $isModerator = $this->permissions->isModerator($viewer);
+        $isOwner = $this->permissions->isPostOwner($viewer, $ownerId);
+        $row = DB::table('comments as c')->leftJoin('users as u', 'u.id', '=', 'c.user_id')
+            ->where('c.id', $commentId)->where('c.post_id', $postId)
+            ->where(function ($query) use ($lineage, $isOwner, $isModerator): void {
+                $query->whereIn('c.id', $lineage);
+                if ($isOwner) {
+                    $query->orWhere('c.status', CommentStatus::OwnerHidden->value);
+                }
+                if ($isModerator) {
+                    $query->orWhereNotNull('c.id');
+                }
+            })
+            ->select(['c.id', 'c.parent_id', 'c.body', 'c.status', 'c.user_id', 'c.deleted_at', 'c.created_at', 'u.name as author_name'])
+            ->selectSub(fn ($q) => $q->from('comments as r')->whereColumn('r.parent_id', 'c.id')->whereNull('r.deleted_at')->selectRaw('count(*)'), 'replies_count')
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+        $canRead = $row->deleted_at === null && ($isModerator || $row->status === CommentStatus::Visible->value || ($row->status === CommentStatus::OwnerHidden->value && $isOwner));
+        $isVisible = $row->status === CommentStatus::Visible->value && $row->deleted_at === null;
+        $isOwnerHidden = $row->status === CommentStatus::OwnerHidden->value && $row->deleted_at === null;
+
+        return [
+            'id' => (int) $row->id, 'parent_id' => $row->parent_id === null ? null : (int) $row->parent_id,
+            'body' => $canRead ? (string) $row->body : null, 'author_name' => $canRead ? (string) ($row->author_name ?? 'Thành viên') : null,
+            'created_at' => (string) $row->created_at, 'replies_count' => (int) $row->replies_count,
+            'placeholder' => ! $canRead, 'status' => $row->status, 'is_owner_hidden' => $isOwnerHidden,
+            'is_admin_hidden' => $row->status === CommentStatus::AdminHidden->value,
+            'can_reply' => $viewer !== null && $isVisible,
+            'can_edit' => $viewer !== null && (int) $row->user_id === (int) $viewer->id && $isVisible,
+            'can_delete' => $viewer !== null && (int) $row->user_id === (int) $viewer->id && $row->deleted_at === null,
+            'can_hide' => $isOwner && $isVisible, 'can_unhide' => $isOwner && $isOwnerHidden,
+            'can_report' => $viewer !== null && $canRead,
+        ];
     }
 
     private function read(int $postId, int $ownerId, ?int $parentId, ?object $viewer, int $page, int $perPage): array

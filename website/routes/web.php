@@ -150,6 +150,9 @@ Route::get('/b/{slug}/{post}', PublicPostController::class)
 Route::get('/b/{slug}/{post}/comments', [PublicCommentController::class, 'index'])
     ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
     ->name('public.comments.index');
+Route::get('/b/{slug}/{post}/comments/{comment}/fragment', [PublicCommentController::class, 'fragment'])
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'comment' => '[0-9]+'])
+    ->name('public.comments.fragment');
 Route::get('/b/{slug}/{post}/comments/{comment}/replies', [PublicCommentController::class, 'replies'])
     ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'comment' => '[0-9]+'])
     ->name('public.comments.replies');

@@ -24,6 +24,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::table('content_reports')->where('target_type', 'COMMENT')->exists()) {
+            throw new RuntimeException('Cannot roll back comment reports while COMMENT report data exists. Archive or migrate those rows first.');
+        }
+
         DB::statement('ALTER TABLE content_reports DROP CHECK ck_content_reports_0');
         DB::statement("ALTER TABLE content_reports ADD CONSTRAINT ck_content_reports_0 CHECK ((target_type = 'BLOG' AND post_id IS NULL) OR (target_type = 'POST' AND post_id IS NOT NULL))");
         DB::statement("ALTER TABLE content_reports MODIFY target_type ENUM('BLOG','POST') NOT NULL");

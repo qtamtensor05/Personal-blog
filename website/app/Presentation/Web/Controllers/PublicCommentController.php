@@ -6,8 +6,8 @@ namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
-use App\Application\Comments\CommentManager;
-use App\Application\Comments\CommentTreeReader;
+use App\Application\Comments\Contracts\CommentManager;
+use App\Application\Comments\Contracts\CommentReader;
 use App\Application\Content\Contracts\PostRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,26 +16,54 @@ use Illuminate\Routing\Controller;
 
 final class PublicCommentController extends Controller
 {
-    public function index(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentTreeReader $reader): JsonResponse
+    public function index(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentReader $reader): JsonResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
 
         return response()->json($reader->roots($record->id, $view->blog->ownerUserId, $request->user(), (int) $request->integer('page', 1)));
     }
 
-    public function replies(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentTreeReader $reader): JsonResponse
+    public function fragment(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentReader $reader): JsonResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $item = $reader->find($record->id, $view->blog->ownerUserId, $comment, $request->user());
+        abort_unless($item !== null, 404);
+
+        return response()->json([
+            'comment_id' => $comment,
+            'parent_id' => $item['parent_id'],
+            'html' => view('public.partials.comment-item', ['comment' => $item, 'blog' => $view->blog, 'post' => $record])->render(),
+        ]);
+    }
+
+    public function replies(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentReader $reader): JsonResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
 
-        return response()->json($reader->replies($record->id, $view->blog->ownerUserId, $comment, $request->user(), (int) $request->integer('page', 1)));
+        $payload = $reader->replies($record->id, $view->blog->ownerUserId, $comment, $request->user(), (int) $request->integer('page', 1));
+        $payload['html'] = collect($payload['items'])->mapWithKeys(fn (array $item): array => [
+            (string) $item['id'] => view('public.partials.comment-item', ['comment' => $item, 'blog' => $view->blog, 'post' => $record])->render(),
+        ])->all();
+
+        return response()->json($payload);
     }
 
-    public function store(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function store(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager, CommentReader $reader): JsonResponse|RedirectResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $data = $request->validate(['body' => ['required', 'string', 'max:2000'], 'parent_id' => ['nullable', 'integer', 'min:1']]);
         $parentId = ($data['parent_id'] ?? null) === null ? null : (int) $data['parent_id'];
-        $manager->create($request->user(), $record->id, $view->blog->ownerUserId, (string) $data['body'], $parentId);
+        $commentId = $manager->create($request->user(), $record->id, $view->blog->ownerUserId, (string) $data['body'], $parentId);
+
+        if ($request->expectsJson()) {
+            $comment = $reader->find($record->id, $view->blog->ownerUserId, $commentId, $request->user());
+
+            return response()->json([
+                'comment_id' => $commentId,
+                'parent_id' => $parentId,
+                'html' => view('public.partials.comment-item', ['comment' => $comment, 'blog' => $view->blog, 'post' => $record])->render(),
+            ], 201);
+        }
 
         return back()->with('comment_status', 'Đã gửi bình luận.');
     }

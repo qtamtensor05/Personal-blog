@@ -14,7 +14,79 @@ function initCommentUi() {
         if (menu !== except) menu.open = false;
     });
 
-    const renderReply = (item, url) => {
+    const fragmentFromServer = (html) => {
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        const node = template.content.querySelector('[data-comment-id]');
+        if (!node) throw new Error('Missing server-rendered comment markup.');
+        return node;
+    };
+
+    const insertCommentFragment = (container, html, commentId) => {
+        const existing = [...container.querySelectorAll(':scope > [data-comment-id]')]
+            .find((element) => element.dataset.commentId === String(commentId));
+        const element = fragmentFromServer(html);
+        if (existing) existing.replaceWith(element);
+        else container.append(element);
+        return element;
+    };
+
+    document.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-comment-form]');
+        if (!form) return;
+        event.preventDefault();
+        const submit = form.querySelector('button[type="submit"]');
+        if (submit) submit.disabled = true;
+        try {
+            const response = await fetch(form.action, {
+                method: form.method || 'POST',
+                body: new FormData(form),
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || 'Unable to submit comment.');
+            const parentId = payload.parent_id;
+            const container = parentId
+                ? document.querySelector(`[data-comment-id="${CSS.escape(String(parentId))}"] > .comment-replies`)
+                : document.querySelector('[data-comments-list]');
+            if (!container) throw new Error('Comment target was not found.');
+            insertCommentFragment(container, payload.html, payload.comment_id);
+            if (parentId) container.hidden = false;
+            form.reset();
+            form.hidden = true;
+        } catch (error) {
+            window.showErrorModal?.(error.message || 'Unable to submit comment.');
+        } finally {
+            if (submit) submit.disabled = false;
+        }
+    });
+
+    const commentsSection = document.querySelector('[data-comments-post-id][data-comments-url]');
+    if (commentsSection && window.Echo) {
+        const postId = commentsSection.dataset.commentsPostId;
+        const fragmentUrl = (commentId) => `${commentsSection.dataset.commentsUrl}/${commentId}/fragment`;
+        window.Echo.private(`comments.post.${postId}`).listen('.comment.created', async (event) => {
+            try {
+                const response = await fetch(fragmentUrl(event.comment_id), { headers: { Accept: 'application/json' } });
+                if (!response.ok) return;
+                const payload = await response.json();
+                const container = payload.parent_id
+                    ? document.querySelector(`[data-comment-id="${CSS.escape(String(payload.parent_id))}"] > .comment-replies`)
+                    : document.querySelector('[data-comments-list]');
+                if (container) {
+                    insertCommentFragment(container, payload.html, payload.comment_id);
+                    if (payload.parent_id) container.hidden = false;
+                }
+            } catch {
+                // Realtime is an enhancement; the normal AJAX path remains available.
+            }
+        });
+    }
+
+    /* Replies are rendered by the server so dynamically loaded nodes keep all
+       permission-aware actions from the Blade partial. */
+    /* legacy renderer removed */
+    /*
         const article = document.createElement('article');
         article.className = 'bm-comment bm-comment--reply';
         article.id = `comment-${item.id}`;
@@ -67,7 +139,7 @@ function initCommentUi() {
             article.append(load);
         }
         return article;
-    };
+    }; */
 
     document.addEventListener('click', async (event) => {
         const load = event.target.closest('[data-comment-action="load-replies"]');
@@ -88,7 +160,10 @@ function initCommentUi() {
             const response = await fetch(load.dataset.url, { headers: { Accept: 'application/json' } });
             if (!response.ok) throw new Error('Không tải được phản hồi.');
             const payload = await response.json();
-            target.replaceChildren(...(payload.items || []).map((item) => renderReply(item, load.dataset.url)));
+            target.replaceChildren(...(payload.items || []).map((item) => {
+                const html = payload.html?.[String(item.id)];
+                return html ? fragmentFromServer(html) : null;
+            }).filter(Boolean));
             target.hidden = false;
             load.dataset.loaded = 'true';
             load.dataset.count = String(payload.total ?? payload.items?.length ?? 0);

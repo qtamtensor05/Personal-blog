@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Application\Comments;
 
-use App\Application\Notifications\Contracts\NotificationPublisher;
+use App\Application\Comments\Contracts\CommentManager as CommentManagerContract;
+use App\Application\Comments\Contracts\CommentSideEffectDispatcher;
 use App\Domain\Comments\Enums\CommentStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-final readonly class CommentManager
+final readonly class CommentManager implements CommentManagerContract
 {
     public function __construct(
         private CommentPermissions $permissions,
-        private NotificationPublisher $notifications,
+        private CommentSideEffectDispatcher $sideEffects,
     ) {}
 
     public function create(object $actor, int $postId, int $bodyPostOwnerId, string $body, ?int $parentId): int
@@ -56,23 +57,30 @@ final readonly class CommentManager
             if ((int) $post->owner_user_id !== (int) $actor->id && ! isset($recipients[(int) $post->owner_user_id])) {
                 $recipients[(int) $post->owner_user_id] = 'post_comment_created';
             }
+            $notifications = [];
             foreach ($recipients as $recipientId => $type) {
                 $isReply = $type === 'comment_replied';
-                $this->notifications->publish((int) $recipientId, $type, [
-                    'title' => $isReply ? 'Có người trả lời bình luận của bạn' : 'Bài viết của bạn có bình luận mới',
-                    'message' => $isReply
-                        ? $actorName.' đã trả lời bình luận của bạn.'
-                        : $actorName.' đã bình luận về bài viết "'.$post->title.'".',
-                    'actor_user_id' => (int) $actor->id,
-                    'actor_name' => $actorName,
-                    'blog_id' => (int) $post->blog_id,
-                    'post_id' => $postId,
-                    'blog_slug' => $post->blog_slug,
-                    'post_slug' => $post->post_slug,
-                    'comment_id' => $commentId,
-                    'parent_id' => $parentId,
-                ]);
+                $notifications[] = [
+                    'recipient_id' => (int) $recipientId,
+                    'type' => $type,
+                    'data' => [
+                        'title' => $isReply ? 'Có người trả lời bình luận của bạn' : 'Bài viết của bạn có bình luận mới',
+                        'message' => $isReply
+                            ? $actorName.' đã trả lời bình luận của bạn.'
+                            : $actorName.' đã bình luận về bài viết "'.$post->title.'".',
+                        'actor_user_id' => (int) $actor->id,
+                        'actor_name' => $actorName,
+                        'blog_id' => (int) $post->blog_id,
+                        'post_id' => $postId,
+                        'blog_slug' => $post->blog_slug,
+                        'post_slug' => $post->post_slug,
+                        'comment_id' => $commentId,
+                        'parent_id' => $parentId,
+                    ],
+                ];
             }
+
+            $this->sideEffects->dispatchAfterCommit($postId, $commentId, $notifications);
 
             return $commentId;
         });
@@ -122,6 +130,7 @@ final readonly class CommentManager
             throw ValidationException::withMessages(['reason' => 'Lý do báo cáo không hợp lệ.']);
         }
         DB::transaction(function () use ($actor, $blogId, $postId, $commentId, $reason): void {
+            DB::table('users')->where('id', (int) $actor->id)->lockForUpdate()->first(['id']);
             abort_unless(DB::table('comments')->where('id', $commentId)->where('post_id', $postId)->whereNull('deleted_at')->exists(), 404);
             $exists = DB::table('content_reports')->where('comment_id', $commentId)->where('reporter_user_id', (int) $actor->id)->whereIn('status', ['OPEN', 'REVIEWING'])->exists();
             if ($exists) {

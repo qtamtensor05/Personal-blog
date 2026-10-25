@@ -7,7 +7,7 @@
     $hasMenu = ! $placeholder && ($comment['can_edit'] || $comment['can_delete'] || $comment['can_hide'] || $comment['can_unhide'] || $comment['can_report']);
 @endphp
 
-<article id="comment-{{ $commentId }}" class="bm-comment {{ $hidden ? 'bm-comment--owner-hidden' : '' }} {{ $adminHidden ? 'bm-comment--admin-hidden' : '' }} {{ $placeholder ? 'bm-comment--placeholder' : '' }}" data-comment-id="{{ $commentId }}">
+<article id="comment-{{ $commentId }}" class="bm-comment {{ $hidden ? 'bm-comment--owner-hidden' : '' }} {{ $adminHidden ? 'bm-comment--admin-hidden' : '' }} {{ $placeholder ? 'bm-comment--placeholder' : '' }}" data-comment-id="{{ $commentId }}" data-parent-id="{{ $comment['parent_id'] ?? '' }}">
     <div class="bm-comment__surface">
         @if ($placeholder)
             <p class="bm-comment__placeholder">Bình luận không còn hiển thị.</p>
@@ -48,7 +48,7 @@
                 @if ($comment['can_reply'])<button type="button" class="bm-comment__reply-btn" data-bm-toggle="reply" data-target="reply-comment-{{ $commentId }}" aria-expanded="false">@include('public.partials.comment-icon', ['name' => 'reply'])<span>Trả lời</span></button>@endif
             </div>
             @if ($comment['can_reply'])
-                <form id="reply-comment-{{ $commentId }}" class="bm-comment__composer" hidden method="POST" action="{{ route('public.comments.store', [$blog->slug, $post->slug]) }}">
+                <form id="reply-comment-{{ $commentId }}" class="bm-comment__composer" hidden method="POST" action="{{ route('public.comments.store', [$blog->slug, $post->slug]) }}" data-comment-form>
                     @csrf <input type="hidden" name="parent_id" value="{{ $commentId }}" />
                     <label class="bm-comment__label" for="reply-body-{{ $commentId }}">Trả lời {{ $comment['author_name'] }}</label>
                     <textarea id="reply-body-{{ $commentId }}" name="body" rows="2" maxlength="2000" required placeholder="Viết câu trả lời..."></textarea>
