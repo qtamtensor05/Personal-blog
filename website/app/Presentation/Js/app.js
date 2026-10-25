@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 const themeStorageKey = 'theme';
 
 function initCommentUi() {
@@ -15,10 +17,17 @@ function initCommentUi() {
     });
 
     const fragmentFromServer = (html) => {
-        const template = document.createElement('template');
-        template.innerHTML = html;
-        const node = template.content.querySelector('[data-comment-id]');
-        if (!node) throw new Error('Missing server-rendered comment markup.');
+        if (typeof html !== 'string') {
+            throw new Error('Invalid server-rendered comment markup.');
+        }
+
+        const fragment = DOMPurify.sanitize(html, { RETURN_DOM_FRAGMENT: true });
+        const node = fragment.querySelector('[data-comment-id]');
+
+        if (!node || !node.matches('.bm-comment[data-comment-id]')) {
+            throw new Error('Missing server-rendered comment markup.');
+        }
+
         return node;
     };
 
@@ -30,6 +39,97 @@ function initCommentUi() {
         else container.append(element);
         return element;
     };
+
+    const readCommentActionResponse = async (response) => {
+        const contentType = response.headers.get('content-type') || '';
+        if (response.redirected || !contentType.includes('application/json')) {
+            throw new Error('Phiên đăng nhập có thể đã hết hạn. Vui lòng tải lại trang và đăng nhập.');
+        }
+
+        const payload = await response.json();
+        if (!response.ok || payload.ok === false) {
+            const validation = payload.errors && typeof payload.errors === 'object'
+                ? Object.values(payload.errors).flat().find((value) => typeof value === 'string')
+                : null;
+            throw new Error(validation || payload.message || 'Không thể thực hiện thao tác.');
+        }
+        return payload;
+    };
+
+    const findCommentCard = (commentId) => {
+        if (!/^[1-9]\d*$/.test(String(commentId))) throw new Error('Mã bình luận không hợp lệ.');
+        return document.querySelector(`[data-comment-id="${CSS.escape(String(commentId))}"]`);
+    };
+
+    const replaceCommentKeepingReplies = (commentId, html) => {
+        const existing = findCommentCard(commentId);
+        if (!existing) throw new Error('Không tìm thấy bình luận cần cập nhật.');
+        const fresh = fragmentFromServer(html);
+        if (String(fresh.dataset.commentId) !== String(commentId)) {
+            throw new Error('Nội dung phản hồi không khớp mã bình luận.');
+        }
+
+        const oldReplies = existing.querySelector(':scope > .comment-replies');
+        const newReplies = fresh.querySelector(':scope > .comment-replies');
+        if (oldReplies && newReplies) {
+            newReplies.replaceChildren(...oldReplies.childNodes);
+            newReplies.hidden = oldReplies.hidden;
+        }
+        existing.replaceWith(fresh);
+    };
+
+    const applyDeletedComment = (commentId) => {
+        const existing = findCommentCard(commentId);
+        if (!existing) return;
+        const replies = existing.querySelector(':scope > .comment-replies');
+        const replyLoader = existing.querySelector(':scope > [data-comment-action="load-replies"]');
+        if (!replies || (!replies.childNodes.length && !replyLoader)) {
+            existing.remove();
+            return;
+        }
+
+        const surface = existing.querySelector(':scope > .bm-comment__surface');
+        if (surface) {
+            surface.replaceChildren(Object.assign(document.createElement('p'), {
+                className: 'bm-comment__placeholder',
+                textContent: 'Bình luận đã bị xóa.',
+            }));
+        }
+        existing.classList.add('bm-comment--placeholder');
+    };
+
+    document.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-comment-action-form]');
+        if (!form) return;
+        if (form.matches('[data-modal-confirm-form]') && form.dataset.confirmed !== 'true') return;
+        event.preventDefault();
+        const submit = form.querySelector('button[type="submit"]');
+        if (submit) submit.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: form.method || 'POST',
+                body: new FormData(form),
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const payload = await readCommentActionResponse(response);
+            const action = form.dataset.commentActionForm;
+            if (action === 'report') {
+                form.reset();
+                form.closest('.bm-comment__composer')?.setAttribute('hidden', '');
+            } else if (action === 'delete' && payload.html) {
+                replaceCommentKeepingReplies(payload.comment_id, payload.html);
+            } else if (action === 'delete') {
+                applyDeletedComment(payload.comment_id);
+            } else if (payload.html) {
+                replaceCommentKeepingReplies(payload.comment_id, payload.html);
+            }
+        } catch (error) {
+            window.showErrorModal?.(error.message || 'Không thể thực hiện thao tác.');
+        } finally {
+            if (submit) submit.disabled = false;
+        }
+    });
 
     document.addEventListener('submit', async (event) => {
         const form = event.target.closest('[data-comment-form]');
@@ -479,19 +579,18 @@ function initErrorModal() {
             confirm.focus();
         });
 
-    document.querySelectorAll('[data-modal-confirm-form]').forEach((form) => {
-        form.addEventListener('submit', async (event) => {
-            if (form.dataset.confirmed === 'true') return;
-            event.preventDefault();
-            const confirmed = await window.requestModalConfirmation(
-                form.dataset.confirmTitle || 'Confirm action',
-                form.dataset.confirmMessage || 'Are you sure you want to continue?',
-            );
-            if (confirmed) {
-                form.dataset.confirmed = 'true';
-                form.submit();
-            }
-        });
+    document.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-modal-confirm-form]');
+        if (!form || form.dataset.confirmed === 'true') return;
+        event.preventDefault();
+        const confirmed = await window.requestModalConfirmation(
+            form.dataset.confirmTitle || 'Confirm action',
+            form.dataset.confirmMessage || 'Are you sure you want to continue?',
+        );
+        if (confirmed) {
+            form.dataset.confirmed = 'true';
+            form.requestSubmit();
+        }
     });
 }
 

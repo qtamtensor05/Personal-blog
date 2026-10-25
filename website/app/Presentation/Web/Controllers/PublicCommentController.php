@@ -68,46 +68,89 @@ final class PublicCommentController extends Controller
         return back()->with('comment_status', 'Đã gửi bình luận.');
     }
 
-    public function update(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function update(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager, CommentReader $reader): JsonResponse|RedirectResponse
     {
-        [, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
         $manager->edit($request->user(), $record->id, $comment, $data['body']);
+
+        if ($request->expectsJson()) {
+            return $this->actionResponse($request, $view, $record, $reader, $comment, 'edit', 'Đã cập nhật bình luận.');
+        }
 
         return back()->with('comment_status', 'Đã cập nhật bình luận.');
     }
 
-    public function destroy(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function destroy(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager, CommentReader $reader): JsonResponse|RedirectResponse
     {
-        [, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $manager->remove($request->user(), $record->id, $comment);
+
+        if ($request->expectsJson()) {
+            return $this->actionResponse($request, $view, $record, $reader, $comment, 'delete', 'Đã xóa bình luận.');
+        }
 
         return back()->with('comment_status', 'Đã xóa bình luận.');
     }
 
-    public function hide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function hide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager, CommentReader $reader): JsonResponse|RedirectResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $manager->hide($request->user(), $record->id, $view->blog->ownerUserId, $comment);
 
+        if ($request->expectsJson()) {
+            return $this->actionResponse($request, $view, $record, $reader, $comment, 'hide', 'Đã ẩn bình luận.');
+        }
+
         return back()->with('comment_status', 'Đã ẩn bình luận.');
     }
 
-    public function unhide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function unhide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager, CommentReader $reader): JsonResponse|RedirectResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $manager->unhide($request->user(), $record->id, $view->blog->ownerUserId, $comment);
 
+        if ($request->expectsJson()) {
+            return $this->actionResponse($request, $view, $record, $reader, $comment, 'unhide', 'Đã hiện lại bình luận.');
+        }
+
         return back()->with('comment_status', 'Đã hiện lại bình luận.');
     }
 
-    public function report(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    public function report(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): JsonResponse|RedirectResponse
     {
         [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
         $data = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
         $manager->report($request->user(), $view->blog->id, $record->id, $comment, $data['reason']);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'action' => 'report',
+                'comment_id' => $comment,
+                'message' => 'Đã tiếp nhận báo cáo bình luận.',
+            ]);
+        }
+
         return back()->with('comment_status', 'Đã tiếp nhận báo cáo bình luận.');
+    }
+
+    private function actionResponse(Request $request, object $view, object $record, CommentReader $reader, int $comment, string $action, string $message): JsonResponse
+    {
+        $item = $reader->find($record->id, $view->blog->ownerUserId, $comment, $request->user());
+
+        return response()->json([
+            'ok' => true,
+            'action' => $action,
+            'comment_id' => $comment,
+            'parent_id' => $item['parent_id'] ?? null,
+            'html' => $item === null ? null : view('public.partials.comment-item', [
+                'comment' => $item,
+                'blog' => $view->blog,
+                'post' => $record,
+            ])->render(),
+            'message' => $message,
+        ]);
     }
 
     private function target(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts): array
