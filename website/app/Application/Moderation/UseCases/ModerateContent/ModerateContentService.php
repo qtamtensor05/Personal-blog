@@ -18,7 +18,7 @@ use DomainException;
  */
 final readonly class ModerateContentService
 {
-    public const ACTIONS = ['none', 'suspend_blog', 'archive_post'];
+    public const ACTIONS = ['none', 'suspend_blog', 'archive_post', 'hide_comment'];
 
     public function __construct(
         private ContentReportRepository $reports,
@@ -54,6 +54,14 @@ final readonly class ModerateContentService
         }
 
         $this->reports->create($blog->id, $postId, $reporterId, $reason);
+    }
+
+    public function reportComment(int $reporterId, int $blogId, int $postId, int $commentId, string $reason): void
+    {
+        if ($this->reports->hasPendingCommentReport($reporterId, $commentId)) {
+            throw new DomainException('You have already reported this. It is being reviewed.');
+        }
+        $this->reports->createComment($blogId, $postId, $commentId, $reporterId, $reason);
     }
 
     public function startReview(int $adminId, int $reportId): void
@@ -97,6 +105,9 @@ final readonly class ModerateContentService
             'archive_post' => $report->post_id !== null
                 ? $this->reports->archivePost((int) $report->blog_id, (int) $report->post_id)
                 : throw new DomainException('This report is not about a post.'),
+            'hide_comment' => $report->target_type === 'COMMENT' && $report->comment_id !== null
+                ? $this->reports->hideComment((int) $report->comment_id)
+                : throw new DomainException('This report is not about a comment.'),
             default => throw new DomainException('Unknown moderation action.'),
         };
 

@@ -34,11 +34,12 @@ final readonly class ResolveLikedPostLocationsService implements ResolveLikedPos
     private function visibleLocation(NotificationRecord $notification, int $recipientUserId): ?PostLocation
     {
         $data = $notification->data;
-        if ($notification->type !== 'post.liked') {
+        if (! in_array($notification->type, ['post.liked', 'post_comment_created', 'comment_replied'], true)) {
             return null;
         }
 
-        $viewerId = isset($data['liker_user_id']) ? (int) $data['liker_user_id'] : null;
+        $isLike = $notification->type === 'post.liked';
+        $viewerId = $isLike && isset($data['liker_user_id']) ? (int) $data['liker_user_id'] : $recipientUserId;
         $postId = isset($data['post_id']) ? (int) $data['post_id'] : null;
         $location = $postId !== null ? $this->locations->findForPost($postId) : null;
 
@@ -62,7 +63,7 @@ final readonly class ResolveLikedPostLocationsService implements ResolveLikedPos
             return null;
         }
 
-        if ($page['page']->blog->ownerUserId !== $recipientUserId || ($postId !== null && $page['post']->id !== $postId)) {
+        if (($isLike && $page['page']->blog->ownerUserId !== $recipientUserId) || ($postId !== null && $page['post']->id !== $postId)) {
             return null;
         }
 

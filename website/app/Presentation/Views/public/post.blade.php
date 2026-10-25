@@ -191,6 +191,8 @@
 
             </article>
 
+            @include ('public.partials.comments', ['comments' => $comments, 'blog' => $blog, 'post' => $post])
+
             <div class="mt-12 border-t pt-6" style="border-color: var(--d-secondary)">
                 @include ('public.partials.report-form', ['blog' => $blog, 'postSlug' => $post->slug])
             </div>

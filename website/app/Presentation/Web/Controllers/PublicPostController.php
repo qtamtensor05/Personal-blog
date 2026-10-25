@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Comments\Contracts\CommentReader;
 use App\Application\Content\UseCases\ManagePostInteractions\PostEngagementUseCase;
 use App\Application\Content\UseCases\ManagePostInteractions\PostInteractionsUseCase;
 use App\Application\Content\UseCases\ManagePostInteractions\RecordPostViewUseCase;
@@ -25,6 +26,7 @@ final class PublicPostController extends Controller
         PostEngagementUseCase $engagement,
         RecordPostViewUseCase $views,
         TiptapHtmlRenderer $renderer,
+        CommentReader $comments,
     ): View {
         try {
             $result = $viewPost->execute(
@@ -55,6 +57,7 @@ final class PublicPostController extends Controller
                 : null,
             'postEngagement' => $postEngagement,
             'canViewLikers' => $canViewLikers,
+            'comments' => $comments->roots($record->id, $result['page']->blog->ownerUserId, $request->user()),
         ]);
     }
 }

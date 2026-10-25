@@ -44,12 +44,18 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
             ->limit($perPage)
             ->get();
         $actorIds = $rows->map(function (object $row): ?int {
-            if ($row->type !== 'post.liked') {
+            if (! in_array($row->type, ['post.liked', 'post_comment_created', 'comment_replied'], true)) {
                 return null;
             }
             $data = json_decode((string) $row->data, true);
 
-            return is_array($data) && isset($data['liker_user_id']) ? (int) $data['liker_user_id'] : null;
+            if (! is_array($data)) {
+                return null;
+            }
+
+            $actorId = $data['liker_user_id'] ?? $data['actor_user_id'] ?? null;
+
+            return $actorId === null ? null : (int) $actorId;
         })->filter()->unique()->all();
         $avatars = $actorIds === [] ? collect() : DB::table('users as users')
             ->leftJoin('media_assets as avatar', function ($join): void {
@@ -124,7 +130,9 @@ final class QueryBuilderNotificationRepository implements NotificationRepository
             is_array($data) ? $data : [],
             $row->read_at !== null ? (string) $row->read_at : null,
             (string) $row->created_at,
-            isset($data['liker_user_id']) ? ($avatars[(int) $data['liker_user_id']] ?? null) : null,
+            isset($data['liker_user_id'])
+                ? ($avatars[(int) $data['liker_user_id']] ?? null)
+                : (isset($data['actor_user_id']) ? ($avatars[(int) $data['actor_user_id']] ?? null) : null),
         );
     }
 }

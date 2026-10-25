@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './comments.css';
 
 phantom-ui {
     display: block;
