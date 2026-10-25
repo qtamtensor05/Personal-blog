@@ -1,5 +1,139 @@
 const themeStorageKey = 'theme';
 
+function initCommentUi() {
+    const closePanels = (except = null) => {
+        document.querySelectorAll('.bm-comment__composer:not([hidden])').forEach((panel) => {
+            if (panel !== except) panel.hidden = true;
+        });
+        document.querySelectorAll('[data-bm-toggle][aria-expanded="true"]').forEach((button) => {
+            const target = document.getElementById(button.dataset.target || '');
+            if (target !== except) button.setAttribute('aria-expanded', 'false');
+        });
+    };
+    const closeMenus = (except = null) => document.querySelectorAll('.bm-comment-menu[open]').forEach((menu) => {
+        if (menu !== except) menu.open = false;
+    });
+
+    const renderReply = (item, url) => {
+        const article = document.createElement('article');
+        article.className = 'bm-comment bm-comment--reply';
+        article.id = `comment-${item.id}`;
+        article.dataset.commentId = String(item.id);
+
+        const surface = document.createElement('div');
+        surface.className = 'bm-comment__surface';
+        if (item.placeholder) surface.classList.add('bm-comment--placeholder');
+
+        const header = document.createElement('header');
+        header.className = 'bm-comment__header';
+        const avatar = document.createElement('span');
+        avatar.className = 'bm-comment__avatar';
+        avatar.setAttribute('aria-hidden', 'true');
+        avatar.textContent = (item.author_name || '?').slice(0, 1).toUpperCase();
+        const author = document.createElement('strong');
+        author.className = 'bm-comment__author';
+        author.textContent = item.author_name || 'Bình luận đã bị ẩn';
+        const time = document.createElement('time');
+        time.className = 'bm-comment__time';
+        time.textContent = item.created_at || '';
+        header.append(avatar, author, time);
+
+        const body = document.createElement('div');
+        body.className = 'bm-comment__body';
+        body.textContent = item.body || 'Bình luận không còn hiển thị.';
+        surface.append(header, body);
+
+        if (item.status === 'OWNER_HIDDEN') {
+            const state = document.createElement('span');
+            state.className = 'bm-comment__state';
+            state.textContent = 'Bình luận đã bị ẩn';
+            surface.append(state);
+        }
+
+        article.append(surface);
+        const replies = document.createElement('div');
+        replies.className = 'comment-replies';
+        replies.dataset.repliesFor = String(item.id);
+        article.append(replies);
+
+        if (Number(item.replies_count) > 0) {
+            const load = document.createElement('button');
+            load.type = 'button';
+            load.className = 'bm-comment__load-replies';
+            load.dataset.commentAction = 'load-replies';
+            load.dataset.page = '1';
+            load.dataset.url = url.replace(/\/\d+\/replies$/, `/${item.id}/replies`);
+            load.textContent = `Xem phản hồi (${item.replies_count})`;
+            article.append(load);
+        }
+        return article;
+    };
+
+    document.addEventListener('click', async (event) => {
+        const load = event.target.closest('[data-comment-action="load-replies"]');
+        if (!load) return;
+        event.preventDefault();
+        const article = load.closest('.bm-comment');
+        const target = article?.querySelector(':scope > .comment-replies');
+        if (!article || !target) return;
+        if (load.dataset.loaded === 'true') {
+            const collapsed = target.hidden;
+            target.hidden = !collapsed;
+            load.textContent = `${collapsed ? 'Ẩn' : 'Xem'} phản hồi (${load.dataset.count})`;
+            return;
+        }
+        load.disabled = true;
+        load.textContent = 'Đang tải phản hồi...';
+        try {
+            const response = await fetch(load.dataset.url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Không tải được phản hồi.');
+            const payload = await response.json();
+            target.replaceChildren(...(payload.items || []).map((item) => renderReply(item, load.dataset.url)));
+            target.hidden = false;
+            load.dataset.loaded = 'true';
+            load.dataset.count = String(payload.total ?? payload.items?.length ?? 0);
+            load.textContent = `Ẩn phản hồi (${load.dataset.count})`;
+        } catch (error) {
+            load.textContent = error.message || 'Không tải được phản hồi.';
+        } finally {
+            load.disabled = false;
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('[data-bm-toggle]');
+        if (toggle) {
+            const target = document.getElementById(toggle.dataset.target || '');
+            if (!target) return;
+            const open = target.hidden;
+            closePanels(target);
+            closeMenus();
+            target.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) target.querySelector('textarea, input:not([type="hidden"])')?.focus();
+            return;
+        }
+        const cancel = event.target.closest('[data-bm-close]');
+        if (cancel) {
+            const target = document.getElementById(cancel.dataset.bmClose || '');
+            if (target) target.hidden = true;
+            const trigger = document.querySelector(`[data-bm-toggle][data-target="${CSS.escape(cancel.dataset.bmClose || '')}"]`);
+            trigger?.setAttribute('aria-expanded', 'false');
+            return;
+        }
+        if (!event.target.closest('.bm-comment-menu')) closeMenus();
+    });
+    document.addEventListener('toggle', (event) => {
+        if (event.target.matches?.('.bm-comment-menu') && event.target.open) closeMenus(event.target);
+    }, true);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') { closeMenus(); closePanels(); }
+    });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCommentUi, { once: true });
+else initCommentUi();
+
 /**
  * Server-rendered pages do not need a loading skeleton: their content is already
  * present in the HTML. Use GSAP only for a short entrance transition, and leave

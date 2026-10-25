@@ -1,0 +1,95 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Web\Controllers;
+
+use App\Application\Blogs\Exceptions\BlogNotFound;
+use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
+use App\Application\Comments\CommentManager;
+use App\Application\Comments\CommentTreeReader;
+use App\Application\Content\Contracts\PostRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
+final class PublicCommentController extends Controller
+{
+    public function index(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentTreeReader $reader): JsonResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+
+        return response()->json($reader->roots($record->id, $view->blog->ownerUserId, $request->user(), (int) $request->integer('page', 1)));
+    }
+
+    public function replies(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentTreeReader $reader): JsonResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+
+        return response()->json($reader->replies($record->id, $view->blog->ownerUserId, $comment, $request->user(), (int) $request->integer('page', 1)));
+    }
+
+    public function store(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $data = $request->validate(['body' => ['required', 'string', 'max:2000'], 'parent_id' => ['nullable', 'integer', 'min:1']]);
+        $parentId = ($data['parent_id'] ?? null) === null ? null : (int) $data['parent_id'];
+        $manager->create($request->user(), $record->id, $view->blog->ownerUserId, (string) $data['body'], $parentId);
+
+        return back()->with('comment_status', 'Đã gửi bình luận.');
+    }
+
+    public function update(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+        $manager->edit($request->user(), $record->id, $comment, $data['body']);
+
+        return back()->with('comment_status', 'Đã cập nhật bình luận.');
+    }
+
+    public function destroy(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $manager->remove($request->user(), $record->id, $comment);
+
+        return back()->with('comment_status', 'Đã xóa bình luận.');
+    }
+
+    public function hide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $manager->hide($request->user(), $record->id, $view->blog->ownerUserId, $comment);
+
+        return back()->with('comment_status', 'Đã ẩn bình luận.');
+    }
+
+    public function unhide(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $manager->unhide($request->user(), $record->id, $view->blog->ownerUserId, $comment);
+
+        return back()->with('comment_status', 'Đã hiện lại bình luận.');
+    }
+
+    public function report(string $slug, string $post, int $comment, Request $request, ViewPublicBlogService $blogs, PostRepository $posts, CommentManager $manager): RedirectResponse
+    {
+        [$view, $record] = $this->target($slug, $post, $request, $blogs, $posts);
+        $data = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
+        $manager->report($request->user(), $view->blog->id, $record->id, $comment, $data['reason']);
+
+        return back()->with('comment_status', 'Đã tiếp nhận báo cáo bình luận.');
+    }
+
+    private function target(string $slug, string $post, Request $request, ViewPublicBlogService $blogs, PostRepository $posts): array
+    {
+        try {
+            $view = $blogs->execute($slug, $request->user()?->id);
+        } catch (BlogNotFound) {
+            abort(404);
+        }
+
+        return [$view, $posts->findPublishedBySlug($view->blog->id, $post) ?? abort(404)];
+    }
+}

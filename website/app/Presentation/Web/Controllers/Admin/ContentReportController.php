@@ -55,7 +55,7 @@ final class ContentReportController extends Controller
         return $this->run(
             $report,
             fn () => $service->startReview((int) $request->user()->id, $report),
-            'Report assigned to you.',
+            __('admin.report_assigned'),
         );
     }
 
@@ -79,7 +79,7 @@ final class ContentReportController extends Controller
                 $data['action'],
                 $data['note'] ?? null,
             ),
-            'Report closed.',
+            __('admin.report_closed'),
         );
     }
 
@@ -91,7 +91,7 @@ final class ContentReportController extends Controller
         return $this->run(
             $report,
             fn () => $service->liftBlogSuspension((int) $request->user()->id, $report),
-            'Blog suspension lifted.',
+            __('admin.blog_suspension_lifted'),
         );
     }
 

@@ -23,6 +23,7 @@ use App\Presentation\Web\Controllers\PostController;
 use App\Presentation\Web\Controllers\PostInteractionController;
 use App\Presentation\Web\Controllers\ProfileController;
 use App\Presentation\Web\Controllers\PublicBlogController;
+use App\Presentation\Web\Controllers\PublicCommentController;
 use App\Presentation\Web\Controllers\PublicPageController;
 use App\Presentation\Web\Controllers\PublicPostController;
 use App\Presentation\Web\Controllers\PublicPostIndexController;
@@ -146,6 +147,13 @@ Route::get('/b/{slug}/{post}', PublicPostController::class)
     ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
     ->name('public.post');
 
+Route::get('/b/{slug}/{post}/comments', [PublicCommentController::class, 'index'])
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('public.comments.index');
+Route::get('/b/{slug}/{post}/comments/{comment}/replies', [PublicCommentController::class, 'replies'])
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'comment' => '[0-9]+'])
+    ->name('public.comments.replies');
+
 // Authentication Routes
 Route::middleware('guest')->group(function () {
     // Register
@@ -192,6 +200,14 @@ Route::get('/email/verified', function () {
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    Route::post('/b/{slug}/{post}/comments', [PublicCommentController::class, 'store'])
+        ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'post' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+        ->middleware('throttle:10,1')->name('public.comments.store');
+    Route::patch('/b/{slug}/{post}/comments/{comment}', [PublicCommentController::class, 'update'])->whereNumber('comment')->name('public.comments.update');
+    Route::delete('/b/{slug}/{post}/comments/{comment}', [PublicCommentController::class, 'destroy'])->whereNumber('comment')->name('public.comments.destroy');
+    Route::post('/b/{slug}/{post}/comments/{comment}/hide', [PublicCommentController::class, 'hide'])->whereNumber('comment')->name('public.comments.hide');
+    Route::post('/b/{slug}/{post}/comments/{comment}/unhide', [PublicCommentController::class, 'unhide'])->whereNumber('comment')->name('public.comments.unhide');
+    Route::post('/b/{slug}/{post}/comments/{comment}/report', [PublicCommentController::class, 'report'])->whereNumber('comment')->name('public.comments.report');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/bookmarks', BookmarkedPostsController::class)->name('bookmarks.index');

@@ -13,10 +13,14 @@ interface ContentReportRepository
      */
     public function create(int $blogId, ?int $postId, int $reporterId, string $reason): int;
 
+    public function createComment(int $blogId, int $postId, int $commentId, int $reporterId, string $reason): int;
+
     /**
      * An OPEN or REVIEWING report from this user on the same target already exists.
      */
     public function hasPendingReport(int $reporterId, int $blogId, ?int $postId): bool;
+
+    public function hasPendingCommentReport(int $reporterId, int $commentId): bool;
 
     /**
      * Rows joined with blog, post and reporter, newest first.
@@ -39,4 +43,6 @@ interface ContentReportRepository
     public function liftBlogSuspension(int $blogId): string;
 
     public function archivePost(int $blogId, int $postId): void;
+
+    public function hideComment(int $commentId): void;
 }

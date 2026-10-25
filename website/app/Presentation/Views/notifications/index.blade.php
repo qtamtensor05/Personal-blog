@@ -34,14 +34,14 @@
                     >
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div class="flex min-w-0 items-start gap-3">
-                                @if ($notification->type === 'post.liked')
+                                @if ($notification->type === 'post.liked' || $notification->type === 'post_comment_created' || $notification->type === 'comment_replied')
                                     <span class="relative shrink-0">
                                         @if ($notification->actorAvatarUrl)
                                             <img src="{{ $notification->actorAvatarUrl }}" alt="" class="h-12 w-12 rounded-full object-cover" />
                                         @else
                                             <span class="bg-accent-primary text-surface flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold" aria-hidden="true">{{ mb_strtoupper(mb_substr($notification->data['liker_name'] ?? $notification->data['message'] ?? '?', 0, 1)) }}</span>
                                         @endif
-                                        <span class="bg-rose-500 ring-surface absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-white ring-2" aria-hidden="true"><i class="fa-solid fa-heart"></i></span>
+                                        <span class="{{ $notification->type === 'post.liked' ? 'bg-rose-500' : 'bg-accent-primary' }} ring-surface absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] text-white ring-2" aria-hidden="true"><i class="fa-solid {{ $notification->type === 'post.liked' ? 'fa-heart' : 'fa-comment' }}"></i></span>
                                     </span>
                                 @endif
                                 <div class="min-w-0">
@@ -56,7 +56,7 @@
                                         ''
                                 }}</p>
                                 @if (isset($notificationLocations[$notification->id]))
-                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notificationLocations[$notification->id]->blogSlug, $notificationLocations[$notification->id]->postSlug]) }}">{{ __('post.open_liked_post') }}</a>
+                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notificationLocations[$notification->id]->blogSlug, $notificationLocations[$notification->id]->postSlug]) }}{{ isset($notification->data['comment_id']) ? '#comment-'.(int) $notification->data['comment_id'] : '' }}">{{ $notification->type === 'post.liked' ? __('post.open_liked_post') : 'Xem bình luận' }}</a>
                                 @endif
                                 <time datetime="{{ \Illuminate\Support\Carbon::parse($notification->createdAt)->toAtomString() }}" class="text-secondary mt-2 block text-xs tabular-nums">{{ \Illuminate\Support\Carbon::parse($notification->createdAt)->format('H:i d/m/Y') }}</time>
                                 </div>
