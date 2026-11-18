@@ -18,7 +18,7 @@ final class LoginController extends Controller
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'These credentials do not match our records.',
+                'email' => __('These credentials do not match our records.'),
             ]);
         }
 
@@ -35,10 +35,10 @@ final class LoginController extends Controller
 
             throw ValidationException::withMessages([
                 'email' => match ($user?->status) {
-                    'LOCKED' => 'Your account is locked. Please contact an administrator for assistance.',
-                    'SUSPENDED' => 'Your account is suspended. Please contact an administrator for assistance.',
-                    'DISABLED' => 'Your account has been disabled. Please contact an administrator for assistance.',
-                    default => 'Your account must be active and email verified before signing in.',
+                    'LOCKED' => __('Your account is locked. Please contact an administrator for assistance.'),
+                    'SUSPENDED' => __('Your account is suspended. Please contact an administrator for assistance.'),
+                    'DISABLED' => __('Your account has been disabled. Please contact an administrator for assistance.'),
+                    default => __('Your account must be active and email verified before signing in.'),
                 },
             ]);
         }

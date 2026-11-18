@@ -48,7 +48,7 @@ final class NotificationController extends Controller
     ): RedirectResponse {
         $service->all((int) $request->user()->id);
 
-        return back()->with('status', 'All notifications marked as read.');
+        return back()->with('status', __('All notifications marked as read.'));
     }
 
     public function destroy(
@@ -61,6 +61,6 @@ final class NotificationController extends Controller
             404,
         );
 
-        return back()->with('status', 'Notification deleted.');
+        return back()->with('status', __('Notification deleted.'));
     }
 }

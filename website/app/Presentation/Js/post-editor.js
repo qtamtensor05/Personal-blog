@@ -1,3 +1,4 @@
+import { translate } from './interface-messages';
 import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -89,14 +90,14 @@ function initPostEditor(root) {
         editorProps: {
             attributes: {
                 class: 'post-content min-h-[24rem] focus:outline-none',
-                'aria-label': 'Post content',
+                'aria-label': translate('Post content'),
             },
         },
     });
     editor.setEditable(true);
     editor.view.dom.setAttribute('contenteditable', 'true');
     editor.view.dom.setAttribute('tabindex', '0');
-    status.textContent = 'Trình soạn thảo đã sẵn sàng.';
+    status.textContent = translate('Editor ready.');
     if (contentInput) {
         contentInput.value = JSON.stringify(editor.getJSON());
         publishForm?.addEventListener('submit', () => {
@@ -155,8 +156,8 @@ function initPostEditor(root) {
         if (toolbar) toolbar.hidden = previewing;
         editor.view.dom.classList.toggle('post-content', previewing);
         status.textContent = previewing
-            ? 'Đang xem trước nội dung bài viết.'
-            : 'Đang chỉnh sửa bài viết.';
+            ? translate('Previewing post content.')
+            : translate('Editing post content.');
     });
     root.querySelector('[data-editor-fallback]').hidden = true;
     root.querySelector('[data-editor-loading]')?.setAttribute('hidden', '');
@@ -232,20 +233,20 @@ function initPostEditor(root) {
                 if (!response.ok) {
                     const body = await response.json().catch(() => ({}));
                     dirty = true;
-                    setStatus(body.message ?? 'Could not save the draft.', true);
+                    setStatus(body.message ?? translate('Could not save the draft.'), true);
                     return false;
                 }
 
                 // A user may have edited while the request was in flight.
                 if (dirty) {
-                    setStatus('Unsaved changes');
+                    setStatus(translate('Unsaved changes'));
                     return false;
                 }
-                setStatus('Draft saved');
+                setStatus(translate('Draft saved'));
                 return true;
             } catch {
                 dirty = true;
-                setStatus('Offline. Changes are not saved yet.', true);
+                setStatus(translate('Offline. Changes are not saved yet.'), true);
                 return false;
             } finally {
                 saving = null;
@@ -257,7 +258,7 @@ function initPostEditor(root) {
 
     const scheduleSave = () => {
         dirty = true;
-        setStatus('Unsaved changes');
+        setStatus(translate('Unsaved changes'));
         clearTimeout(timer);
         timer = setTimeout(() => void save(), 1500);
     };
@@ -296,8 +297,8 @@ function initPostEditor(root) {
         link: async () => {
             const currentHref = editor.getAttributes('link').href ?? '';
             const href = await window.requestModalInput(
-                'Add link',
-                'Link URL (https://…)',
+                translate('Add link'),
+                translate('Link URL (https://…)'),
                 currentHref,
             );
             if (href === null) return;
@@ -308,7 +309,7 @@ function initPostEditor(root) {
             }
             // Only allow web links and email links; reject javascript:, data:, etc.
             if (!/^(https?:\/\/|mailto:)/i.test(value)) {
-                setStatus('Use a link starting with https://, http:// or mailto:.', true);
+                setStatus(translate('Use a link starting with https://, http:// or mailto:.'), true);
                 return;
             }
             editor.chain().focus().extendMarkRange('link').setLink({ href: value }).run();
@@ -364,8 +365,8 @@ function initPostEditor(root) {
             }
 
             const alt = await window.requestModalInput(
-                'Image description',
-                'Describe the image (alt text)',
+                translate('Image description'),
+                translate('Describe the image (alt text)'),
                 '',
             );
             if (alt === null) {
@@ -393,7 +394,7 @@ function initPostEditor(root) {
         form.append('file', file);
         form.append('scope', 'BLOG');
         form.append('blog_id', config.blogId);
-        coverStatus.textContent = 'Đang tải ảnh đại diện...';
+        coverStatus.textContent = translate('Uploading cover image…');
         try {
             const response = await fetch(config.mediaUrl, {
                 method: 'POST',
@@ -405,7 +406,7 @@ function initPostEditor(root) {
                 throw new Error(
                     body.message ??
                         Object.values(body.errors ?? {})[0]?.[0] ??
-                        'Không thể tải ảnh.',
+                        translate('Unable to upload the image.'),
                 );
             root.querySelector('[data-cover-media-id]').value = body.data.id;
             const preview = root.querySelector('[data-cover-preview]');
@@ -414,7 +415,7 @@ function initPostEditor(root) {
             image.alt = '';
             image.className = 'mb-2 aspect-video w-full rounded-md object-cover';
             preview.replaceChildren(image);
-            coverStatus.textContent = 'Đã tải ảnh. Nhấn “Lưu thông tin” để áp dụng.';
+            coverStatus.textContent = translate('Image uploaded. Select “Save details” to apply.');
         } catch (error) {
             coverStatus.textContent = error.message;
             coverStatus.classList.add('text-red-500');
@@ -471,7 +472,7 @@ document.querySelectorAll('[data-post-editor]').forEach((root) => {
 
         if (status) {
             status.textContent =
-                'Trình soạn thảo chưa tải được. Hãy tải lại trang; nếu lỗi vẫn còn, báo quản trị viên.';
+                translate('The editor could not load. Reload the page; if the problem persists, contact an administrator.');
             status.classList.add('text-red-500');
         }
     }

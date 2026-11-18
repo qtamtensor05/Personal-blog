@@ -26,7 +26,7 @@ final class ForgotPasswordController extends Controller
 
         return back()->with(
             'status',
-            'If an account exists for that email, a password reset link has been sent.',
+            __('If an account exists for that email, a password reset link has been sent.'),
         );
     }
 }

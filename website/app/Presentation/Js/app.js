@@ -208,7 +208,7 @@ function initErrorModal() {
         modal.setAttribute('aria-hidden', 'true');
         input.classList.add('hidden');
         cancel.classList.add('hidden');
-        confirm.textContent = 'Close';
+        confirm.textContent = modal.dataset.closeLabel;
         if (pending) {
             pending(value);
             pending = null;
@@ -232,7 +232,7 @@ function initErrorModal() {
     });
 
     window.showErrorModal = (text) => {
-        title.textContent = 'Something went wrong';
+        title.textContent = modal.dataset.errorTitle;
         message.textContent = text;
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -248,7 +248,7 @@ function initErrorModal() {
             input.value = initialValue;
             input.classList.remove('hidden');
             cancel.classList.remove('hidden');
-            confirm.textContent = 'Confirm';
+            confirm.textContent = modal.dataset.confirmLabel;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             modal.setAttribute('aria-hidden', 'false');
@@ -263,7 +263,7 @@ function initErrorModal() {
             message.textContent = prompt;
             input.classList.add('hidden');
             cancel.classList.remove('hidden');
-            confirm.textContent = 'Confirm';
+            confirm.textContent = modal.dataset.confirmLabel;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             modal.setAttribute('aria-hidden', 'false');
@@ -275,8 +275,8 @@ function initErrorModal() {
             if (form.dataset.confirmed === 'true') return;
             event.preventDefault();
             const confirmed = await window.requestModalConfirmation(
-                form.dataset.confirmTitle || 'Confirm action',
-                form.dataset.confirmMessage || 'Are you sure you want to continue?',
+                form.dataset.confirmTitle || modal.dataset.confirmTitle,
+                form.dataset.confirmMessage || modal.dataset.confirmMessage,
             );
             if (confirmed) {
                 form.dataset.confirmed = 'true';

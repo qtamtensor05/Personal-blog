@@ -13,6 +13,7 @@ use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\Enums\PostStatus;
 use App\Domain\Content\ValueObjects\PostDraft;
 use App\Domain\Content\ValueObjects\TiptapDocument;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -79,7 +80,7 @@ final class PostController extends Controller
             abort(404);
         } catch (DomainException|InvalidArgumentException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
@@ -153,9 +154,9 @@ final class PostController extends Controller
                 ),
             );
         } catch (BlogNotFound) {
-            return new JsonResponse(['message' => 'Not found.'], 404);
+            return new JsonResponse(['message' => __('Not found.')], 404);
         } catch (DomainException|InvalidArgumentException $exception) {
-            return new JsonResponse(['message' => $exception->getMessage()], 422);
+            return new JsonResponse(['message' => LocalizedError::message($exception->getMessage())], 422);
         }
 
         return new JsonResponse(['saved_at' => now()->toAtomString()]);
@@ -196,7 +197,7 @@ final class PostController extends Controller
                 array_map('intval', $data['category_ids'] ?? []),
                 array_map('intval', $data['tag_ids'] ?? []),
             ),
-            'Post details saved.',
+            __('Post details saved.'),
         );
     }
 
@@ -223,16 +224,16 @@ final class PostController extends Controller
                 'tag_ids.*' => ['integer', 'min:1'],
             ],
             [
-                'title.required' => 'Vui lòng nhập tiêu đề bài viết ở ô Tiêu đề phía trên.',
-                'title.max' => 'Tiêu đề tối đa 160 ký tự. Hãy rút gọn tiêu đề rồi thử lại.',
-                'content.required' => 'Chưa nhận được nội dung bài viết. Hãy nhập nội dung trong khung soạn thảo rồi thử xuất bản lại.',
-                'content.json' => 'Nội dung chưa được đồng bộ từ trình soạn thảo. Hãy nhập lại nội dung hoặc tải lại trang rồi thử lại.',
-                'slug.required' => 'Vui lòng nhập đường dẫn bài viết ở trường Đường dẫn.',
-                'slug.regex' => 'Đường dẫn chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: bai-viet-moi.',
-                'slug.max' => 'Đường dẫn tối đa 160 ký tự. Hãy rút gọn rồi thử lại.',
-                'is_featured.required' => 'Không nhận được lựa chọn bài viết nổi bật. Hãy tải lại trang rồi thử xuất bản lại.',
-                'category_ids.array' => 'Danh sách chuyên mục không hợp lệ. Hãy chọn lại chuyên mục.',
-                'tag_ids.array' => 'Danh sách thẻ không hợp lệ. Hãy chọn lại thẻ.',
+                'title.required' => __('Please enter the post title in the Title field above.'),
+                'title.max' => __('The title may not exceed 160 characters. Shorten it and try again.'),
+                'content.required' => __('No post content was received. Enter content in the editor and try publishing again.'),
+                'content.json' => __('Content has not synced from the editor. Re-enter the content or reload the page and try again.'),
+                'slug.required' => __('Please enter the post slug in the Slug field.'),
+                'slug.regex' => __('The slug may only contain lowercase unaccented letters, numbers and hyphens; for example: new-post.'),
+                'slug.max' => __('The slug may not exceed 160 characters. Shorten it and try again.'),
+                'is_featured.required' => __('The featured post option was not received. Reload the page and try publishing again.'),
+                'category_ids.array' => __('The category list is invalid. Please select the categories again.'),
+                'tag_ids.array' => __('The tag list is invalid. Please select the tags again.'),
             ],
         );
 
@@ -243,14 +244,14 @@ final class PostController extends Controller
         } catch (InvalidArgumentException|\JsonException) {
             return back()
                 ->withErrors([
-                    'content' => 'Nội dung bài viết không hợp lệ. Hãy nhập lại trong khung soạn thảo rồi thử xuất bản.',
+                    'content' => __('The post content is invalid. Re-enter it in the editor and try publishing again.'),
                 ])
                 ->withInput();
         }
 
         if (trim($document->plainText()) === '' && $document->mediaIds() === []) {
             return back()
-                ->withErrors(['content' => 'Vui lòng nhập nội dung bài viết trước khi xuất bản.'])
+                ->withErrors(['content' => __('Please enter post content before publishing.')])
                 ->withInput();
         }
 
@@ -280,13 +281,13 @@ final class PostController extends Controller
             abort(404);
         } catch (DomainException|InvalidArgumentException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
         return redirect()
             ->route('blogs.posts.edit', [$blog, $post])
-            ->with('status', 'Post published.');
+            ->with('status', __('Post published.'));
     }
 
     public function changeStatus(
@@ -306,7 +307,7 @@ final class PostController extends Controller
                 $post,
                 PostStatus::from($data['status']),
             ),
-            'Post status updated.',
+            __('Post status updated.'),
         );
     }
 
@@ -321,12 +322,12 @@ final class PostController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()]);
+            return back()->withErrors(['general' => LocalizedError::message($exception->getMessage())]);
         }
 
         return redirect()
             ->route('blogs.posts.index', $blog)
-            ->with('status', 'Post moved to Recently deleted.');
+            ->with('status', __('Post moved to Recently deleted.'));
     }
 
     public function restore(
@@ -343,7 +344,7 @@ final class PostController extends Controller
         }
         $posts->restore($blog, $post);
 
-        return back()->with('status', 'Post restored.');
+        return back()->with('status', __('Post restored.'));
     }
 
     public function forceDestroy(
@@ -360,7 +361,7 @@ final class PostController extends Controller
         }
         $posts->permanentlyDelete($blog, $post);
 
-        return back()->with('status', 'Post permanently deleted.');
+        return back()->with('status', __('Post permanently deleted.'));
     }
 
     private function run(int $blog, int $post, callable $action, string $message): RedirectResponse
@@ -371,7 +372,7 @@ final class PostController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

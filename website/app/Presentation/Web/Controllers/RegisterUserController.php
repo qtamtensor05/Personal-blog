@@ -23,7 +23,7 @@ final class RegisterUserController extends Controller
 
         if (! $platformSettings->execute()->data->registrationEnabled) {
             throw ValidationException::withMessages([
-                'email' => 'New account registration is currently disabled.',
+                'email' => __('New account registration is currently disabled.'),
             ]);
         }
 
@@ -35,21 +35,21 @@ final class RegisterUserController extends Controller
             );
         } catch (EmailAlreadyRegistered) {
             throw ValidationException::withMessages([
-                'email' => 'Email address is already registered.',
+                'email' => __('Email address is already registered.'),
             ]);
         }
 
         if ($user->emailVerifiedAt() !== null) {
             return redirect()
                 ->route('login')
-                ->with('status', 'Account created successfully! You can sign in now.');
+                ->with('status', __('Account created successfully! You can sign in now.'));
         }
 
         return redirect()
             ->route('login')
             ->with(
                 'status',
-                'Your account has been created. We have sent a verification email to your email address. Please check your inbox and spam folder before signing in.',
+                __('Your account has been created. We have sent a verification email to your email address. Please check your inbox and spam folder before signing in.'),
             );
     }
 }

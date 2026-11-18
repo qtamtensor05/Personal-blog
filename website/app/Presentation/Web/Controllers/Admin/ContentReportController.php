@@ -7,6 +7,7 @@ namespace App\Presentation\Web\Controllers\Admin;
 use App\Application\Moderation\Contracts\ContentReportRepository;
 use App\Application\Moderation\UseCases\ModerateContent\ModerateContentService;
 use App\Domain\Moderation\Enums\ReportStatus;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ final class ContentReportController extends Controller
         return $this->run(
             $report,
             fn () => $service->startReview((int) $request->user()->id, $report),
-            'Report assigned to you.',
+            __('Report assigned to you.'),
         );
     }
 
@@ -79,7 +80,7 @@ final class ContentReportController extends Controller
                 $data['action'],
                 $data['note'] ?? null,
             ),
-            'Report closed.',
+            __('Report closed.'),
         );
     }
 
@@ -91,7 +92,7 @@ final class ContentReportController extends Controller
         return $this->run(
             $report,
             fn () => $service->liftBlogSuspension((int) $request->user()->id, $report),
-            'Blog suspension lifted.',
+            __('Blog suspension lifted.'),
         );
     }
 
@@ -101,7 +102,7 @@ final class ContentReportController extends Controller
             $action();
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

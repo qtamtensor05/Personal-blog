@@ -28,12 +28,12 @@ final class UpdateBlogRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nhập tên blog để người đọc nhận ra blog của bạn.',
-            'name.max' => 'Tên blog tối đa 160 ký tự. Hãy rút gọn tên rồi thử lại.',
-            'slug.regex' => 'Slug chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: blog-cua-toi.',
-            'slug.max' => 'Slug tối đa 160 ký tự. Hãy rút gọn slug rồi thử lại.',
-            'status.in' => 'Trạng thái chỉ có thể là bản nháp hoặc đã xuất bản.',
-            'visibility.in' => 'Quyền hiển thị không hợp lệ. Hãy tải lại trang và chọn lại.',
+            'name.required' => __('Enter a blog name so readers can recognize your blog.'),
+            'name.max' => __('The blog name may not exceed 160 characters. Shorten it and try again.'),
+            'slug.regex' => __('The slug may only contain lowercase unaccented letters, numbers and hyphens; for example: my-blog.'),
+            'slug.max' => __('The slug may not exceed 160 characters. Shorten it and try again.'),
+            'status.in' => __('The status must be either draft or published.'),
+            'visibility.in' => __('The visibility setting is invalid. Reload the page and select it again.'),
         ];
     }
 }
