@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Content\Contracts\ImageContentGenerator;
 use App\Application\Content\Contracts\PageRepository;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Content\Contracts\PublicPostCatalog;
 use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Application\Content\UseCases\GetHomeContent\GetHomeContentService;
 use App\Application\Content\UseCases\GetHomeContent\GetHomeContentUseCase;
+use App\Infrastructure\Content\AI\GeminiImageContentGenerator;
 use App\Infrastructure\Content\Persistence\QueryBuilderPageRepository;
 use App\Infrastructure\Content\Persistence\QueryBuilderPostRepository;
 use App\Infrastructure\Content\Persistence\QueryBuilderPublicPostCatalog;
@@ -20,6 +22,7 @@ final class ContentServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(ImageContentGenerator::class, GeminiImageContentGenerator::class);
         $this->app->bind(TaxonomyRepository::class, QueryBuilderTaxonomyRepository::class);
         $this->app->bind(PostRepository::class, QueryBuilderPostRepository::class);
         $this->app->bind(PublicPostCatalog::class, QueryBuilderPublicPostCatalog::class);

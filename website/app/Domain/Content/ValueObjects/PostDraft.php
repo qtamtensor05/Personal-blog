@@ -16,6 +16,7 @@ final readonly class PostDraft implements JsonSerializable
         public string $title,
         public ?string $excerpt,
         public TiptapDocument $content,
+        public ?PostDraftMetadata $metadata = null,
     ) {
         $length = mb_strlen(trim($title));
 
@@ -25,15 +26,20 @@ final readonly class PostDraft implements JsonSerializable
     }
 
     /**
-     * @return array{title: string, excerpt: ?string, content: array<string, mixed>}
+     * @return array<string, mixed>
      */
     public function jsonSerialize(): array
     {
-        return [
+        $data = [
             'title' => $this->title,
             'excerpt' => $this->excerpt,
             'content' => $this->content->toArray(),
         ];
+        if ($this->metadata !== null) {
+            $data['metadata'] = $this->metadata->toArray();
+        }
+
+        return $data;
     }
 
     /**
@@ -45,6 +51,7 @@ final readonly class PostDraft implements JsonSerializable
             title: (string) $data['title'],
             excerpt: isset($data['excerpt']) ? (string) $data['excerpt'] : null,
             content: TiptapDocument::fromArray((array) $data['content']),
+            metadata: isset($data['metadata']) && is_array($data['metadata']) ? PostDraftMetadata::fromArray($data['metadata']) : null,
         );
     }
 }

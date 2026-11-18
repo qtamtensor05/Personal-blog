@@ -183,6 +183,10 @@ npm run build                # build asset bằng Vite
 - Token đặt lại mật khẩu và token xác minh domain chỉ lưu dạng hash.
 - Tài khoản bị khóa, đình chỉ hoặc vô hiệu hóa bị đăng xuất khỏi mọi session ngay lập tức.
 
+## Trợ lý viết nội dung từ ảnh
+
+Hướng dẫn tính năng mới: [Trợ lý viết nội dung từ ảnh bằng Gemini](website/docs/IMAGE_WRITING.md) — cấu hình khóa API, cách dùng trong trình soạn thảo và giới hạn hỗ trợ.
+
 ## Giới hạn hiện tại
 
 - Chưa có Media Library: ảnh bìa, logo và ảnh OG nhập bằng media ID.

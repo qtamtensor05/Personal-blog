@@ -2,6 +2,17 @@
 
 return [
     'attributes' => [
+        'analysis_image' => 'optimized AI image',
+        'fields' => 'selected fields',
+
+        'metadata.slug' => 'post slug',
+        'metadata.seo_title' => 'SEO title',
+        'metadata.seo_description' => 'SEO description',
+
+        'media_id' => 'image',
+        'context' => 'nearby text',
+        'instructions' => 'writing request',
+
         'name' => 'name',
         'email' => 'email',
         'password' => 'password',

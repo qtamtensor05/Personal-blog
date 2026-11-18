@@ -1,4 +1,5 @@
 import { translate } from './interface-messages';
+import { initImageWriting } from './image-writing';
 import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -64,7 +65,8 @@ function initPostEditor(root) {
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
     const status = root.querySelector('[data-save-status]');
     const titleInput = root.querySelector('[data-publish-title-source]');
-    const excerptInput = root.querySelector('[name="excerpt"]');
+    const excerptInput =
+        root.querySelector('[data-post-excerpt-source]') ?? root.querySelector('[name="excerpt"]');
     const fileInput = root.querySelector('[data-image-input]');
     const imageButton = root.querySelector('[data-command="image"]');
     const imageUploadStatus = root.querySelector('[data-image-upload-status]');
@@ -97,6 +99,7 @@ function initPostEditor(root) {
     editor.setEditable(true);
     editor.view.dom.setAttribute('contenteditable', 'true');
     editor.view.dom.setAttribute('tabindex', '0');
+    const imageWriting = initImageWriting(root, editor, config, csrf, titleInput);
     status.textContent = translate('Editor ready.');
     if (contentInput) {
         contentInput.value = JSON.stringify(editor.getJSON());
@@ -153,6 +156,7 @@ function initPostEditor(root) {
             ? previewToggle.dataset.editLabel
             : previewToggle.dataset.previewLabel;
         editor.setEditable(!previewing);
+        imageWriting?.refresh();
         if (toolbar) toolbar.hidden = previewing;
         editor.view.dom.classList.toggle('post-content', previewing);
         status.textContent = previewing
@@ -216,6 +220,16 @@ function initPostEditor(root) {
             // Pages have no excerpt field.
             excerpt: excerptInput?.value || null,
             content: editor.getJSON(),
+            ...(config.imageWriting
+                ? {
+                      metadata: {
+                          slug: root.querySelector('[data-publish-slug-source]').value || null,
+                          seo_title: root.querySelector('[name="seo_title_editor"]').value || null,
+                          seo_description:
+                              root.querySelector('[name="seo_description_editor"]').value || null,
+                      },
+                  }
+                : {}),
         });
 
         saving = (async () => {
@@ -271,6 +285,9 @@ function initPostEditor(root) {
     editor.on('transaction', updateToolbar);
     titleInput.addEventListener('input', scheduleSave);
     excerptInput?.addEventListener('input', scheduleSave);
+    root.querySelectorAll(
+        '[data-publish-slug-source], [name="seo_title_editor"], [name="seo_description_editor"]',
+    ).forEach((input) => input.addEventListener('input', scheduleSave));
     updateToolbar();
 
     // Toolbar commands are kept explicit so each action remains easy to audit.
@@ -309,7 +326,10 @@ function initPostEditor(root) {
             }
             // Only allow web links and email links; reject javascript:, data:, etc.
             if (!/^(https?:\/\/|mailto:)/i.test(value)) {
-                setStatus(translate('Use a link starting with https://, http:// or mailto:.'), true);
+                setStatus(
+                    translate('Use a link starting with https://, http:// or mailto:.'),
+                    true,
+                );
                 return;
             }
             editor.chain().focus().extendMarkRange('link').setLink({ href: value }).run();
@@ -471,8 +491,9 @@ document.querySelectorAll('[data-post-editor]').forEach((root) => {
         }
 
         if (status) {
-            status.textContent =
-                translate('The editor could not load. Reload the page; if the problem persists, contact an administrator.');
+            status.textContent = translate(
+                'The editor could not load. Reload the page; if the problem persists, contact an administrator.',
+            );
             status.classList.add('text-red-500');
         }
     }

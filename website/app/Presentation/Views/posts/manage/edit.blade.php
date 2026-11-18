@@ -4,12 +4,20 @@
 
 @section ('content')
     @php
+        $aiAvailable = (bool) config('services.gemini.key');
+        $draftMetadata = $editable->metadata;
         $editorConfig = [
             'blogId' => $blog->id,
             'content' => $editable->content->toArray(),
             'mediaUrls' => (object) $mediaUrls,
             'draftUrl' => route('blogs.posts.draft', [$blog->id, $post->id]),
             'mediaUrl' => route('media.store'),
+            'imageWriting' => [
+                'url' => route('blogs.posts.image-writing', [$blog->id, $post->id]),
+                'available' => $aiAvailable,
+                'labels' => collect(['generating', 'throttled', 'failed', 'filled', 'skipped', 'selected', 'uploading', 'unsupported', 'tooLarge', 'choose_fields', 'preparing'])
+                    ->mapWithKeys(fn ($key) => [$key => __('ai.'.$key)])->all(),
+            ],
         ];
     @endphp
     <div class="container-custom section-spacing max-w-6xl" data-post-editor>
@@ -101,6 +109,7 @@
                 />
             @endforeach
             <div class="grid gap-6">
+                @include('posts.manage.image-writing')
                 {{-- Writing area --}}
                 <div class="card space-y-4">
                     <label
@@ -120,11 +129,10 @@
                     @if ($errors->has('title'))
                         <p class="text-sm text-red-600" role="alert">{{ $errors->first('title') }}</p>
                     @endif
-                    <input
-                        type="hidden"
-                        value="{{ $editable->excerpt ?? $post->excerpt }}"
-                        data-publish-excerpt-source
-                    />
+                    <div>
+                        <label for="post-excerpt" class="text-secondary block text-sm font-medium">{{ __('ai.excerpt') }}</label>
+                        <textarea id="post-excerpt" class="input w-full" maxlength="1000" rows="2" data-post-excerpt-source>{{ $editable->excerpt }}</textarea>
+                    </div>
 
                     <div>
                         <div class="mb-2 flex items-center justify-between gap-3">
@@ -247,7 +255,7 @@
                     <x-input
                         name="slug_editor"
                         :label="__('post.slug')"
-                        :value="old('slug', $post->slug)"
+                        :value="old('slug', $draftMetadata !== null ? $draftMetadata->slug : $post->slug)"
                         :error="$errors->first('slug')"
                         required
                         maxlength="160"
@@ -329,7 +337,7 @@
                     <x-input
                         name="seo_title_editor"
                         :label="__('post.seo_title')"
-                        :value="$post->seoTitle"
+                        :value="$draftMetadata !== null ? $draftMetadata->seoTitle : $post->seoTitle"
                         maxlength="255"
                     />
                     <x-textarea
@@ -337,7 +345,7 @@
                         :label="__('post.seo_description')"
                         rows="2"
                         maxlength="500"
-                        >{{ $post->seoDescription }}</x-textarea
+                        >{{ $draftMetadata !== null ? $draftMetadata->seoDescription : $post->seoDescription }}</x-textarea
                     >
                     <p class="text-secondary text-xs md:col-span-2">{{ __('post.seo_description_help') }}</p>
                     <label class="flex items-center gap-2 text-sm">

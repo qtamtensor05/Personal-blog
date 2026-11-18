@@ -12,6 +12,7 @@ use App\Application\Content\UseCases\ManagePosts\ManagePostsService;
 use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\Enums\PostStatus;
 use App\Domain\Content\ValueObjects\PostDraft;
+use App\Domain\Content\ValueObjects\PostDraftMetadata;
 use App\Domain\Content\ValueObjects\TiptapDocument;
 use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
@@ -140,6 +141,10 @@ final class PostController extends Controller
             'title' => ['required', 'string', 'max:160'],
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'content' => ['required', 'array'],
+            'metadata' => ['sometimes', 'array:slug,seo_title,seo_description'],
+            'metadata.slug' => ['nullable', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'metadata.seo_title' => ['nullable', 'string', 'max:255'],
+            'metadata.seo_description' => ['nullable', 'string', 'max:500'],
         ]);
 
         try {
@@ -151,6 +156,7 @@ final class PostController extends Controller
                     $data['title'],
                     $data['excerpt'] ?? null,
                     TiptapDocument::fromArray($data['content']),
+                    isset($data['metadata']) ? PostDraftMetadata::fromArray($data['metadata']) : null,
                 ),
             );
         } catch (BlogNotFound) {
@@ -261,7 +267,7 @@ final class PostController extends Controller
                 $actorId,
                 $blog,
                 $post,
-                new PostDraft($data['title'], $data['excerpt'] ?? null, $document),
+                new PostDraft($data['title'], $data['excerpt'] ?? null, $document, new PostDraftMetadata($data['slug'], $data['seo_title'] ?? null, $data['seo_description'] ?? null)),
             );
             $service->updateMeta(
                 $actorId,

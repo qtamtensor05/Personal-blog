@@ -74,6 +74,17 @@ return [
         'file' => 'Dung lượng :attribute phải từ :min đến :max KB.',
     ],
     'attributes' => [
+        'analysis_image' => 'bản ảnh dùng cho AI',
+        'fields' => 'các mục đã chọn',
+
+        'metadata.slug' => 'đường dẫn bài viết',
+        'metadata.seo_title' => 'tiêu đề SEO',
+        'metadata.seo_description' => 'mô tả SEO',
+
+        'media_id' => 'hình ảnh',
+        'context' => 'đoạn văn lân cận',
+        'instructions' => 'yêu cầu viết',
+
         'name' => 'tên',
         'email' => 'địa chỉ email',
         'password' => 'mật khẩu',
