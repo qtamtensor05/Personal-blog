@@ -10,6 +10,7 @@ use App\Application\Blogs\DTOs\BlogSettingsRecord;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Blogs\UseCases\UpdateBlogSettings\UpdateBlogSettingsService;
 use App\Presentation\Web\Requests\UpdateBlogSettingsRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,10 +61,10 @@ final class BlogSettingsController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
-        return redirect()->route('blogs.settings.edit', $blog)->with('status', 'Settings saved.');
+        return redirect()->route('blogs.settings.edit', $blog)->with('status', __('Settings saved.'));
     }
 }

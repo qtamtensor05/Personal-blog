@@ -16,6 +16,7 @@ use App\Domain\Blogs\Enums\BlogStatus;
 use App\Domain\Blogs\Enums\BlogVisibility;
 use App\Presentation\Web\Requests\CreateBlogRequest;
 use App\Presentation\Web\Requests\UpdateBlogRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,7 +59,7 @@ final class BlogController extends Controller
             return redirect()->route('blogs.show', $exception->blogId);
         } catch (BlogSlugTaken $exception) {
             return back()
-                ->withErrors(['slug' => $exception->getMessage()])
+                ->withErrors(['slug' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
@@ -66,7 +67,7 @@ final class BlogController extends Controller
             ->route('blogs.show', $id)
             ->with(
                 'status',
-                'Blog created. Choose a template published by an admin to start your design.',
+                __('Blog created. Choose a template published by an admin to start your design.'),
             );
     }
 
@@ -123,15 +124,15 @@ final class BlogController extends Controller
             abort(404);
         } catch (BlogSlugTaken $exception) {
             return back()
-                ->withErrors(['slug' => $exception->getMessage()])
+                ->withErrors(['slug' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
-        return redirect()->route('blogs.show', $blog)->with('status', 'Blog updated successfully.');
+        return redirect()->route('blogs.show', $blog)->with('status', __('Blog updated successfully.'));
     }
 
     public function destroy(
@@ -144,9 +145,9 @@ final class BlogController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()]);
+            return back()->withErrors(['general' => LocalizedError::message($exception->getMessage())]);
         }
 
-        return redirect()->route('blogs.index')->with('status', 'Blog deleted.');
+        return redirect()->route('blogs.index')->with('status', __('Blog deleted.'));
     }
 }

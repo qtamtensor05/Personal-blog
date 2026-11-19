@@ -28,7 +28,7 @@ Migration chỉ chạy trên MySQL 8.0.16 trở lên vì schema dùng CHECK cons
 ```bash
 cd website
 composer install
-cp .env.example .env
+php -r "file_exists('.env') || copy('.env.example', '.env');"
 php artisan key:generate
 ```
 
@@ -72,12 +72,15 @@ CLOUDINARY_URL=cloudinary://123456789012345:abcdefGHIJ@my-cloud
 
 Không dán cả dòng `CLOUDINARY_URL=...` vào sau dấu `=`. Nếu giá trị sai, việc upload sẽ báo lỗi `CLOUDINARY_URL must look like cloudinary://...`.
 
-Khởi động database, chạy migration, seed role/permission và cài frontend:
+Các lệnh sau chạy trong thư mục `website` (nơi có file `artisan`, `composer.json` và `package.json`). Điền `BOOTSTRAP_ADMIN_EMAIL` và `BOOTSTRAP_ADMIN_PASSWORD` trong `.env` trước khi seed; mật khẩu cần ít nhất 12 ký tự.
+
+Khởi động database, chờ MySQL healthy, chạy migration và seed dữ liệu ban đầu:
 
 ```bash
 docker compose up -d mysql redis
-php artisan migrate
-php artisan db:seed --class=AccessControlSeeder
+docker compose ps
+php artisan config:clear
+php artisan migrate --seed
 npm install
 ```
 
@@ -85,7 +88,18 @@ Docker Compose ở môi trường local cho phép mật khẩu root MySQL rỗng
 
 ## Tạo Admin đầu tiên
 
-Đăng ký tài khoản và xác minh email, sau đó cấp role `SUPER_ADMIN`:
+`php artisan migrate --seed` chạy `DatabaseSeeder`: tạo role/permission, tạo tài khoản Owner từ `BOOTSTRAP_ADMIN_EMAIL` và `BOOTSTRAP_ADMIN_PASSWORD`, cấp `SUPER_ADMIN`, rồi seed template ban đầu. Tài khoản mới có trạng thái ACTIVE và email đã xác minh; đăng nhập bằng thông tin đã cấu hình trong `.env`.
+
+Nếu database đã migrate, chỉ cần chạy:
+
+```bash
+php artisan config:clear
+php artisan db:seed
+```
+
+Seed lại không ghi đè mật khẩu hoặc trạng thái của tài khoản đã tồn tại. Thay mật khẩu trong `.env` không đổi mật khẩu tài khoản cũ; dùng chức năng đặt lại mật khẩu. `php artisan migrate` riêng lẻ chỉ cập nhật schema; `php artisan db:seed --class=AccessControlSeeder` chỉ tạo role/permission, không tạo tài khoản.
+
+Để cấp quyền cho một tài khoản khác đã đăng ký và xác minh email:
 
 ```bash
 php artisan admin:grant you@example.com
@@ -100,7 +114,9 @@ cd website
 composer run dev
 ```
 
-Lệnh này chạy Laravel server, queue worker và Vite dev server. Mở http://localhost:8000.
+Lệnh này chạy Laravel server, queue worker và Vite dev server. Giữ terminal này mở; Docker Compose chỉ chạy database/cache, không chạy web. Mở địa chỉ trong `APP_URL` của `.env` (mặc định http://localhost:8000).
+
+Nếu đang ở trong `website` thì không chạy `cd website` lần nữa. Trên PowerShell, có thể chuyển thẳng bằng `cd C:\Users\quangTam\Documents\Personal-blog\website`. Lỗi `Could not open input file: artisan` hoặc npm không tìm thấy `package.json` thường do chạy sai thư mục.
 
 Bật thêm phpMyAdmin tại http://localhost:8080:
 
@@ -166,6 +182,10 @@ npm run build                # build asset bằng Vite
 - Cloudinary API secret không bao giờ được gửi xuống frontend.
 - Token đặt lại mật khẩu và token xác minh domain chỉ lưu dạng hash.
 - Tài khoản bị khóa, đình chỉ hoặc vô hiệu hóa bị đăng xuất khỏi mọi session ngay lập tức.
+
+## Trợ lý viết nội dung từ ảnh
+
+Hướng dẫn tính năng mới: [Trợ lý viết nội dung từ ảnh bằng Gemini](website/docs/IMAGE_WRITING.md) — cấu hình khóa API, cách dùng trong trình soạn thảo và giới hạn hỗ trợ.
 
 ## Giới hạn hiện tại
 

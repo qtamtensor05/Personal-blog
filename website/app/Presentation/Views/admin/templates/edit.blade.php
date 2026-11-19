@@ -370,7 +370,7 @@
                                     <option value="left">Align left</option>
                                     <option value="right">Align right</option>
                                 </select>
-                                <p class="text-xs text-secondary" data-upload-status>Choose an image to upload to Cloudinary.</p>
+                                <p class="text-xs text-secondary" data-upload-status>{{ __('Choose an image to upload to Cloudinary.') }}</p>
                             </div>
                         </div>
                         <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">Remove</button>
@@ -422,9 +422,9 @@
                         body: form,
                     });
                     const body = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(body.message || 'Image upload failed.');
+                    if (!response.ok) throw new Error(body.message || @js (__('templates.image_upload_failed')));
                     section.querySelector('input[name="section_image_media_ids[]"]').value = body.data.id;
-                    status.textContent = 'Image uploaded to Cloudinary.';
+                    status.textContent = @js (__('Image uploaded to Cloudinary.'));
                     updatePreview();
                 } catch (error) {
                     status.textContent = error.message;
@@ -476,7 +476,7 @@
                     .filter((s) => s.key && s.section);
 
                 if (sections.length === 0) {
-                    showFormError('Add at least one section before saving the template.');
+                    showFormError(@js (__('Add at least one section before saving the template.')));
                     return;
                 }
 
@@ -518,7 +518,7 @@
                 } else {
                     const err = await r.json().catch(() => ({}));
                     showFormError(
-                        err.message || 'The template could not be saved. Check the form and try again.',
+                        err.message || @js (__('The template could not be saved. Check the form and try again.')),
                     );
                 }
             });

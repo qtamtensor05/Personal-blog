@@ -14,6 +14,7 @@ use App\Presentation\Web\Controllers\BookmarkedPostsController;
 use App\Presentation\Web\Controllers\ContentReportController;
 use App\Presentation\Web\Controllers\ForgotPasswordController;
 use App\Presentation\Web\Controllers\HomeController;
+use App\Presentation\Web\Controllers\ImageWritingController;
 use App\Presentation\Web\Controllers\InterfaceLocaleController;
 use App\Presentation\Web\Controllers\LoginController;
 use App\Presentation\Web\Controllers\MediaController;
@@ -34,6 +35,7 @@ use App\Presentation\Web\Controllers\TaxonomyController;
 use App\Presentation\Web\Controllers\TemplateGalleryController;
 use App\Presentation\Web\Controllers\TemplatePreviewController;
 use App\Presentation\Web\Controllers\VerifyEmailController;
+use App\Presentation\Web\Middleware\ImageWritingExecutionBudget;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -321,6 +323,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{post}/likers', [PostController::class, 'likers'])->name('likers');
             Route::post('/', [PostController::class, 'store'])->name('store');
             Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::post('/{post}/image-writing', ImageWritingController::class)
+                ->middleware([ImageWritingExecutionBudget::class, 'throttle:5,1'])
+                ->name('image-writing');
             Route::put('/{post}/draft', [PostController::class, 'saveDraft'])
                 ->middleware('throttle:60,1')
                 ->name('draft');

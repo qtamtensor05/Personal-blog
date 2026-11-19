@@ -22,11 +22,11 @@ final class VerifyEmailController extends Controller
         try {
             $verifyEmail->execute($user);
         } catch (DomainException) {
-            abort(403, 'This email verification link cannot be used.');
+            abort(403, __('This email verification link cannot be used.'));
         }
 
         return redirect()
             ->route('verification.success')
-            ->with('status', 'Email verified successfully.');
+            ->with('status', __('Email verified successfully.'));
     }
 }

@@ -43,13 +43,11 @@ final class UploadMediaRequest extends FormRequest
         $maxMb = (float) config('media.max_upload_kb') / 1024;
 
         return [
-            'file.required' => 'Vui lòng chọn hình ảnh hoặc video để tải lên.',
-            'file.uploaded' => 'Tệp tải lên không thành công. Tệp có thể vượt quá giới hạn của PHP; hãy chọn tệp tối đa '.
-                $maxMb.
-                ' MB.',
-            'file.file' => 'Tệp tải lên không hợp lệ.',
-            'file.mimes' => 'Chỉ hỗ trợ ảnh JPG, PNG, WEBP, GIF và video MP4, WEBM, MOV.',
-            'file.max' => 'Tệp không được lớn hơn '.$maxMb.' MB.',
+            'file.required' => __('Please choose an image or video to upload.'),
+            'file.uploaded' => __('The upload failed. The file may exceed the PHP upload limit; choose a file up to :max MB.', ['max' => $maxMb]),
+            'file.file' => __('The uploaded file is invalid.'),
+            'file.mimes' => __('Only JPG, PNG, WEBP, GIF images and MP4, WEBM, MOV videos are supported.'),
+            'file.max' => __('The file may not exceed :max MB.', ['max' => $maxMb]),
         ];
     }
 }

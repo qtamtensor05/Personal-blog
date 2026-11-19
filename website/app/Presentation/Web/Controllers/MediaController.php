@@ -16,6 +16,7 @@ use App\Application\Media\UseCases\DeleteMedia\DeleteMediaUseCase;
 use App\Application\Media\UseCases\UploadMedia\UploadMediaUseCase;
 use App\Domain\Media\Enums\MediaScope;
 use App\Presentation\Web\Requests\UploadMediaRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -64,13 +65,13 @@ final class MediaController extends Controller
                 altText: $request->validated('alt_text'),
             );
         } catch (MediaAccessDenied $exception) {
-            return $this->error($exception->getMessage(), 403);
+            return $this->error(LocalizedError::message($exception->getMessage()), 403);
         } catch (MediaQuotaExceeded $exception) {
-            return $this->error($exception->getMessage(), 422);
+            return $this->error(LocalizedError::message($exception->getMessage()), 422);
         } catch (MediaStorageFailed $exception) {
             Log::error('Media upload failed.', ['exception' => $exception]);
 
-            return $this->error('Không thể tải Media lên. Vui lòng thử lại.', 502);
+            return $this->error(__('Unable to upload the media file. Please try again.'), 502);
         }
 
         return new JsonResponse(['data' => $this->present($asset)], 201);
@@ -81,15 +82,15 @@ final class MediaController extends Controller
         try {
             $delete->execute((int) $request->user()->id, $media);
         } catch (MediaAccessDenied) {
-            return $this->error('Media not found.', 404);
+            return $this->error(__('Media not found.'), 404);
         } catch (MediaInUse $exception) {
-            return $this->error($exception->getMessage(), 409);
+            return $this->error(LocalizedError::message($exception->getMessage()), 409);
         } catch (MediaStorageFailed $exception) {
             Log::error('Media delete failed.', ['exception' => $exception]);
 
-            return $this->error('Không thể xóa Media. Vui lòng thử lại.', 502);
+            return $this->error(__('Unable to delete the media file. Please try again.'), 502);
         } catch (DomainException $exception) {
-            return $this->error($exception->getMessage(), 409);
+            return $this->error(LocalizedError::message($exception->getMessage()), 409);
         }
 
         return new JsonResponse(null, 204);

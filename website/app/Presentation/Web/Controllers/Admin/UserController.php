@@ -11,6 +11,7 @@ use App\Application\Identity\Exceptions\EmailAlreadyRegistered;
 use App\Application\Identity\UseCases\RegisterUser\RegisterUserUseCase;
 use App\Domain\AccessControl\Enums\PlatformPermission;
 use App\Domain\Identity\Enums\UserStatus;
+use App\Presentation\Web\Support\LocalizedError;
 use DateTimeImmutable;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -74,16 +75,16 @@ final class UserController extends Controller
             );
         } catch (EmailAlreadyRegistered) {
             throw ValidationException::withMessages([
-                'email' => 'Email address is already registered.',
+                'email' => __('Email address is already registered.'),
             ]);
         } catch (DomainException $exception) {
-            throw ValidationException::withMessages(['email' => $exception->getMessage()]);
+            throw ValidationException::withMessages(['email' => LocalizedError::message($exception->getMessage())]);
         }
 
         $adminRole = collect($users->roles())->firstWhere('code', 'SUPER_ADMIN');
 
         if ($adminRole === null) {
-            throw new DomainException('The SUPER_ADMIN role is not configured.');
+            throw new DomainException(__('The SUPER_ADMIN role is not configured.'));
         }
 
         $users->grantRole($user->id(), (int) $adminRole['id'], (int) $request->user()->id, null);
@@ -92,7 +93,7 @@ final class UserController extends Controller
             ->route('admin.users.index')
             ->with(
                 'status',
-                'Admin account created. A verification email was sent to the address.',
+                __('Admin account created. A verification email was sent to the address.'),
             );
     }
 
@@ -137,7 +138,7 @@ final class UserController extends Controller
                 $data['reason'],
                 isset($data['ends_at']) ? new DateTimeImmutable($data['ends_at']) : null,
             ),
-            'Restriction applied. The user has been signed out.',
+            __('Restriction applied. The user has been signed out.'),
         );
     }
 
@@ -148,7 +149,7 @@ final class UserController extends Controller
         return $this->run(
             $user,
             fn () => $service->lift((int) $request->user()->id, $user, $data['reason']),
-            'Restriction lifted.',
+            __('Restriction lifted.'),
         );
     }
 
@@ -170,7 +171,7 @@ final class UserController extends Controller
                 (int) $data['role_id'],
                 isset($data['expires_at']) ? new DateTimeImmutable($data['expires_at']) : null,
             ),
-            'Role granted.',
+            __('Role granted.'),
         );
     }
 
@@ -183,7 +184,7 @@ final class UserController extends Controller
         return $this->run(
             $user,
             fn () => $service->revokeRole((int) $request->user()->id, $user, $role),
-            'Role revoked.',
+            __('Role revoked.'),
         );
     }
 
@@ -205,7 +206,7 @@ final class UserController extends Controller
                 (int) $data['permission_id'],
                 $data['effect'],
             ),
-            'User permission updated.',
+            __('User permission updated.'),
         );
     }
 
@@ -227,7 +228,7 @@ final class UserController extends Controller
             $action();
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

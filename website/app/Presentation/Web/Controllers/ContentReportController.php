@@ -6,6 +6,7 @@ namespace App\Presentation\Web\Controllers;
 
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Moderation\UseCases\ModerateContent\ModerateContentService;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,12 +37,12 @@ final class ContentReportController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['report' => $exception->getMessage()]);
+            return back()->withErrors(['report' => LocalizedError::message($exception->getMessage())]);
         }
 
         return back()->with(
             'report_status',
-            'Thanks. Your report has been sent to the moderators.',
+            __('Thanks. Your report has been sent to the moderators.'),
         );
     }
 }

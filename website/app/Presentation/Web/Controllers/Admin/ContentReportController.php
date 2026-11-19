@@ -7,6 +7,7 @@ namespace App\Presentation\Web\Controllers\Admin;
 use App\Application\Moderation\Contracts\ContentReportRepository;
 use App\Application\Moderation\UseCases\ModerateContent\ModerateContentService;
 use App\Domain\Moderation\Enums\ReportStatus;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -101,7 +102,7 @@ final class ContentReportController extends Controller
             $action();
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

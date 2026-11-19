@@ -9,6 +9,7 @@ use App\Application\Comments\CommentTreeReader;
 use App\Application\Comments\Contracts\CommentManager as CommentManagerContract;
 use App\Application\Comments\Contracts\CommentReader;
 use App\Application\Comments\Contracts\CommentSideEffectDispatcher;
+use App\Application\Content\Contracts\ImageContentGenerator;
 use App\Application\Content\Contracts\LikeNotificationCooldownRepository;
 use App\Application\Content\Contracts\LikeNotificationDispatcher;
 use App\Application\Content\Contracts\PageRepository;
@@ -30,6 +31,7 @@ use App\Application\Content\UseCases\ManagePostInteractions\RecordPostViewUseCas
 use App\Application\Content\UseCases\ManagePostInteractions\ResolveLikedPostLocationsService;
 use App\Application\Content\UseCases\ManagePostInteractions\ResolveLikedPostLocationsUseCase;
 use App\Infrastructure\Comments\QueueCommentSideEffectDispatcher;
+use App\Infrastructure\Content\AI\GeminiImageContentGenerator;
 use App\Infrastructure\Content\Jobs\QueueLikeNotificationDispatcher;
 use App\Infrastructure\Content\Persistence\QueryBuilderLikeNotificationCooldownRepository;
 use App\Infrastructure\Content\Persistence\QueryBuilderPageRepository;
@@ -47,9 +49,15 @@ final class ContentServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Image content generation
+        $this->app->bind(ImageContentGenerator::class, GeminiImageContentGenerator::class);
+
+        // Comment management
         $this->app->bind(CommentSideEffectDispatcher::class, QueueCommentSideEffectDispatcher::class);
         $this->app->bind(CommentManagerContract::class, CommentManager::class);
         $this->app->bind(CommentReader::class, CommentTreeReader::class);
+
+        // Content repositories
         $this->app->bind(TaxonomyRepository::class, QueryBuilderTaxonomyRepository::class);
         $this->app->bind(PostRepository::class, QueryBuilderPostRepository::class);
         $this->app->bind(PostInteractionRepository::class, QueryBuilderPostInteractionRepository::class);
@@ -58,6 +66,8 @@ final class ContentServiceProvider extends ServiceProvider
         $this->app->bind(LikeNotificationDispatcher::class, QueueLikeNotificationDispatcher::class);
         $this->app->bind(PublicPostCatalog::class, QueryBuilderPublicPostCatalog::class);
         $this->app->bind(PageRepository::class, QueryBuilderPageRepository::class);
+
+        // Use cases
         $this->app->bind(GetHomeContentUseCase::class, GetHomeContentService::class);
         $this->app->bind(PostEngagementUseCase::class, PostEngagementService::class);
         $this->app->bind(PostInteractionsUseCase::class, PostInteractionsService::class);
