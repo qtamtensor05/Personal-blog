@@ -225,7 +225,8 @@
                         }}</p>
                         <div class="le-post-grid">
                             @forelse (array_slice($publicPosts ?? [], 0, (int) ($latest['limit'] ?? 3)) as $post)
-                                <article>
+                                <article class="relative">
+                                    <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary" aria-label="{{ $post->title }}"></a>
                                     <img
                                         src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : $images.'/'.$fallbackCards[$loop->index % 3] }}"
                                         alt=""
@@ -235,25 +236,21 @@
                                             ? \Illuminate\Support\Carbon::parse($post->publishedAt)->format('d.m.Y')
                                             : ''
                                     }}</time>
-                                    <h2>
-                                        <a
-                                            href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                                            >{{ $post->title }}</a
-                                        >
-                                    </h2>
+                                    <h2>{{ $post->title }}</h2>
                                     <p>{{
                                         $post->excerpt ??
                                             $post->content->plainText(150)
                                     }}</p>
-                                    <a
-                                        class="le-read-more"
-                                        href="{{ route('public.post', [$blog->slug, $post->slug]) }}"
-                                        >{{ __('public.read_post') }}
+                                    <div class="text-secondary mt-3 flex items-center gap-4 text-sm">
+                                        <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.likes_count') }}: {{ $engagement[$post->id]->likes }}"><i class="fa-regular fa-heart" aria-hidden="true"></i>{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
+                                        <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.views_count') }}: {{ $engagement[$post->id]->views }}"><i class="fa-regular fa-eye" aria-hidden="true"></i>{{ $engagement[$post->id]->views }}</span>
+                                    </div>
+                                    <span class="le-read-more">{{ __('public.read_post') }}
                                         <i
                                             class="fa-solid fa-arrow-right-long"
                                             aria-hidden="true"
                                         ></i
-                                    ></a>
+                                    ></span>
                                 </article>
                             @empty
                                 <p class="le-kicker">{{ __('public.no_posts') }}</p>
@@ -311,11 +308,11 @@
 
                 <aside class="le-sidebar">
                     <section>
-                        <img
-                            class="le-avatar"
-                            src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}"
-                            alt=""
-                        />
+                            <img
+                                class="le-avatar"
+                                src="{{ !empty($profile['mediaId']) && isset($mediaUrls[$profile['mediaId']]) ? $mediaUrls[$profile['mediaId']] : $images.'/avatar.svg' }}"
+                                alt=""
+                            />
                         <h2>
                             {{
                                 $profile['title'] ??

@@ -29,6 +29,22 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
         ]);
     }
 
+    public function createComment(int $blogId, int $postId, int $commentId, int $reporterId, string $reason): int
+    {
+        $now = now();
+
+        return (int) DB::table('content_reports')->insertGetId([
+            'blog_id' => $blogId, 'target_type' => 'COMMENT', 'post_id' => $postId, 'comment_id' => $commentId,
+            'reporter_user_id' => $reporterId, 'reason' => $reason, 'status' => ReportStatus::Open->value,
+            'created_at' => $now, 'updated_at' => $now,
+        ]);
+    }
+
+    public function hasPendingCommentReport(int $reporterId, int $commentId): bool
+    {
+        return DB::table('content_reports')->where('reporter_user_id', $reporterId)->where('comment_id', $commentId)->whereIn('status', self::PENDING)->exists();
+    }
+
     public function hasPendingReport(int $reporterId, int $blogId, ?int $postId): bool
     {
         return DB::table('content_reports')
@@ -121,6 +137,15 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
             ->update(['status' => 'ARCHIVED', 'updated_at' => now()]);
     }
 
+    public function hideComment(int $commentId): void
+    {
+        DB::table('comments')->where('id', $commentId)->update([
+            'status' => 'ADMIN_HIDDEN',
+            'hidden_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     private function joined(): Builder
     {
         return DB::table('content_reports as r')
@@ -136,7 +161,10 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
                 'p.title as post_title',
                 'p.slug as post_slug',
                 'p.status as post_status',
+                'r.comment_id',
+                'c.body as comment_body',
+                'c.status as comment_status',
                 'u.email as reporter_email',
-            ]);
+            ])->leftJoin('comments as c', 'c.id', '=', 'r.comment_id');
     }
 }

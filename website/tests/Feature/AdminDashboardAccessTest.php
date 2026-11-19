@@ -34,17 +34,17 @@ it('shows the admin console link and dashboard to an authorized admin', function
     $this->actingAs(adminDashboardTestUser($adminId))
         ->get(route('profile.edit'))
         ->assertOk()
-        ->assertSee('Admin Console');
+        ->assertSee(__('ui.admin_console'));
 
     $this->actingAs(adminDashboardTestUser($adminId))
         ->get(route('admin.dashboard'))
         ->assertOk()
-        ->assertSee('Admin Console');
+        ->assertSee(__('admin.console'));
 
     $this->actingAs(adminDashboardTestUser($adminId))
         ->get(route('admin.templates.index'))
         ->assertOk()
-        ->assertSee('Tạp chí tối giản');
+        ->assertSee('Lifestyle Editorial');
 });
 
 it('hides and forbids the admin console for a normal user', function (): void {
@@ -70,7 +70,7 @@ it('hides and forbids the admin console for a normal user', function (): void {
     $this->actingAs(adminDashboardTestUser($userId))
         ->get(route('profile.edit'))
         ->assertOk()
-        ->assertDontSee('Admin Console');
+        ->assertDontSee(__('ui.admin_console'));
 
     $this->actingAs(adminDashboardTestUser($userId))
         ->get(route('admin.dashboard'))

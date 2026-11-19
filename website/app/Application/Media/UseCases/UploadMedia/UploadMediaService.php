@@ -12,6 +12,7 @@ use App\Application\Media\Exceptions\MediaStorageFailed;
 use App\Application\Media\Services\MediaAccessPolicy;
 use App\Domain\Media\Enums\MediaScope;
 use DomainException;
+use Illuminate\Database\QueryException;
 
 final readonly class UploadMediaService implements UploadMediaUseCase
 {
@@ -42,6 +43,23 @@ final readonly class UploadMediaService implements UploadMediaUseCase
 
         $this->policy->authorize($actorId, $scope, $blogId);
 
+        $contentHash = hash_file('sha256', $localPath);
+
+        if ($contentHash === false) {
+            throw new MediaStorageFailed('Uploaded file could not be read.');
+        }
+
+        $existing = $this->media->findReadyByContentHash(
+            $scope,
+            $blogId,
+            $actorId,
+            $contentHash,
+        );
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
         if ($blogId !== null) {
             $quota = $this->media->quotaBytesForBlog($blogId) ?? $this->defaultBlogQuotaBytes;
 
@@ -50,15 +68,52 @@ final readonly class UploadMediaService implements UploadMediaUseCase
             }
         }
 
-        $id = $this->media->createPending(
-            $scope,
-            $blogId,
-            $actorId,
-            $this->storage->cloudName(),
-            $originalName,
-            $mimeType,
-            $altText,
-        );
+        try {
+            $id = $this->media->createPending(
+                $scope,
+                $blogId,
+                $actorId,
+                $this->storage->cloudName(),
+                $originalName,
+                $mimeType,
+                $altText,
+                $contentHash,
+            );
+        } catch (QueryException $exception) {
+            if (! $this->isUniqueViolation($exception)) {
+                throw $exception;
+            }
+
+            // A concurrent request may have claimed this hash but not finished storage yet.
+            for ($attempt = 0; $attempt < 600; $attempt++) {
+                usleep(100_000);
+                $existing = $this->media->findReadyByContentHash(
+                    $scope,
+                    $blogId,
+                    $actorId,
+                    $contentHash,
+                );
+
+                if ($existing !== null) {
+                    return $existing;
+                }
+            }
+
+            try {
+                $id = $this->media->createPending(
+                    $scope,
+                    $blogId,
+                    $actorId,
+                    $this->storage->cloudName(),
+                    $originalName,
+                    $mimeType,
+                    $altText,
+                    $contentHash,
+                );
+            } catch (QueryException) {
+                throw $exception;
+            }
+        }
 
         try {
             $stored = $this->storage->upload(
@@ -87,5 +142,11 @@ final readonly class UploadMediaService implements UploadMediaUseCase
         };
 
         return trim($this->folderPrefix.'/'.$suffix, '/');
+    }
+
+    private function isUniqueViolation(QueryException $exception): bool
+    {
+        return (int) ($exception->errorInfo[1] ?? 0) === 1062
+            || str_contains(strtolower($exception->getMessage()), 'unique constraint failed');
     }
 }

@@ -39,6 +39,7 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
         string $originalName,
         ?string $mimeType,
         ?string $altText,
+        string $contentHash,
     ): int {
         $now = now();
 
@@ -50,10 +51,29 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             'original_name' => mb_substr($originalName, 0, 255),
             'mime_type' => $mimeType,
             'alt_text' => $altText,
+            'content_hash' => $contentHash,
+            'deduplication_scope' => $this->deduplicationScope($scope, $blogId, $uploadedBy),
             'status' => MediaStatus::Uploading->value,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
+    }
+
+    public function findReadyByContentHash(
+        MediaScope $scope,
+        ?int $blogId,
+        int $uploadedBy,
+        string $contentHash,
+    ): ?MediaAssetRecord {
+        $row = DB::table(self::TABLE)
+            ->where('deduplication_scope', $this->deduplicationScope($scope, $blogId, $uploadedBy))
+            ->where('content_hash', $contentHash)
+            ->where('status', MediaStatus::Ready->value)
+            ->whereNull('deleted_at')
+            ->orderBy('id')
+            ->first(['id']);
+
+        return $row === null ? null : $this->find((int) $row->id);
     }
 
     public function markReady(int $id, StoredMedia $stored): void
@@ -78,7 +98,14 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
 
     public function markFailed(int $id): void
     {
-        $this->setStatus($id, MediaStatus::Failed);
+        DB::table(self::TABLE)
+            ->where('id', $id)
+            ->update([
+                'status' => MediaStatus::Failed->value,
+                'content_hash' => null,
+                'deduplication_scope' => null,
+                'updated_at' => now(),
+            ]);
     }
 
     public function find(int $id): ?MediaAssetRecord
@@ -188,6 +215,8 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
             ->where('id', $id)
             ->update([
                 'status' => MediaStatus::Deleted->value,
+                'content_hash' => null,
+                'deduplication_scope' => null,
                 'deleted_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -251,5 +280,14 @@ final class QueryBuilderMediaAssetRepository implements MediaAssetRepository
         DB::table(self::TABLE)
             ->where('id', $id)
             ->update(['status' => $status->value, 'updated_at' => now()]);
+    }
+
+    private function deduplicationScope(MediaScope $scope, ?int $blogId, int $actorId): string
+    {
+        return match ($scope) {
+            MediaScope::Blog => "BLOG:{$blogId}",
+            MediaScope::User => "USER:{$actorId}",
+            MediaScope::Platform => 'PLATFORM',
+        };
     }
 }

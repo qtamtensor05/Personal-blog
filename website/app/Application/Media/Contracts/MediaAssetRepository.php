@@ -21,7 +21,16 @@ interface MediaAssetRepository
         string $originalName,
         ?string $mimeType,
         ?string $altText,
+        string $contentHash,
     ): int;
+
+    /** Find a reusable READY asset with the same content in the exact ownership scope. */
+    public function findReadyByContentHash(
+        MediaScope $scope,
+        ?int $blogId,
+        int $uploadedBy,
+        string $contentHash,
+    ): ?MediaAssetRecord;
 
     public function markReady(int $id, StoredMedia $stored): void;
 

@@ -224,9 +224,9 @@ function initPostEditor(root) {
                 ? {
                       metadata: {
                           slug: root.querySelector('[data-publish-slug-source]').value || null,
-                          seo_title: root.querySelector('[name="seo_title_editor"]').value || null,
+                          seo_title: root.querySelector('[name="seo_title_editor]').value || null,
                           seo_description:
-                              root.querySelector('[name="seo_description_editor"]').value || null,
+                              root.querySelector('[name="seo_description_editor]').value || null,
                       },
                   }
                 : {}),
@@ -414,7 +414,12 @@ function initPostEditor(root) {
         form.append('file', file);
         form.append('scope', 'BLOG');
         form.append('blog_id', config.blogId);
-        coverStatus.textContent = translate('Uploading cover image…');
+
+        // Keep the existing status styling while using localized labels when available.
+        coverStatus.classList.remove('text-red-500');
+        coverStatus.textContent =
+            coverStatus.dataset.uploadingLabel || translate('Uploading cover image…');
+
         try {
             const response = await fetch(config.mediaUrl, {
                 method: 'POST',
@@ -435,7 +440,10 @@ function initPostEditor(root) {
             image.alt = '';
             image.className = 'mb-2 aspect-video w-full rounded-md object-cover';
             preview.replaceChildren(image);
-            coverStatus.textContent = translate('Image uploaded. Select “Save details” to apply.');
+
+            coverStatus.textContent =
+                coverStatus.dataset.uploadedLabel ||
+                translate('Image uploaded. Select “Save details” to apply.');
         } catch (error) {
             coverStatus.textContent = error.message;
             coverStatus.classList.add('text-red-500');

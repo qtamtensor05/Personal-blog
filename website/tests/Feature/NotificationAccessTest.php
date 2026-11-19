@@ -82,7 +82,7 @@ it('paginates only the signed-in users notifications', function (): void {
     $this->actingAs(notificationTestUser($ids[0]))
         ->get(route('notifications.index', ['page' => 2]))
         ->assertOk()
-        ->assertSee('Page 2 of 2')
+        ->assertSee(__('notifications.page_of', ['page' => 2, 'total' => 2]))
         ->assertSee('Own notification 1')
         ->assertDontSee('Other users secret');
 });

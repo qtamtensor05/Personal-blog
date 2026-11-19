@@ -14,6 +14,7 @@ final readonly class NotificationRecord
         public array $data,
         public ?string $readAt,
         public string $createdAt,
+        public ?string $actorAvatarUrl = null,
     ) {}
 
     public function isUnread(): bool
