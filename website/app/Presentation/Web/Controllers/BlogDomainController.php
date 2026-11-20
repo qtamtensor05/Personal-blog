@@ -8,6 +8,7 @@ use App\Application\BlogDesign\Services\OwnedBlogGuard;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Domains\Contracts\BlogDomainRepository;
 use App\Application\Domains\UseCases\ManageDomains\ManageDomainsService;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ final class BlogDomainController extends Controller
         return $this->run(
             $blog,
             fn () => $service->add((int) $request->user()->id, $blog, $data['hostname']),
-            'Domain added. Create the DNS record below, then verify.',
+            __('Domain added. Create the DNS record below, then verify.'),
         );
     }
 
@@ -65,17 +66,17 @@ final class BlogDomainController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()]);
+            return back()->withErrors(['general' => LocalizedError::message($exception->getMessage())]);
         }
 
         return $ok
             ? redirect()
                 ->route('blogs.domains.index', $blog)
-                ->with('status', 'Domain verified. You can now activate it.')
+                ->with('status', __('Domain verified. You can now activate it.'))
             : redirect()
                 ->route('blogs.domains.index', $blog)
                 ->withErrors([
-                    'general' => 'The TXT record was not found yet. DNS changes can take a while; try again later.',
+                    'general' => __('The TXT record was not found yet. DNS changes can take a while; try again later.'),
                 ]);
     }
 
@@ -88,7 +89,7 @@ final class BlogDomainController extends Controller
         return $this->run(
             $blog,
             fn () => $service->activate((int) $request->user()->id, $blog, $domain),
-            'Domain activated.',
+            __('Domain activated.'),
         );
     }
 
@@ -101,7 +102,7 @@ final class BlogDomainController extends Controller
         return $this->run(
             $blog,
             fn () => $service->disable((int) $request->user()->id, $blog, $domain),
-            'Domain disabled.',
+            __('Domain disabled.'),
         );
     }
 
@@ -114,7 +115,7 @@ final class BlogDomainController extends Controller
         return $this->run(
             $blog,
             fn () => $service->remove((int) $request->user()->id, $blog, $domain),
-            'Domain removed.',
+            __('Domain removed.'),
         );
     }
 
@@ -126,7 +127,7 @@ final class BlogDomainController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

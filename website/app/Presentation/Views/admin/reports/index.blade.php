@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', __('admin.reports_title'))
+@section ('title', __('admin.reports_title') . ' — ' . __('admin.console'))
 
 @section ('content')
     <div class="container-custom section-spacing">
@@ -23,7 +23,7 @@
                             value="{{ __('content_status.' . $status) }}"
                             @selected (($filters['status'] ?? null) === $status)
                         >
-                            {{ __('content_status.' . $status) }}
+                            {{ __('admin.status_' . strtolower($status)) }}
                         </option>
                     @endforeach
                 </select>
@@ -42,6 +42,7 @@
                             <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.reason_col') }}</th>
                             <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.status') }}</th>
                             <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.reported') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.action') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-default divide-y">
@@ -53,13 +54,18 @@
                                         class="text-primary hover:text-accent-primary font-medium"
                                     >
                                         {{
-                                            $report->target_type === 'POST'
+                                            $report->target_type === 'COMMENT'
+                                                ? __('admin.comment_label', ['id' => $report->comment_id])
+                                                : ($report->target_type === 'POST'
                                                 ? $report->post_title
-                                                : $report->blog_name
+                                                : $report->blog_name)
                                         }}
                                     </a>
                                     <div class="text-secondary text-xs">
-                                        {{ $report->target_type }} · {{ $report->blog_name }}
+                                        {{ __('admin.target_' . strtolower($report->target_type)) }} · {{ $report->blog_name }}
+                                        @if ($report->target_type === 'COMMENT')
+                                            <div class="text-secondary mt-1">{{ \Illuminate\Support\Str::limit($report->comment_body ?? __('admin.comment_deleted'), 120) }}</div>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="text-secondary max-w-md px-4 py-3">
@@ -73,7 +79,7 @@
                                 <td class="px-4 py-3">
                                     <x-badge
                                         :variant="in_array($report->status, ['OPEN', 'REVIEWING'], true) ? 'highlight' : 'default'"
-                                        >{{ __('content_status.' . $report->status) }}</x-badge
+                                        >{{ __('admin.status_' . strtolower($report->status)) }}</x-badge
                                     >
                                 </td>
                                 <td class="text-secondary px-4 py-3">
@@ -82,6 +88,11 @@
                                             $report->created_at,
                                         )->diffForHumans()
                                     }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <a href="{{ route('admin.reports.show', $report->id) }}" class="btn-secondary inline-flex rounded-md px-3 py-2 text-xs font-semibold">
+                                        {{ __('admin.view_process') }}
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
@@ -102,7 +113,7 @@
                     @else
                         <span></span>
                     @endif
-                    <span class="text-secondary">Page {{ $page }} of {{ $lastPage }}</span>
+                            <span class="text-secondary">{{ __('admin.page_of', ['page' => $page, 'last' => $lastPage]) }}</span>
                     @if ($page < $lastPage)
                         <a
                             href="{{ route('admin.reports.index', array_merge($filters, ['page' => $page + 1])) }}"

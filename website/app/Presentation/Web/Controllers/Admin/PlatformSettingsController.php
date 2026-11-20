@@ -8,6 +8,7 @@ use App\Application\PlatformSettings\DTOs\PlatformSettingsData;
 use App\Application\PlatformSettings\UseCases\UpdatePlatformSettings\UpdatePlatformSettingsService;
 use App\Application\PlatformSettings\UseCases\ViewPlatformSettings\ViewPlatformSettingsService;
 use App\Presentation\Web\Requests\Admin\UpdatePlatformSettingsRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
@@ -45,12 +46,12 @@ final class PlatformSettingsController extends Controller
             );
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
         return redirect()
             ->route('admin.settings.edit')
-            ->with('status', 'Platform settings updated.');
+            ->with('status', __('Platform settings updated.'));
     }
 }

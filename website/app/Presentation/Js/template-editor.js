@@ -1,3 +1,4 @@
+import { translate } from './interface-messages';
 import { Editor, Node } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -73,7 +74,7 @@ function initTemplateEditor(root) {
         editorProps: {
             attributes: {
                 class: 'template-editor min-h-[32rem] focus:outline-none',
-                'aria-label': 'Template content editor',
+                'aria-label': translate('Template content editor'),
             },
         },
     });
@@ -123,7 +124,7 @@ function initTemplateEditor(root) {
         const form = new FormData();
         form.append('file', file);
         form.append('scope', 'PLATFORM');
-        setStatus('Uploading image to Cloudinary…');
+        setStatus(translate('Uploading image to Cloudinary…'));
         try {
             const response = await fetch(config.mediaUrl, {
                 method: 'POST',
@@ -131,10 +132,10 @@ function initTemplateEditor(root) {
                 body: form,
             });
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(body.message || 'Image upload failed.');
+            if (!response.ok) throw new Error(body.message || translate('Image upload failed.'));
             const alt = await window.requestModalInput(
-                'Image description',
-                'Describe the image (alt text)',
+                translate('Image description'),
+                translate('Describe the image (alt text)'),
                 '',
             );
             editor
@@ -142,7 +143,7 @@ function initTemplateEditor(root) {
                 .focus()
                 .setImage({ src: body.data.url, alt, mediaId: body.data.id })
                 .run();
-            setStatus('Image uploaded.');
+            setStatus(translate('Image uploaded.'));
         } catch (error) {
             setStatus(error.message, true);
             window.showErrorModal?.(error.message);
@@ -152,7 +153,7 @@ function initTemplateEditor(root) {
     root.querySelector('[data-template-form]').addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        setStatus('Saving draft…');
+        setStatus(translate('Saving draft…'));
         const data = new FormData(form);
         const payload = {
             name: data.get('name'),
@@ -192,7 +193,7 @@ function initTemplateEditor(root) {
                 body: JSON.stringify(payload),
             });
             const body = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(body.message || 'The template could not be saved.');
+            if (!response.ok) throw new Error(body.message || translate('The template could not be saved.'));
             window.location.href = config.successUrl;
         } catch (error) {
             setStatus(error.message, true);

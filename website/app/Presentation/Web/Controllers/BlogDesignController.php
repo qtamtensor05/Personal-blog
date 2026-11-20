@@ -14,6 +14,7 @@ use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Application\Templates\Contracts\TemplateRepository;
 use App\Application\Templates\Exceptions\TemplateNotFound;
 use App\Presentation\Web\Requests\SaveSlotContentRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,16 +70,16 @@ final class BlogDesignController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (TemplateNotFound) {
-            return back()->withErrors(['template_id' => 'This template is not available.']);
+            return back()->withErrors(['template_id' => __('This template is not available.')]);
         } catch (DomainException $exception) {
-            return back()->withErrors(['template_id' => $exception->getMessage()]);
+            return back()->withErrors(['template_id' => LocalizedError::message($exception->getMessage())]);
         }
 
         return redirect()
             ->route('blogs.design.edit', $blog)
             ->with(
                 'status',
-                'Template applied. Its fallback content is ready in your draft preview.',
+                __('Template applied. Its fallback content is ready in your draft preview.'),
             );
     }
 
@@ -99,7 +100,7 @@ final class BlogDesignController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
@@ -108,8 +109,8 @@ final class BlogDesignController extends Controller
             ->with(
                 'status',
                 $request->boolean('publish')
-                    ? ucfirst($region).' content saved and published.'
-                    : ucfirst($region).' content saved as draft.',
+                    ? __('Content saved and published.')
+                    : __('Content saved as draft.'),
             );
     }
 
@@ -124,11 +125,11 @@ final class BlogDesignController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()]);
+            return back()->withErrors(['general' => LocalizedError::message($exception->getMessage())]);
         }
 
         return redirect()
             ->route('blogs.design.edit', ['blog' => $blog, 'region' => $region])
-            ->with('status', ucfirst($region).' content published.');
+            ->with('status', __('Content published.'));
     }
 }

@@ -17,6 +17,6 @@ final class ResendVerificationEmailController extends Controller
     ): RedirectResponse {
         $resendVerificationEmail->execute($request->validated('email'));
 
-        return back()->with('status', 'If verification is required, an email will be sent.');
+        return back()->with('status', __('If verification is required, an email will be sent.'));
     }
 }

@@ -20,6 +20,7 @@ use App\Domain\Templates\ValueObjects\TemplateData;
 use App\Domain\Templates\ValueObjects\TemplateSectionConfig;
 use App\Presentation\Web\Requests\Admin\CreateTemplateRequest;
 use App\Presentation\Web\Requests\Admin\UpdateTemplateRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -62,9 +63,9 @@ final class TemplateController extends Controller
             );
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
             return $request->expectsJson()
-                ? $this->error($exception->getMessage(), 422)
+                ? $this->error(LocalizedError::message($exception->getMessage()), 422)
                 : back()
-                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                     ->withInput();
         }
 
@@ -72,7 +73,7 @@ final class TemplateController extends Controller
             ? new JsonResponse(['data' => ['id' => $id]], 201)
             : redirect()
                 ->route('admin.templates.edit', $id)
-                ->with('status', 'Template draft created.');
+                ->with('status', __('Template draft created.'));
     }
 
     public function edit(
@@ -136,12 +137,12 @@ final class TemplateController extends Controller
                 ),
             );
         } catch (TemplateNotFound) {
-            return $request->expectsJson() ? $this->error('Template not found.', 404) : abort(404);
+            return $request->expectsJson() ? $this->error(__('Template not found.'), 404) : abort(404);
         } catch (TemplateSlugTaken|InvalidArgumentException $exception) {
             return $request->expectsJson()
-                ? $this->error($exception->getMessage(), 422)
+                ? $this->error(LocalizedError::message($exception->getMessage()), 422)
                 : back()
-                    ->withErrors(['general' => $exception->getMessage()])
+                    ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                     ->withInput();
         }
 
@@ -149,7 +150,7 @@ final class TemplateController extends Controller
             ? new JsonResponse(null, 204)
             : redirect()
                 ->route('admin.templates.edit', $template)
-                ->with('status', 'Template draft saved.');
+                ->with('status', __('Template draft saved.'));
     }
 
     public function publish(
@@ -162,15 +163,15 @@ final class TemplateController extends Controller
         try {
             $status = TemplateStatus::from((string) $statusValue);
         } catch (\ValueError) {
-            return $this->error('Invalid status.', 422);
+            return $this->error(__('Invalid status.'), 422);
         }
 
         try {
             $publish->execute((int) $request->user()->id, $template, $status);
         } catch (TemplateNotFound) {
-            return $this->error('Template not found.', 404);
+            return $this->error(__('Template not found.'), 404);
         } catch (DomainException $exception) {
-            return $this->error($exception->getMessage(), 422);
+            return $this->error(LocalizedError::message($exception->getMessage()), 422);
         }
 
         return new JsonResponse(null, 204);
@@ -186,15 +187,15 @@ final class TemplateController extends Controller
         try {
             $status = TemplateStatus::from((string) $statusValue);
         } catch (\ValueError) {
-            return $this->error('Invalid status.', 422);
+            return $this->error(__('Invalid status.'), 422);
         }
 
         try {
             $change->execute((int) $request->user()->id, $template, $status);
         } catch (TemplateNotFound) {
-            return $this->error('Template not found.', 404);
+            return $this->error(__('Template not found.'), 404);
         } catch (DomainException $exception) {
-            return $this->error($exception->getMessage(), 422);
+            return $this->error(LocalizedError::message($exception->getMessage()), 422);
         }
 
         return new JsonResponse(null, 204);
@@ -208,7 +209,7 @@ final class TemplateController extends Controller
         try {
             $delete->execute((int) $request->user()->id, $template);
         } catch (TemplateNotFound) {
-            return $this->error('Template not found.', 404);
+            return $this->error(__('Template not found.'), 404);
         }
 
         return new JsonResponse(null, 204);
@@ -217,7 +218,7 @@ final class TemplateController extends Controller
     public function restore(int $template, TemplateRepository $templates): JsonResponse
     {
         if (collect($templates->allDeleted())->firstWhere('id', $template) === null) {
-            return $this->error('Template not found.', 404);
+            return $this->error(__('Template not found.'), 404);
         }
 
         $templates->restore($template);
@@ -230,7 +231,7 @@ final class TemplateController extends Controller
         $deleted = collect($templates->allDeleted())->firstWhere('id', $template);
 
         if ($deleted === null) {
-            return $this->error('Deleted template not found.', 404);
+            return $this->error(__('Deleted template not found.'), 404);
         }
 
         $templates->forceDelete($template);
@@ -323,7 +324,7 @@ final class TemplateController extends Controller
         );
 
         if ($sections === []) {
-            throw new InvalidArgumentException('Select at least one supported component.');
+            throw new InvalidArgumentException(__('Select at least one supported component.'));
         }
 
         return new TemplateData($sections, $starter->designTokens, $starter->postLayout, $layout);

@@ -8,6 +8,7 @@ use App\Application\BlogDesign\Services\OwnedBlogGuard;
 use App\Application\Blogs\Exceptions\BlogNotFound;
 use App\Application\Content\Contracts\TaxonomyRepository;
 use App\Application\Content\UseCases\ManageTaxonomy\ManageTaxonomyService;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,7 +55,7 @@ final class TaxonomyController extends Controller
                 $data['description'] ?? null,
                 isset($data['parent_id']) ? (int) $data['parent_id'] : null,
             ),
-            'Category created.',
+            __('Category created.'),
         );
     }
 
@@ -81,7 +82,7 @@ final class TaxonomyController extends Controller
                 isset($data['parent_id']) ? (int) $data['parent_id'] : null,
                 (bool) $data['is_active'],
             ),
-            'Category updated.',
+            __('Category updated.'),
         );
     }
 
@@ -94,7 +95,7 @@ final class TaxonomyController extends Controller
         return $this->run(
             $blog,
             fn () => $service->deleteCategory((int) $request->user()->id, $blog, $category),
-            'Category deleted.',
+            __('Category deleted.'),
         );
     }
 
@@ -119,7 +120,7 @@ final class TaxonomyController extends Controller
                 $data['name'],
                 $data['slug'],
             ),
-            'Tag created.',
+            __('Tag created.'),
         );
     }
 
@@ -146,7 +147,7 @@ final class TaxonomyController extends Controller
                 $data['name'],
                 $data['slug'],
             ),
-            'Tag updated.',
+            __('Tag updated.'),
         );
     }
 
@@ -159,7 +160,7 @@ final class TaxonomyController extends Controller
         return $this->run(
             $blog,
             fn () => $service->deleteTag((int) $request->user()->id, $blog, $tag),
-            'Tag deleted.',
+            __('Tag deleted.'),
         );
     }
 
@@ -182,12 +183,12 @@ final class TaxonomyController extends Controller
     private function validationMessages(): array
     {
         return [
-            'name.required' => 'Nhập tên để người đọc nhận biết chuyên mục hoặc thẻ này.',
-            'name.max' => 'Tên tối đa 160 ký tự. Hãy rút gọn tên rồi thử lại.',
-            'slug.required' => 'Slug là phần cuối của đường dẫn. Hãy nhập slug hoặc dùng slug tự tạo từ tên.',
-            'slug.regex' => 'Slug chỉ gồm chữ thường không dấu, số và dấu gạch ngang; ví dụ: mon-chay.',
-            'slug.max' => 'Slug tối đa 160 ký tự. Hãy rút gọn slug rồi thử lại.',
-            'parent_id.integer' => 'Chuyên mục cha không hợp lệ. Hãy chọn lại từ danh sách.',
+            'name.required' => __('Enter a name so readers can identify this category or tag.'),
+            'name.max' => __('The name may not exceed 160 characters. Shorten it and try again.'),
+            'slug.required' => __('The slug is the last part of the URL. Enter one or use the slug generated from the name.'),
+            'slug.regex' => __('The slug may only contain lowercase unaccented letters, numbers and hyphens; for example: vegetarian-food.'),
+            'slug.max' => __('The slug may not exceed 160 characters. Shorten it and try again.'),
+            'parent_id.integer' => __('The parent category is invalid. Please select it again from the list.'),
         ];
     }
 
@@ -199,7 +200,7 @@ final class TaxonomyController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 

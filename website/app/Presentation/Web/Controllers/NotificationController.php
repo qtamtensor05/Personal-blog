@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Controllers;
 
+use App\Application\Content\UseCases\ManagePostInteractions\ResolveLikedPostLocationsUseCase;
 use App\Application\Notifications\Contracts\NotificationRepository;
 use App\Application\Notifications\UseCases\ListNotificationsService;
 use App\Application\Notifications\UseCases\MarkNotificationReadService;
@@ -19,13 +20,15 @@ final class NotificationController extends Controller
         Request $request,
         ListNotificationsService $service,
         NotificationRepository $repository,
+        ResolveLikedPostLocationsUseCase $links,
     ): View {
         $data = $request->validate(['page' => ['nullable', 'integer', 'min:1']]);
         $userId = (int) $request->user()->id;
         $notifications = $service->execute($userId, (int) ($data['page'] ?? 1));
+        $notificationLocations = $links->execute($notifications->items, $userId);
         $notificationUnreadCount = $repository->unreadCount($userId);
 
-        return view('notifications.index', compact('notifications', 'notificationUnreadCount'));
+        return view('notifications.index', compact('notifications', 'notificationLocations', 'notificationUnreadCount'));
     }
 
     public function read(
@@ -48,7 +51,7 @@ final class NotificationController extends Controller
     ): RedirectResponse {
         $service->all((int) $request->user()->id);
 
-        return back()->with('status', 'All notifications marked as read.');
+        return back()->with('status', __('All notifications marked as read.'));
     }
 
     public function destroy(
@@ -61,6 +64,6 @@ final class NotificationController extends Controller
             404,
         );
 
-        return back()->with('status', 'Notification deleted.');
+        return back()->with('status', __('Notification deleted.'));
     }
 }

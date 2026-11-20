@@ -12,6 +12,7 @@ use App\Application\Profile\UseCases\UpdateProfileNameService;
 use App\Application\Profile\UseCases\ViewProfileService;
 use App\Domain\Media\Enums\MediaScope;
 use App\Presentation\Web\Requests\UpdateProfileRequest;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ final class ProfileController extends Controller
                 $passwords->assertCurrentPassword($userId, (string) $data['current_password']);
             } catch (DomainException $exception) {
                 throw ValidationException::withMessages([
-                    'current_password' => $exception->getMessage(),
+                    'current_password' => LocalizedError::message($exception->getMessage()),
                 ]);
             }
         }
@@ -65,7 +66,7 @@ final class ProfileController extends Controller
                 $avatars->execute($userId, $asset);
             } catch (MediaStorageFailed) {
                 throw ValidationException::withMessages([
-                    'avatar' => 'The profile image could not be uploaded. Check the media storage configuration.',
+                    'avatar' => __('The profile image could not be uploaded. Check the media storage configuration.'),
                 ]);
             }
         } elseif ((bool) $data['remove_avatar']) {
@@ -86,9 +87,9 @@ final class ProfileController extends Controller
 
             return redirect()
                 ->route('login')
-                ->with('status', 'Profile and password updated. Please sign in again.');
+                ->with('status', __('Profile and password updated. Please sign in again.'));
         }
 
-        return back()->with('status', 'Profile updated.');
+        return back()->with('status', __('Profile updated.'));
     }
 }

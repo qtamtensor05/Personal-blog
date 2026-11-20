@@ -352,7 +352,7 @@
                 }
 
                 if (sections.length === 0) {
-                    showFormError('Add at least one section before saving the template.');
+                    showFormError(@js (__('Add at least one section before saving the template.')));
                     return;
                 }
 
@@ -389,7 +389,7 @@
                 } else {
                     const err = await r.json().catch(() => ({}));
                     showFormError(
-                        err.message || 'The template could not be saved. Check the form and try again.',
+                        err.message || @js (__('The template could not be saved. Check the form and try again.')),
                     );
                 }
             });

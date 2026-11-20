@@ -12,6 +12,7 @@ use App\Application\Media\Contracts\MediaAssetRepository;
 use App\Domain\Content\Enums\PostStatus;
 use App\Domain\Content\ValueObjects\PostDraft;
 use App\Domain\Content\ValueObjects\TiptapDocument;
+use App\Presentation\Web\Support\LocalizedError;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -61,7 +62,7 @@ final class PageController extends Controller
             abort(404);
         } catch (DomainException|InvalidArgumentException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
@@ -115,9 +116,9 @@ final class PageController extends Controller
                 new PostDraft($data['title'], null, TiptapDocument::fromArray($data['content'])),
             );
         } catch (BlogNotFound) {
-            return new JsonResponse(['message' => 'Not found.'], 404);
+            return new JsonResponse(['message' => __('Not found.')], 404);
         } catch (DomainException|InvalidArgumentException $exception) {
-            return new JsonResponse(['message' => $exception->getMessage()], 422);
+            return new JsonResponse(['message' => LocalizedError::message($exception->getMessage())], 422);
         }
 
         return new JsonResponse(['saved_at' => now()->toAtomString()]);
@@ -146,7 +147,7 @@ final class PageController extends Controller
                 $data['seo_title'] ?? null,
                 $data['seo_description'] ?? null,
             ),
-            'Page details saved.',
+            __('Page details saved.'),
         );
     }
 
@@ -160,7 +161,7 @@ final class PageController extends Controller
             $blog,
             $page,
             fn () => $service->publish((int) $request->user()->id, $blog, $page),
-            'Page published.',
+            __('Page published.'),
         );
     }
 
@@ -181,7 +182,7 @@ final class PageController extends Controller
                 $page,
                 PostStatus::from($data['status']),
             ),
-            'Page status updated.',
+            __('Page status updated.'),
         );
     }
 
@@ -196,10 +197,10 @@ final class PageController extends Controller
         } catch (BlogNotFound) {
             abort(404);
         } catch (DomainException $exception) {
-            return back()->withErrors(['general' => $exception->getMessage()]);
+            return back()->withErrors(['general' => LocalizedError::message($exception->getMessage())]);
         }
 
-        return redirect()->route('blogs.pages.index', $blog)->with('status', 'Page deleted.');
+        return redirect()->route('blogs.pages.index', $blog)->with('status', __('Page deleted.'));
     }
 
     private function run(int $blog, int $page, callable $action, string $message): RedirectResponse
@@ -210,7 +211,7 @@ final class PageController extends Controller
             abort(404);
         } catch (DomainException $exception) {
             return back()
-                ->withErrors(['general' => $exception->getMessage()])
+                ->withErrors(['general' => LocalizedError::message($exception->getMessage())])
                 ->withInput();
         }
 
