@@ -7,6 +7,20 @@ use Tests\TestCase;
 
 uses(TestCase::class);
 
+beforeEach(function (): void {
+    // This test owns a minimal schema, independent of the migrated CI database.
+    config()->set('database.connections.maintenance_notification_test', [
+        'driver' => 'sqlite',
+        'database' => ':memory:',
+        'prefix' => '',
+    ]);
+    DB::setDefaultConnection('maintenance_notification_test');
+});
+
+afterEach(function (): void {
+    DB::purge('maintenance_notification_test');
+});
+
 it('broadcasts once per user and keeps read state independent', function (): void {
     DB::statement('CREATE TABLE users (id INTEGER PRIMARY KEY, deleted_at TEXT NULL)');
     DB::statement('CREATE TABLE notifications (id TEXT PRIMARY KEY, recipient_user_id INTEGER, type TEXT, data TEXT, read_at TEXT NULL, created_at TEXT, updated_at TEXT)');
