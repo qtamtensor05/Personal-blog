@@ -153,9 +153,6 @@
                                 <span data-interaction-label>{{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}</span>
                             </button>
                         </form>
-                        <a href="{{ route('bookmarks.index') }}" class="border-default text-secondary hover:border-accent-primary hover:text-accent-primary inline-flex items-center rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary">
-                            {{ __('post.view_bookmarks') }}
-                        </a>
                     @else
                         <a href="{{ route('login') }}" class="text-sm text-rose-700 underline-offset-2 hover:underline">{{ __('post.sign_in_to_like') }}</a>
                         <a href="{{ route('login') }}" class="text-accent-primary text-sm underline-offset-2 hover:underline">{{ __('post.sign_in_to_bookmark') }}</a>
