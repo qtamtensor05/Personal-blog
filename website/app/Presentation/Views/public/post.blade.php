@@ -107,12 +107,17 @@
 
                 <div
                     class="mb-8 flex flex-wrap items-center gap-3"
+                    data-post-actions
+                    data-like-count="{{ $postEngagement->likes }}"
                     role="group"
                     aria-label="{{ __('post.actions') }}"
                 >
                     @auth
                         <form
                             method="POST"
+                            data-post-interaction="like"
+                            data-active-label="{{ __('post.unlike') }}"
+                            data-inactive-label="{{ __('post.like') }}"
                             action="{{ $interactionState->liked ? route('public.post.unlike', [$blog->slug, $post->slug]) : route('public.post.like', [$blog->slug, $post->slug]) }}"
                         >
                             @csrf
@@ -125,11 +130,14 @@
                                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="{{ $interactionState->liked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-8.3 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
                                 </svg>
-                                {{ $interactionState->liked ? __('post.unlike') : __('post.like') }}
+                                <span data-interaction-label>{{ $interactionState->liked ? __('post.unlike') : __('post.like') }}</span>
                             </button>
                         </form>
                         <form
                             method="POST"
+                            data-post-interaction="bookmark"
+                            data-active-label="{{ __('post.unbookmark') }}"
+                            data-inactive-label="{{ __('post.bookmark') }}"
                             action="{{ $interactionState->bookmarked ? route('public.post.unbookmark', [$blog->slug, $post->slug]) : route('public.post.bookmark', [$blog->slug, $post->slug]) }}"
                         >
                             @csrf
@@ -142,7 +150,7 @@
                                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="{{ $interactionState->bookmarked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />
                                 </svg>
-                                {{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}
+                                <span data-interaction-label>{{ $interactionState->bookmarked ? __('post.unbookmark') : __('post.bookmark') }}</span>
                             </button>
                         </form>
                         <a href="{{ route('bookmarks.index') }}" class="border-default text-secondary hover:border-accent-primary hover:text-accent-primary inline-flex items-center rounded-lg border px-4 py-2 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-primary">
@@ -169,7 +177,7 @@
                     @else
                         <span class="border-default bg-surface-secondary text-primary ml-auto inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold" aria-label="{{ __('post.likes_count') }}: {{ $postEngagement->likes }}">
                             <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" class="text-rose-600" aria-hidden="true"><path d="M12 21 3.5 12.4a5.5 5.5 0 0 1 7.8-7.8L12 5.3l.7-.7a5.5 5.5 0 0 1 7.8 7.8L12 21Z" /></svg>
-                            <span>{{ \App\Presentation\Formatting\CompactCount::format($postEngagement->likes) }}</span>
+                            <span data-public-like-count>{{ \App\Presentation\Formatting\CompactCount::format($postEngagement->likes) }}</span>
                         </span>
                     @endif
                 </div>

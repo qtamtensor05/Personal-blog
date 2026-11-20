@@ -1,3 +1,4 @@
+import './post-interactions.js';
 import DOMPurify from 'dompurify';
 
 const themeStorageKey = 'theme';
