@@ -17,11 +17,13 @@ Nền tảng blog cá nhân viết bằng Laravel 13, theo Clean Architecture d�
 ## Yêu cầu
 
 - PHP 8.3 trở lên và Composer
-- Node.js và npm
+- Node.js 22.12+ (hoặc 20.19+) và npm; Vite 8 không chạy với Node cũ hơn
 - Docker và Docker Compose (MySQL 8.4, Redis)
 - Tài khoản Cloudinary và một SMTP server (tùy chọn khi phát triển)
 
 Migration chỉ chạy trên MySQL 8.0.16 trở lên vì schema dùng CHECK constraint. SQLite và MariaDB không được hỗ trợ.
+
+PHP cần extension `pdo_mysql` và `redis` (ngoài các extension Composer kiểm tra). Kiểm tra bằng `php -m` và `composer check-platform-reqs` trong `website`.
 
 ## Cài đặt lần đầu
 
@@ -81,7 +83,7 @@ php artisan db:seed --class=AccessControlSeeder
 npm install
 ```
 
-Docker Compose ở môi trường local cho phép mật khẩu root MySQL rỗng. Không dùng cấu hình này cho production.
+Mở Docker Desktop và chờ engine sẵn sàng trước khi chạy. `--wait` chờ cả MySQL và Redis healthy; nếu lệnh thất bại, xử lý lỗi trước khi migrate. Nếu `storage:link` báo liên kết đã tồn tại thì có thể tiếp tục. Docker Compose ở môi trường local cho phép mật khẩu root MySQL rỗng. Không dùng cấu hình này cho production.
 
 ## Tạo Admin đầu tiên
 
@@ -95,8 +97,11 @@ Lệnh chỉ cấp role cho tài khoản đang ACTIVE và ghi lại vào `securi
 
 ## Chạy ứng dụng
 
+Các lệnh dưới đây đều chạy trong `website`. Mỗi lần chạy lại dự án, mở Docker Desktop rồi chạy:
+
 ```bash
-cd website
+docker compose up -d --wait mysql redis
+php artisan config:clear
 composer run dev
 ```
 

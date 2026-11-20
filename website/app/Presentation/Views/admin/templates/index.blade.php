@@ -80,7 +80,7 @@
                                     @endphp
                                     <x-badge
                                         :variant="$statusBadge"
-                                        >{{ $template->status->value }}</x-badge
+                                        >{{ __('content_status.' . $template->status->value) }}</x-badge
                                     >
                                 </td>
                                 <td class="text-secondary px-4 py-3 text-sm">

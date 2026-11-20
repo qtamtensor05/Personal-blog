@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\PlatformSettings\UseCases\UpdatePlatformSettings;
 
 use App\Application\Administration\Contracts\AuditLogger;
+use App\Application\Notifications\Contracts\MaintenanceNotificationPublisher;
 use App\Application\PlatformSettings\Contracts\PlatformSettingsRepository;
 use App\Application\PlatformSettings\DTOs\PlatformSettingsData;
 use App\Application\PlatformSettings\DTOs\PlatformSettingsRecord;
@@ -14,6 +15,7 @@ final readonly class UpdatePlatformSettingsService
     public function __construct(
         private PlatformSettingsRepository $settings,
         private AuditLogger $audit,
+        private MaintenanceNotificationPublisher $notifications,
     ) {}
 
     public function execute(
@@ -32,6 +34,13 @@ final readonly class UpdatePlatformSettingsService
             before: $before->data->toArray(),
             after: $updated->data->toArray(),
         );
+
+        if ($updated->data->maintenanceBannerEnabled && (
+            ! $before->data->maintenanceBannerEnabled ||
+            $before->data->maintenanceBannerMessage !== $updated->data->maintenanceBannerMessage
+        )) {
+            $this->notifications->publish($updated->data->maintenanceBannerMessage, $updated->revision);
+        }
 
         return $updated;
     }

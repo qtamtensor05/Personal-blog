@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Notifications\Contracts\MaintenanceNotificationPublisher;
 use App\Application\Notifications\Contracts\NotificationPublisher;
 use App\Application\Notifications\Contracts\NotificationRepository;
 use App\Application\Notifications\UseCases\PublishNotificationService;
+use App\Infrastructure\Notifications\QueryBuilderMaintenanceNotificationPublisher;
 use App\Infrastructure\Notifications\QueryBuilderNotificationRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -16,6 +18,7 @@ final class NotificationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(MaintenanceNotificationPublisher::class, QueryBuilderMaintenanceNotificationPublisher::class);
         $this->app->bind(NotificationRepository::class, QueryBuilderNotificationRepository::class);
         $this->app->bind(NotificationPublisher::class, PublishNotificationService::class);
     }

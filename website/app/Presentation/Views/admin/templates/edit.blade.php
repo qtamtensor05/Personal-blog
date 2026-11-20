@@ -160,8 +160,8 @@
                     @endphp
 
                     <div class="border-default border-t pt-6">
-                        <h2 class="text-primary mb-1 text-lg font-semibold">Sections</h2>
-                        <p class="text-secondary mb-4 text-sm">Add, remove, and reorder the blocks that make up the template.</p>
+                        <h2 class="text-primary mb-1 text-lg font-semibold">{{ __('templates.sections') }}</h2>
+                        <p class="text-secondary mb-4 text-sm">{{ __('templates.sections_help') }}</p>
                         <div id="sections" class="space-y-4">
                             @foreach ($sections as $s)
                                 <div class="card">
@@ -278,7 +278,7 @@
                     <h2 class="text-secondary text-sm font-semibold tracking-wide uppercase">
                         {{ __('templates.live_review') }}
                     </h2>
-                    <span class="text-secondary text-xs">Draft configuration</span>
+                    <span class="text-secondary text-xs">{{ __('templates.draft_config') }}</span>
                 </div>
                 <div id="templatePreview" class="card overflow-hidden p-0">
                     <div
@@ -286,7 +286,7 @@
                         class="p-6"
                         style="background:{{ $tokens?->backgroundColor ?? '#F7F6F1' }};color:{{ $tokens?->textColor ?? '#616B5E' }};font-family:'{{ $tokens?->headingFont ?? 'Instrument Sans' }}',sans-serif"
                     >
-                        <p class="text-xs tracking-widest uppercase opacity-70">Template preview</p>
+                        <p class="text-xs tracking-widest uppercase opacity-70">{{ __('templates.eyebrow_preview') }}</p>
                         <h2 id="previewTitle" class="mt-2 text-3xl font-semibold">
                             {{ $template->name }}
                         </h2>
@@ -366,14 +366,14 @@
                                 <input type="hidden" name="section_image_media_ids[]" />
                                 <input type="text" name="section_image_alts[]" placeholder="{{ __('templates.image_description') }}" class="input" />
                                 <select name="section_image_positions[]" class="input">
-                                    <option value="full">Full width</option>
-                                    <option value="left">Align left</option>
-                                    <option value="right">Align right</option>
+                                    <option value="full">{{ __('templates.full_width') }}</option>
+                                    <option value="left">{{ __('templates.align_left') }}</option>
+                                    <option value="right">{{ __('templates.align_right') }}</option>
                                 </select>
                                 <p class="text-xs text-secondary" data-upload-status>Choose an image to upload to Cloudinary.</p>
                             </div>
                         </div>
-                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">Remove</button>
+                        <button type="button" onclick="this.closest('.card').remove()" class="text-red-500 hover:text-red-600 text-sm">{{ __('templates.remove') }}</button>
                     </div>
                 `;
                 container.appendChild(div);

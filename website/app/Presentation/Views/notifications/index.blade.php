@@ -36,7 +36,7 @@
                             <div>
                                 <h2 class="text-primary font-semibold">
                                     {{
-                                        $notification->data['title'] ??
+                                        $notification->type === 'platform.maintenance' ? __('admin.maintenance_banner') : $notification->data['title'] ??
                                             __('notifications.fallback_title')
                                     }}
                                 </h2>
@@ -72,7 +72,7 @@
                                 >
                                     @csrf
                                     @method ('DELETE')
-                                    <button type="submit" class="btn-ghost text-sm text-red-500">
+                                    <button type="submit" class="btn-danger text-sm">
                                         {{ __('notifications.delete') }}
                                     </button>
                                 </form>

@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', 'Admin Console')
+@section ('title', __('admin.console'))
 
 @section ('content')
     <div class="container-custom section-spacing">

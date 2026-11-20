@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Application\Administration\Contracts\AuditLogger;
+use App\Application\Notifications\Contracts\MaintenanceNotificationPublisher;
 use App\Application\PlatformSettings\Contracts\PlatformSettingsRepository;
 use App\Application\PlatformSettings\DTOs\PlatformSettingsData;
 use App\Application\PlatformSettings\DTOs\PlatformSettingsRecord;
@@ -13,11 +14,27 @@ use PHPUnit\Framework\TestCase;
 
 final class UpdatePlatformSettingsServiceTest extends TestCase
 {
+    public function test_it_broadcasts_only_when_maintenance_is_enabled_or_changed(): void
+    {
+        $repository = new FakePlatformSettingsRepository;
+        $publisher = $this->createMock(MaintenanceNotificationPublisher::class);
+        $publisher->expects(self::exactly(3))->method('publish');
+        $service = new UpdatePlatformSettingsService($repository, new FakePlatformSettingsAuditLogger, $publisher);
+        $makeData = fn (bool $enabled, string $message) => PlatformSettingsData::fromArray(array_replace(
+            PlatformSettingsData::defaults()->toArray(), ['maintenance_banner' => ['enabled' => $enabled, 'message' => $message]],
+        ));
+        $service->execute(42, $makeData(true, 'Maintenance'), 0);
+        $service->execute(42, $makeData(true, 'Maintenance'), 1);
+        $service->execute(42, $makeData(true, 'Updated maintenance'), 2);
+        $service->execute(42, $makeData(false, 'Updated maintenance'), 3);
+        $service->execute(42, $makeData(true, 'Updated maintenance'), 4);
+    }
+
     public function test_it_updates_settings_and_writes_an_audit_entry(): void
     {
         $repository = new FakePlatformSettingsRepository;
         $audit = new FakePlatformSettingsAuditLogger;
-        $service = new UpdatePlatformSettingsService($repository, $audit);
+        $service = new UpdatePlatformSettingsService($repository, $audit, $this->createMock(MaintenanceNotificationPublisher::class));
         $data = PlatformSettingsData::fromArray(
             array_replace(PlatformSettingsData::defaults()->toArray(), [
                 'site_name' => 'Updated Platform',

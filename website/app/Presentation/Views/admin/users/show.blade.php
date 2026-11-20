@@ -1,6 +1,6 @@
 @extends ('layouts.app')
 
-@section ('title', $user->name . ' — Admin Console')
+@section ('title', $user->name . ' — ' . __('admin.console'))
 
 @php
     $restricted = in_array($user->status->value, ['LOCKED', 'SUSPENDED', 'DISABLED'], true);
@@ -14,29 +14,29 @@
                 class="text-secondary hover:text-accent-primary text-sm"
             >
                 <i class="fa-solid fa-arrow-left"></i>
-                Users
+                {{ __('admin.back_users') }}
             </a>
             <div class="mt-2 flex flex-wrap items-center gap-3">
                 <h1 class="text-hero">{{ $user->name }}</h1>
                 <x-badge
                     :variant="$user->status->value === 'ACTIVE' ? 'primary' : 'highlight'"
-                    >{{ $user->status->value }}</x-badge
+                    >{{ __('account_status.' . $user->status->value) }}</x-badge
                 >
             </div>
             <p class="text-secondary">{{ $user->email }}</p>
             <p class="text-secondary mt-1 text-sm">
-                Joined {{
+                {{ __('admin.joined') }} {{
                     \Carbon\Carbon::parse($user->createdAt)->format(
                         'd/m/Y',
                     )
                 }} · Email {{
                     $user->emailVerifiedAt
-                        ? 'verified'
-                        : 'not verified'
-                }} · Last login {{
+                        ? __('admin.verified')
+                        : __('admin.not_verified')
+                }} · {{ __('admin.last_login') }} {{
                     $user->lastLoginAt
                         ? \Carbon\Carbon::parse($user->lastLoginAt)->diffForHumans()
-                        : 'never'
+                        : __('admin.never')
                 }}
             </p>
         </div>
@@ -51,27 +51,27 @@
 
         @if ($isSelf)
             <x-alert type="info" class="mb-6"
-                >This is your own account. Changes to it must be made by another admin.</x-alert
+                >{{ __('admin.own_account') }}</x-alert
             >
         @endif
 
         <div class="grid gap-6 md:grid-cols-2">
             {{-- Account restrictions --}}
             <section class="card space-y-4">
-                <h2 class="text-primary text-lg font-semibold">Account access</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('admin.account_access') }}</h2>
 
                 @foreach ($user->activeRestrictions as $restriction)
                     <div class="bg-surface-secondary rounded-md p-3 text-sm">
                         <div class="text-primary font-medium">{{ $restriction['kind'] }}</div>
                         <div class="text-secondary">{{ $restriction['reason'] }}</div>
                         <div class="text-secondary mt-1 text-xs">
-                            Since {{
+                            {{ __('admin.since') }} {{
                                 \Carbon\Carbon::parse($restriction['starts_at'])->format(
                                     'd/m/Y H:i',
                                 )
                             }}
                             @if ($restriction['ends_at'])
-                                · until{{
+                                · {{ __('admin.until') }} {{
                                     \Carbon\Carbon::parse($restriction['ends_at'])->format(
                                         'd/m/Y H:i',
                                     )
@@ -92,12 +92,12 @@
                             @method ('DELETE')
                             <x-textarea
                                 name="reason"
-                                label="Reason for lifting"
+                                :label="__('admin.reason_lifting')"
                                 rows="2"
                                 required
                             />
                             <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                                Lift restriction
+                                {{ __('admin.lift_restriction') }}
                             </button>
                         </form>
                     @else
@@ -106,28 +106,28 @@
                             action="{{ route('admin.users.restrict', $user->id) }}"
                             class="space-y-3"
                             data-modal-confirm-form
-                            data-confirm-title="Restrict account"
-                            data-confirm-message="Restrict this account? The user will be signed out immediately."
+                            data-confirm-title="{{ __('admin.restrict_account') }}"
+                            data-confirm-message="{{ __('admin.restrict_confirm') }}"
                         >
                             @csrf
                             <div class="space-y-1">
                                 <label for="kind" class="text-primary block text-sm font-medium"
-                                    >Action</label
+                                    >{{ __('admin.action') }}</label
                                 >
                                 <select name="kind" id="kind" class="input" required>
-                                    <option value="LOCK">Lock (temporary)</option>
-                                    <option value="SUSPEND">Suspend</option>
-                                    <option value="DISABLE">Disable (no end date)</option>
+                                    <option value="LOCK">{{ __('admin.lock_temporary') }}</option>
+                                    <option value="SUSPEND">{{ __('admin.suspend') }}</option>
+                                    <option value="DISABLE">{{ __('admin.disable_no_end') }}</option>
                                 </select>
                             </div>
                             <x-input
                                 type="datetime-local"
                                 name="ends_at"
-                                label="Ends at (optional)"
+                                :label="__('admin.ends_optional')"
                             />
-                            <x-textarea name="reason" label="Reason" rows="2" required />
+                            <x-textarea name="reason" :label="__('admin.reason_col')" rows="2" required />
                             <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                                Apply restriction
+                                {{ __('admin.apply_restriction') }}
                             </button>
                         </form>
                     @endif
@@ -136,10 +136,10 @@
 
             {{-- Platform roles --}}
             <section class="card space-y-4">
-                <h2 class="text-primary text-lg font-semibold">Platform roles</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('admin.platform_roles') }}</h2>
 
                 @if (count($user->roles) === 0)
-                    <p class="text-secondary text-sm">No platform roles.</p>
+                    <p class="text-secondary text-sm">{{ __('admin.no_roles') }}</p>
                 @else
                     <ul class="divide-default divide-y">
                         @foreach ($user->roles as $role)
@@ -155,7 +155,7 @@
                                     >
                                     @if ($role['expires_at'])
                                         <span class="text-secondary block text-xs"
-                                            >expires {{
+                                            >{{ __('admin.expires') }} {{
                                                 \Carbon\Carbon::parse($role['expires_at'])->format(
                                                     'd/m/Y',
                                                 )
@@ -168,13 +168,13 @@
                                         method="POST"
                                         action="{{ route('admin.users.roles.revoke', [$user->id, $role['role_id']]) }}"
                                         data-modal-confirm-form
-                                        data-confirm-title="Revoke role"
-                                        data-confirm-message="Revoke this role?"
+                                        data-confirm-title="{{ __('admin.revoke_role') }}"
+                                        data-confirm-message="{{ __('admin.revoke_role_confirm') }}"
                                     >
                                         @csrf
                                         @method ('DELETE')
                                         <button type="submit" class="text-red-500 hover:underline">
-                                            Revoke
+                                            {{ __('admin.revoke') }}
                                         </button>
                                     </form>
                                 @endif
@@ -192,7 +192,7 @@
                         @csrf
                         <div class="space-y-1">
                             <label for="role_id" class="text-primary block text-sm font-medium"
-                                >Grant role</label
+                                >{{ __('admin.grant_role') }}</label
                             >
                             <select name="role_id" id="role_id" class="input" required>
                                 @foreach ($roles as $role)
@@ -200,9 +200,9 @@
                                 @endforeach
                             </select>
                         </div>
-                        <x-input type="date" name="expires_at" label="Expires (optional)" />
+                        <x-input type="date" name="expires_at" :label="__('admin.expires_optional')" />
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                            Grant
+                            {{ __('admin.grant') }}
                         </button>
                     </form>
                 @endif
@@ -210,7 +210,7 @@
 
             {{-- Individual permission overrides --}}
             <section class="card space-y-4">
-                <h2 class="text-primary text-lg font-semibold">Individual permissions</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('admin.individual_permissions') }}</h2>
 
                 @if (count($permissionOverrides) > 0)
                     <ul class="divide-default divide-y">
@@ -226,7 +226,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-secondary text-sm">No individual permission overrides.</p>
+                    <p class="text-secondary text-sm">{{ __('admin.no_permission_overrides') }}</p>
                 @endif
 
                 @if ($canManageRoles && !$isSelf && count($permissions) > 0)
@@ -240,7 +240,7 @@
                             <label
                                 for="permission_id"
                                 class="text-primary block text-sm font-medium"
-                                >Permission</label
+                                >{{ __('admin.permission') }}</label
                             >
                             <select name="permission_id" id="permission_id" class="input" required>
                                 @foreach ($permissions as $permission)
@@ -254,15 +254,15 @@
                             <label
                                 for="permission_effect"
                                 class="text-primary block text-sm font-medium"
-                                >Action</label
+                                >{{ __('admin.action') }}</label
                             >
                             <select name="effect" id="permission_effect" class="input" required>
-                                <option value="GRANT">Grant permission</option>
-                                <option value="DENY">Deny permission</option>
+                                <option value="GRANT">{{ __('admin.grant_permission') }}</option>
+                                <option value="DENY">{{ __('admin.deny_permission') }}</option>
                             </select>
                         </div>
                         <button type="submit" class="btn-primary rounded-md px-4 py-2">
-                            Update permission
+                            {{ __('admin.update_permission') }}
                         </button>
                     </form>
                 @endif

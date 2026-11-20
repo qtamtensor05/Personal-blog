@@ -123,10 +123,10 @@
                     @else
                         <a
                             href="{{ route('notifications.index') }}"
-                            class="btn-ghost relative p-2"
+                            class="btn-ghost relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md"
                             aria-label="{{ __('ui.notifications') }}"
                         >
-                            <i class="fa-solid fa-bell h-5 w-5" aria-hidden="true"></i>
+                            <i class="fa-solid fa-bell text-base leading-none" aria-hidden="true"></i>
                             @if ($notificationUnreadCount > 0)
                                 <span
                                     class="absolute -top-1 -right-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-xs font-semibold text-white"
@@ -295,6 +295,8 @@
         </nav>
     </header>
 
+
+
     <!-- Main Content -->
     <main data-animate="page">
         @yield ('content')
@@ -396,7 +398,7 @@
             <div
                 class="border-default flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row"
             >
-                <p class="text-secondary text-sm">&copy; {{ date('Y') }} {{ config('app.name', 'Personal Blog') }}. {{ __('ui.all_rights_reserved') }}</p>
+                <p class="text-secondary text-sm">&copy; {{ date('Y') }} {{ config('app.name', 'Personal Blog') }}.</p>
                 <p class="text-secondary text-sm">
                     {{ __('ui.built_with') }}
                     <span class="text-accent-primary">Laravel {{ app()->version() }}</span>

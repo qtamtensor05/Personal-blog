@@ -1,26 +1,26 @@
 @extends ('layouts.app')
 
-@section ('title', 'Audit Logs — Admin Console')
+@section ('title', __('admin.audit_title'))
 
 @section ('content')
     <div class="container-custom section-spacing">
         <div class="mb-8">
-            <h1 class="text-hero mb-2">Audit Logs</h1>
-            <p class="text-secondary">Administrative actions, newest first.</p>
+            <h1 class="text-hero mb-2">{{ __('admin.audit_title') }}</h1>
+            <p class="text-secondary">{{ __('admin.audit_help') }}</p>
         </div>
 
         @if (count($logs) === 0)
-            <x-empty-state message="No admin actions recorded yet" />
+            <x-empty-state :message="__('admin.no_admin_actions')" />
         @else
             <div class="card overflow-x-auto p-0">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-secondary border-default border-b">
                         <tr>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">When</th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Admin</th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Action</th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Resource</th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Change</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.when') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.admin') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.action') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.resource') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.change') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-default divide-y align-top">
@@ -48,7 +48,7 @@
                                         <a
                                             href="{{ route('admin.users.show', (int) $log->resource_id) }}"
                                             class="text-accent-primary block text-xs hover:underline"
-                                            >Open</a
+                                            >{{ __('admin.open') }}</a
                                         >
                                     @endif
                                 </td>
@@ -56,10 +56,10 @@
                                     class="text-secondary max-w-md px-4 py-3 font-mono text-xs break-words"
                                 >
                                     @if ($log->before_data)
-                                        <div>before: {{ $log->before_data }}</div>
+                                        <div>{{ __('admin.before') }} {{ $log->before_data }}</div>
                                     @endif
                                     @if ($log->after_data)
-                                        <div>after: {{ $log->after_data }}</div>
+                                        <div>{{ __('admin.after') }} {{ $log->after_data }}</div>
                                     @endif
                                 </td>
                             </tr>
@@ -69,14 +69,14 @@
             </div>
 
             @if ($lastPage > 1)
-                <nav class="mt-6 flex items-center justify-between text-sm" aria-label="Pagination">
+                <nav class="mt-6 flex items-center justify-between text-sm" :aria-label="__('notifications.pagination')">
                     @if ($page > 1)
                         <a
                             href="{{ route('admin.audit-logs', ['page' => $page - 1]) }}"
                             class="btn-ghost"
                         >
                             <i class="fa-solid fa-arrow-left"></i>
-                            Newer
+                            {{ __('admin.newer') }}
                         </a>
                     @else
                         <span></span>
@@ -86,7 +86,7 @@
                         <a
                             href="{{ route('admin.audit-logs', ['page' => $page + 1]) }}"
                             class="btn-ghost"
-                            >Older →</a
+                            >{{ __('admin.older') }} →</a
                         >
                     @else
                         <span></span>

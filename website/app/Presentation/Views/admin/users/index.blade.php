@@ -1,19 +1,14 @@
 @extends ('layouts.app')
 
-@section ('title', 'Users — Admin Console')
+@section ('title', __('admin.users_title'))
 
 @section ('content')
     <div class="container-custom section-spacing">
         <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h1 class="text-hero mb-2">User management</h1>
+                <h1 class="text-hero mb-2">{{ __('admin.user_management') }}</h1>
                 <p class="text-secondary">
-                    {{ $total }} {{
-                        \Illuminate\Support\Str::plural(
-                            'account',
-                            $total,
-                        )
-                    }}
+                    {{ __('admin.account_count', ['count' => $total]) }}
                 </p>
             </div>
             <form
@@ -25,12 +20,12 @@
                 <x-input
                     type="email"
                     name="email"
-                    label="Create admin account"
+                    :label="__('admin.create_admin_account')"
                     placeholder="admin@example.com"
                     :value="old('email')"
                     required
                 />
-                <button type="submit" class="btn-primary rounded-md px-4 py-2">Create admin</button>
+                <button type="submit" class="btn-primary rounded-md px-4 py-2">{{ __('admin.create_admin') }}</button>
             </form>
         </div>
 
@@ -49,45 +44,45 @@
         >
             <x-input
                 name="q"
-                label="Search accounts"
-                placeholder="Name or email"
+                :label="__('admin.search_accounts')"
+                :placeholder="__('admin.name_or_email')"
                 :value="$filters['q'] ?? null"
             />
 
             <div class="space-y-1">
                 <label for="status" class="text-primary block text-sm font-medium">
-                    Account status
+                    {{ __('admin.account_status') }}
                 </label>
                 <select name="status" id="status" class="input">
-                    <option value="">All statuses</option>
+                    <option value="">{{ __('admin.all_statuses') }}</option>
                     @foreach (['PENDING_VERIFICATION', 'ACTIVE', 'LOCKED', 'SUSPENDED', 'DISABLED'] as $status)
                         <option
                             value="{{ $status }}"
                             @selected (($filters['status'] ?? null) === $status)
                         >
-                            {{ str_replace('_', ' ', $status) }}
+                            {{ __('account_status.' . $status) }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
-            <button type="submit" class="btn-primary rounded-md px-6 py-2">Filter</button>
+            <button type="submit" class="btn-primary rounded-md px-6 py-2">{{ __('admin.filter') }}</button>
         </form>
 
         @if (count($users) === 0)
-            <x-empty-state message="No accounts match these filters." />
+            <x-empty-state :message="__('admin.no_accounts')" />
         @else
             <div class="card overflow-x-auto p-0">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-secondary border-default border-b">
                         <tr>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Account</th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Status</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.account') }}</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.status') }}</th>
                             <th class="text-primary px-4 py-3 text-left font-semibold">
-                                Email verified
+                                {{ __('admin.email_verified') }}
                             </th>
-                            <th class="text-primary px-4 py-3 text-left font-semibold">Joined</th>
-                            <th class="text-primary px-4 py-3 text-right font-semibold">Action</th>
+                            <th class="text-primary px-4 py-3 text-left font-semibold">{{ __('admin.joined') }}</th>
+                            <th class="text-primary px-4 py-3 text-right font-semibold">{{ __('admin.action') }}</th>
                         </tr>
                     </thead>
 
@@ -114,21 +109,15 @@
             : 'highlight')
                                         "
                                     >
-                                        {{
-                                            str_replace(
-                                                '_',
-                                                ' ',
-                                                $user->status->value,
-                                            )
-                                        }}
+                                        {{ __('account_status.' . $user->status->value) }}
                                     </x-badge>
                                 </td>
 
                                 <td class="text-secondary px-4 py-3">
                                     {{
                                         $user->emailVerifiedAt
-                                            ? 'Verified'
-                                            : 'Not verified'
+                                            ? __('admin.verified')
+                                            : __('admin.not_verified')
                                     }}
                                 </td>
 
@@ -145,7 +134,7 @@
                                         href="{{ route('admin.users.show', $user->id) }}"
                                         class="btn-ghost"
                                     >
-                                        Manage
+                                        {{ __('admin.manage') }}
                                     </a>
                                 </td>
                             </tr>
@@ -155,27 +144,27 @@
             </div>
 
             @if ($lastPage > 1)
-                <nav class="mt-6 flex items-center justify-between text-sm" aria-label="Pagination">
+                <nav class="mt-6 flex items-center justify-between text-sm" :aria-label="__('notifications.pagination')">
                     @if ($page > 1)
                         <a
                             href="{{ route('admin.users.index', array_merge($filters, ['page' => $page - 1])) }}"
                             class="btn-ghost"
                         >
                             <i class="fa-solid fa-arrow-left"></i>
-                            Previous
+                            {{ __('admin.previous') }}
                         </a>
                     @else
                         <span></span>
                     @endif
 
-                    <span class="text-secondary">Page {{ $page }} of {{ $lastPage }}</span>
+                    <span class="text-secondary">{{ __('admin.page_of', ['page' => $page, 'last' => $lastPage]) }}</span>
 
                     @if ($page < $lastPage)
                         <a
                             href="{{ route('admin.users.index', array_merge($filters, ['page' => $page + 1])) }}"
                             class="btn-ghost"
                         >
-                            Next →
+                            {{ __('admin.next') }} →
                         </a>
                     @else
                         <span></span>

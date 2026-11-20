@@ -1,13 +1,13 @@
 @extends ('layouts.app')
 
-@section ('title', 'Report #' . $report->id . ' — Admin Console')
+@section ('title', 'Report #' . $report->id . ' — ' . __('admin.console'))
 
 @php
     $pending = in_array($report->status, ['OPEN', 'REVIEWING'], true);
     $actionLabels = [
-        'none' => 'No action on content',
-        'suspend_blog' => 'Suspend the blog',
-        'archive_post' => 'Archive the post',
+        'none' => __('admin.no_content_action'),
+        'suspend_blog' => __('admin.suspend_blog_action'),
+        'archive_post' => __('admin.archive_post_action'),
     ];
 @endphp
 
@@ -19,13 +19,13 @@
                 class="text-secondary hover:text-accent-primary text-sm"
             >
                 <i class="fa-solid fa-arrow-left"></i>
-                Reports
+                {{ __('admin.reports') }}
             </a>
             <div class="mt-2 flex items-center gap-3">
-                <h1 class="text-hero">Report #{{ $report->id }}</h1>
+                <h1 class="text-hero">{{ __('admin.report_page_title', ['id' => $report->id]) }}</h1>
                 <x-badge
                     :variant="$pending ? 'highlight' : 'default'"
-                    >{{ $report->status }}</x-badge
+                    >{{ __('content_status.' . $report->status) }}</x-badge
                 >
             </div>
         </div>
@@ -40,22 +40,22 @@
 
         <section class="card mb-6 space-y-3 text-sm">
             <div>
-                <span class="text-secondary">Blog:</span>
+                <span class="text-secondary">{{ __('admin.blog') }}</span>
                 <span class="text-primary font-medium">{{ $report->blog_name }}</span>
-                <x-badge>{{ $report->blog_status }}</x-badge>
+                <x-badge>{{ __('content_status.' . $report->blog_status) }}</x-badge>
             </div>
             @if ($report->target_type === 'POST')
                 <div>
-                    <span class="text-secondary">Post:</span>
+                    <span class="text-secondary">{{ __('admin.post') }}</span>
                     <span class="text-primary font-medium">{{ $report->post_title }}</span>
-                    <x-badge>{{ $report->post_status }}</x-badge>
+                    <x-badge>{{ __('content_status.' . $report->post_status) }}</x-badge>
                     @if ($report->post_status === 'PUBLISHED' && $report->blog_status === 'PUBLISHED')
                         <a
                             href="{{ route('public.post', [$report->blog_slug, $report->post_slug]) }}"
                             target="_blank"
                             rel="noopener"
                             class="text-accent-primary ml-1 hover:underline"
-                            >Open</a
+                            >{{ __('admin.open') }}</a
                         >
                     @endif
                 </div>
@@ -65,13 +65,13 @@
                     target="_blank"
                     rel="noopener"
                     class="text-accent-primary hover:underline"
-                    >Open blog</a
+                    >{{ __('admin.open_blog') }}</a
                 >
             @endif
             <div>
-                <span class="text-secondary">Reported by:</span> {{
+                <span class="text-secondary">{{ __('admin.reported_by') }}</span> {{
                     $report->reporter_email ??
-                        'deleted user'
+                        __('admin.deleted_user')
                 }}
             </div>
             <div class="bg-surface-secondary rounded-md p-3 whitespace-pre-line">
@@ -79,7 +79,7 @@
             </div>
             @if ($report->resolution_note)
                 <div>
-                    <span class="text-secondary">Resolution note:</span>
+                    <span class="text-secondary">{{ __('admin.resolution_note') }}</span>
                     {{ $report->resolution_note }}
                 </div>
             @endif
@@ -93,7 +93,7 @@
                     class="mb-6"
                 >
                     @csrf
-                    <button type="submit" class="btn-secondary">Start review</button>
+                    <button type="submit" class="btn-secondary">{{ __('admin.start_review') }}</button>
                 </form>
             @endif
 
@@ -102,23 +102,23 @@
                 action="{{ route('admin.reports.close', $report->id) }}"
                 class="card space-y-4"
                 data-modal-confirm-form
-                data-confirm-title="Close report"
-                data-confirm-message="Close this report?"
+                data-confirm-title="{{ __('admin.close_report_confirm_title') }}"
+                data-confirm-message="{{ __('admin.close_report_confirm') }}"
             >
                 @csrf
-                <h2 class="text-primary text-lg font-semibold">Decision</h2>
+                <h2 class="text-primary text-lg font-semibold">{{ __('admin.decision') }}</h2>
                 <div class="space-y-1">
                     <label for="status" class="text-primary block text-sm font-medium"
-                        >Outcome</label
+                        >{{ __('admin.outcome') }}</label
                     >
                     <select name="status" id="status" class="input" required>
-                        <option value="RESOLVED">Resolved (report is valid)</option>
-                        <option value="DISMISSED">Dismissed (no violation)</option>
+                        <option value="RESOLVED">{{ __('admin.resolved_valid') }}</option>
+                        <option value="DISMISSED">{{ __('admin.dismissed_no_violation') }}</option>
                     </select>
                 </div>
                 <div class="space-y-1">
                     <label for="action" class="text-primary block text-sm font-medium"
-                        >Action</label
+                        >{{ __('admin.action') }}</label
                     >
                     <select name="action" id="action" class="input" required>
                         @foreach ($actions as $action)
@@ -127,19 +127,19 @@
                         @endforeach
                     </select>
                 </div>
-                <x-textarea name="note" label="Note (optional)" rows="2" />
-                <button type="submit" class="btn-primary">Close report</button>
+                <x-textarea name="note" :label="__('admin.note_optional')" rows="2" />
+                <button type="submit" class="btn-primary">{{ __('admin.close_report_confirm_title') }}</button>
             </form>
         @elseif ($report->blog_status === 'SUSPENDED')
             <form
                 method="POST"
                 action="{{ route('admin.reports.lift', $report->id) }}"
                 data-modal-confirm-form
-                data-confirm-title="Lift suspension"
-                data-confirm-message="Lift the suspension of this blog?"
+                data-confirm-title="{{ __('admin.lift_suspension') }}"
+                data-confirm-message="{{ __('admin.lift_suspension_confirm') }}"
             >
                 @csrf
-                <button type="submit" class="btn-secondary">Lift blog suspension</button>
+                <button type="submit" class="btn-secondary">{{ __('admin.lift_blog_suspension') }}</button>
             </form>
         @endif
     </div>
