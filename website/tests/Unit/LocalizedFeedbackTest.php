@@ -7,6 +7,11 @@ use Tests\TestCase;
 
 uses(TestCase::class);
 
+beforeEach(function (): void {
+    // Translation rendering must not depend on built frontend assets or a Vite server.
+    $this->withoutVite();
+});
+
 it('renders translated constraint messages with numeric bounds', function (string $locale): void {
     app()->setLocale($locale);
     $html = Blade::render('<x-input type="number" name="quantity" label="Quantity" min="2" max="12" required />');
