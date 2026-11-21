@@ -241,12 +241,6 @@
                                         <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.likes_count') }}: {{ $engagement[$post->id]->likes }}"><i class="fa-regular fa-heart" aria-hidden="true"></i>{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
                                         <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.views_count') }}: {{ $engagement[$post->id]->views }}"><i class="fa-regular fa-eye" aria-hidden="true"></i>{{ $engagement[$post->id]->views }}</span>
                                     </div>
-                                    <span class="le-read-more">{{ __('public.read_post') }}
-                                        <i
-                                            class="fa-solid fa-arrow-right-long"
-                                            aria-hidden="true"
-                                        ></i
-                                    ></span>
                                 </article>
                             @empty
                                 <p class="le-kicker">{{ __('public.no_posts') }}</p>

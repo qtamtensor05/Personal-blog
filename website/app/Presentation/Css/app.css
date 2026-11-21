@@ -283,6 +283,16 @@ html[data-theme='dark'] .btn-danger {
         box-shadow 160ms ease;
 }
 
+.input.locale-select {
+    width: 3.25rem;
+    height: 2.5rem;
+    padding: 0;
+    line-height: normal;
+    text-align: center;
+    text-align-last: center;
+    background-image: none;
+}
+
 .input:focus {
     outline: none;
     border-color: var(--color-accent-primary);

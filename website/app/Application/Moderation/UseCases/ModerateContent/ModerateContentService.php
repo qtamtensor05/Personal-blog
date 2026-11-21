@@ -8,6 +8,7 @@ use App\Application\Administration\Contracts\AuditLogger;
 use App\Application\Blogs\UseCases\ViewPublicBlog\ViewPublicBlogService;
 use App\Application\Content\Contracts\PostRepository;
 use App\Application\Moderation\Contracts\ContentReportRepository;
+use App\Application\Moderation\Contracts\ReportNotificationRecipients;
 use App\Application\Notifications\Contracts\NotificationPublisher;
 use App\Domain\Moderation\Enums\ReportStatus;
 use DomainException;
@@ -26,6 +27,7 @@ final readonly class ModerateContentService
         private PostRepository $posts,
         private AuditLogger $audit,
         private NotificationPublisher $notifications,
+        private ReportNotificationRecipients $reportRecipients,
     ) {}
 
     public function report(
@@ -53,7 +55,8 @@ final readonly class ModerateContentService
             throw new DomainException('You have already reported this. It is being reviewed.');
         }
 
-        $this->reports->create($blog->id, $postId, $reporterId, $reason);
+        $reportId = $this->reports->create($blog->id, $postId, $reporterId, $reason);
+        $this->notifyReportReceived($reportId, $postId === null ? 'BLOG' : 'POST');
     }
 
     public function reportComment(int $reporterId, int $blogId, int $postId, int $commentId, string $reason): void
@@ -61,7 +64,25 @@ final readonly class ModerateContentService
         if ($this->reports->hasPendingCommentReport($reporterId, $commentId)) {
             throw new DomainException('You have already reported this. It is being reviewed.');
         }
-        $this->reports->createComment($blogId, $postId, $commentId, $reporterId, $reason);
+        $reportId = $this->reports->createComment($blogId, $postId, $commentId, $reporterId, $reason);
+        $this->notifyReportReceived($reportId, 'COMMENT');
+    }
+
+    private function notifyReportReceived(int $reportId, string $targetType): void
+    {
+        $target = match ($targetType) {
+            'COMMENT' => 'bình luận',
+            'POST' => 'bài viết',
+            default => 'blog',
+        };
+        foreach ($this->reportRecipients->userIds() as $recipientId) {
+            $this->notifications->publish($recipientId, 'moderation.report_received', [
+                'title' => 'Có báo cáo mới',
+                'message' => "Người dùng đã gửi báo cáo #{$reportId} về {$target}.",
+                'report_id' => $reportId,
+                'target_type' => $targetType,
+            ]);
+        }
     }
 
     public function startReview(int $adminId, int $reportId): void

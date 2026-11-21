@@ -81,32 +81,21 @@
                         </span>
                     </a>
                 @endforeach
-                <article class="card hover:border-accent-primary transition hover:-translate-y-0.5">
+                <a href="{{ route('blogs.posts.index', $blog->id) }}" class="card group hover:border-accent-primary block transition hover:-translate-y-0.5">
                     <div
                         class="bg-surface-secondary text-accent-primary mb-4 flex h-10 w-10 items-center justify-center rounded-md"
                     >
                         <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
                     </div>
-                    <h3 class="text-primary font-semibold">{{ __('template.posts') }}</h3>
+                    <h3 class="text-primary group-hover:text-accent-primary font-semibold">{{ __('template.posts') }}</h3>
                     <p class="text-secondary mt-2 text-sm">{{ __('template.posts_description') }}</p>
                     <div class="mt-4 flex flex-col items-start gap-2 text-sm font-medium">
-                        <a
-                            href="{{ route('blogs.posts.index', $blog->id) }}"
-                            class="text-accent-primary inline-flex items-center gap-2 hover:underline"
-                        >
+                        <span class="text-accent-primary inline-flex items-center gap-2">
                             {{ __('template.manage_posts') }}
                             <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
-                        </a>
-
-                        <a
-                            href="{{ route('public.blog.section', [$blog->slug, 'posts']) }}"
-                            class="text-accent-primary inline-flex items-center gap-2 hover:underline"
-                        >
-                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i
-                            >{{ __('template.view_site') }}
-                        </a>
+                        </span>
                     </div>
-                </article>
+                </a>
                 <a
                     href="{{ route('blogs.media.index', $blog->id) }}"
                     class="card group hover:border-accent-primary block transition hover:-translate-y-0.5"

@@ -55,6 +55,9 @@
                                     $notification->data['message'] ??
                                         ''
                                 }}</p>
+                                @if ($notification->type === 'moderation.report_received' && isset($notification->data['report_id']))
+                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('admin.reports.show', (int) $notification->data['report_id']) }}">Xem báo cáo</a>
+                                @endif
                                 @if (isset($notificationLocations[$notification->id]))
                                     <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notificationLocations[$notification->id]->blogSlug, $notificationLocations[$notification->id]->postSlug]) }}{{ isset($notification->data['comment_id']) ? '#comment-'.(int) $notification->data['comment_id'] : '' }}">{{ $notification->type === 'post.liked' ? __('post.open_liked_post') : 'Xem bình luận' }}</a>
                                 @endif

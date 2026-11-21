@@ -381,6 +381,21 @@
     gap: clamp(3rem, 6vw, 6rem);
     align-items: start;
 }
+.le-content-grid > div > section + section {
+    margin-top: clamp(4rem, 8vw, 8rem);
+}
+
+.le-about {
+    display: grid;
+    gap: 2rem;
+}
+
+.le-about > img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+}
+
 .le-posts > .le-kicker {
     padding-bottom: 1.25rem;
     border-bottom: 1px solid rgba(23, 32, 25, 0.28);
@@ -469,9 +484,6 @@
     font-weight: 400;
     line-height: 1;
     letter-spacing: -0.035em;
-}
-.le-gallery {
-    margin-top: clamp(6rem, 9vw, 9rem);
 }
 .le-gallery > div {
     display: grid;
@@ -955,7 +967,17 @@
         grid-template-columns: 1fr auto;
     }
     .le-nav {
-        display: none;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+    }
+    .le-nav a {
+        padding-block: 0.5rem;
+    }
+    .le-social {
+        grid-column: 2;
+        grid-row: 1;
     }
     .le-hero-strip {
         left: 1rem;
@@ -1001,7 +1023,21 @@
         min-height: 70px;
     }
     .le-social {
+        display: flex;
+    }
+    .le-social > a {
         display: none;
+    }
+    .le-header {
+        gap: 0.75rem;
+        padding-inline: 1rem;
+    }
+    .le-brand {
+        min-width: 0;
+        font-size: 1.1rem;
+    }
+    .le-brand span {
+        overflow-wrap: anywhere;
     }
     .le-hero {
         min-height: 620px;

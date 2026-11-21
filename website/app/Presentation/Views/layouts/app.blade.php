@@ -99,7 +99,7 @@
                         <select
                             id="interface-locale"
                             name="locale"
-                            class="input w-auto appearance-none py-1 text-sm"
+                            class="input locale-select w-auto appearance-none text-center text-sm"
                             onchange="this.form.submit()"
                         >
                             <option value="vi" @selected (app()->getLocale() === 'vi')>VI</option>
