@@ -34,6 +34,11 @@ final class PublicBlogController extends Controller
         }
 
         $mediaUrls = [];
+        $logoUrl = null;
+        if ($page->settings->logoMediaId !== null) {
+            $logo = $media->find($page->settings->logoMediaId);
+            $logoUrl = $logo?->secureUrl;
+        }
         $documentHtml = [];
         foreach ($page->sections as $section) {
             $content = array_replace($section->props, $page->slotContent[$section->key] ?? []);
@@ -115,6 +120,7 @@ final class PublicBlogController extends Controller
             'engagement' => $engagement->forVisiblePosts(array_merge($publicPosts, $page->posts)),
             'search' => $search,
             'mediaUrls' => $mediaUrls,
+            'logoUrl' => $logoUrl,
             'documentHtml' => $documentHtml,
             'screen' => $screen,
             'templatePreview' => false,

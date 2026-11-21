@@ -47,10 +47,7 @@
             @if ($layout->showBlogName)
                 <a
                     href="{{ route('public.blog', $blog->slug) }}"
-                    onclick="
-                        window.history.back();
-                        return false;
-                    "
+                    data-navigation-back
                     class="btn-primary inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-base font-medium transition-colors hover:opacity-80"
                 >
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
@@ -70,7 +67,10 @@
                         {{ $post->title }}
                     </h1>
 
-                    <div class="text-secondary inline-flex items-center gap-2 text-sm">
+                    <a
+                        href="{{ route('public.blog', $blog->slug) }}"
+                        class="text-secondary inline-flex items-center gap-2 rounded-sm text-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+                    >
                         @if ($author?->avatarUrl)
                             <img
                                 src="{{ $author->avatarUrl }}"
@@ -89,7 +89,7 @@
                             >
                         @endif
                         <span>{{ $author?->name ?? $blog->name }}</span>
-                    </div>
+                    </a>
 
                     @if ($layout->showPublishedDate && $post->publishedAt)
                         <time

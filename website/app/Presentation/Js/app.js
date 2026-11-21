@@ -1,5 +1,8 @@
 import './post-interactions.js';
 import DOMPurify from 'dompurify';
+import { initNavigationBack } from './navigation-back.js';
+
+initNavigationBack();
 
 const themeStorageKey = 'theme';
 

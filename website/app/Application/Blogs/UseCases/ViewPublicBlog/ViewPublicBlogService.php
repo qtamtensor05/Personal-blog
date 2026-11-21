@@ -54,7 +54,9 @@ final readonly class ViewPublicBlogService
         }
 
         $designRecord = $this->designs->find($blog->id);
-        $usingDraft = $isOwner && $designRecord?->draftData !== null;
+        $usingDraft = $isOwner
+            && $designRecord?->draftData !== null
+            && $designRecord->draftData != $designRecord->publishedData;
         $design = $usingDraft ? $designRecord->draftData : $designRecord?->publishedData;
 
         // No published design yet: a minimal page with the platform default tokens.

@@ -7,10 +7,7 @@
         <div class="mb-8">
             <div class="mb-5 flex items-center gap-3">
                 <a
-                    onclick="
-                        window.history.back();
-                        return false;
-                    "
+                    data-navigation-back
                     href="{{ route('blogs.show', $blog->id) }}"
                     class="btn-ghost"
                     aria-label="{{ __('blog.back_to_blog') }}"
@@ -179,10 +176,7 @@
                     </button>
 
                     <a
-                        onclick="
-                            window.history.back();
-                            return false;
-                        "
+                        data-navigation-back
                         href="{{ route('blogs.show', $blog->id) }}"
                         class="btn-secondary"
                     >

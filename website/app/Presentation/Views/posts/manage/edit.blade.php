@@ -29,10 +29,7 @@
         <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <a
-                    onclick="
-                        window.history.back();
-                        return false;
-                    "
+                    data-navigation-back
                     href="{{ route('blogs.posts.index', $blog->id) }}"
                     class="btn-ghost"
                     aria-label="{{ __('post.editor_back') }}"
