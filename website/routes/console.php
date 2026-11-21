@@ -1,8 +1,16 @@
 <?php
 
+use App\Infrastructure\Moderation\ReportNotificationOutbox;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
+
+Artisan::command('reports:deliver-notifications', function () {
+    app(ReportNotificationOutbox::class)->drain();
+})->purpose('Retry pending moderator report notifications');
+
+Schedule::command('reports:deliver-notifications')->everyMinute()->withoutOverlapping();
 
 // Bootstraps the first admin: there is no one yet who could grant the role via the UI.
 Artisan::command('admin:grant {email}', function (string $email) {

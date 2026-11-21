@@ -9,6 +9,7 @@ use App\Domain\Moderation\Enums\ReportStatus;
 interface ContentReportRepository
 {
     /**
+     * Atomically reject pending duplicates and persist the report with its notification outbox.
      * $postId is null for BLOG reports and set for POST reports (ck_content_reports_0).
      */
     public function create(int $blogId, ?int $postId, int $reporterId, string $reason): int;

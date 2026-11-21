@@ -49,18 +49,11 @@ final readonly class ModerateContentService
                 throw new DomainException('Post not found.');
         }
 
-        if ($this->reports->hasPendingReport($reporterId, $blog->id, $postId)) {
-            throw new DomainException('You have already reported this. It is being reviewed.');
-        }
-
         $this->reports->create($blog->id, $postId, $reporterId, $reason);
     }
 
     public function reportComment(int $reporterId, int $blogId, int $postId, int $commentId, string $reason): void
     {
-        if ($this->reports->hasPendingCommentReport($reporterId, $commentId)) {
-            throw new DomainException('You have already reported this. It is being reviewed.');
-        }
         $this->reports->createComment($blogId, $postId, $commentId, $reporterId, $reason);
     }
 

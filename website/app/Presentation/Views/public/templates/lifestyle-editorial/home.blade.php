@@ -170,28 +170,6 @@
                     </div>
                 @endforeach
                 @if (count($heroSlides) > 1)
-                    <div
-                        class="le-hero-strip"
-                        data-hero-thumbnails
-                        aria-label="{{ __('template.hero_slides') }}"
-                    >
-                        @foreach ($heroSlides as $slide)
-                            @php ($thumbImage = !empty($slide['mediaId']) && isset($mediaUrls[$slide['mediaId']]) ? $mediaUrls[$slide['mediaId']] : $images . '/' . $fallbackCards[$loop->index % count($fallbackCards)])
-                            <button
-                                type="button"
-                                data-hero-thumb="{{ $loop->index }}"
-                                class="le-hero-thumb{{ $loop->first ? ' is-active' : '' }}"
-                                aria-label="{{ __('template.slide') }} {{ $loop->iteration }}: {{ $slide['title'] ?? '' }}"
-                                aria-current="{{ $loop->first ? 'true' : 'false' }}"
-                            >
-                                <img src="{{ $thumbImage }}" alt="" loading="lazy" />
-                                <span>{{
-                                    $slide['title'] ??
-                                        __('template.slide') . ' ' . $loop->iteration
-                                }}</span>
-                            </button>
-                        @endforeach
-                    </div>
                     <div class="le-hero-controls" aria-label="{{ __('template.hero_slides') }}">
                         <button
                             type="button"
@@ -241,12 +219,6 @@
                                         <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.likes_count') }}: {{ $engagement[$post->id]->likes }}"><i class="fa-regular fa-heart" aria-hidden="true"></i>{{ \App\Presentation\Formatting\CompactCount::format($engagement[$post->id]->likes) }}</span>
                                         <span class="inline-flex items-center gap-1.5" aria-label="{{ __('post.views_count') }}: {{ $engagement[$post->id]->views }}"><i class="fa-regular fa-eye" aria-hidden="true"></i>{{ $engagement[$post->id]->views }}</span>
                                     </div>
-                                    <span class="le-read-more">{{ __('public.read_post') }}
-                                        <i
-                                            class="fa-solid fa-arrow-right-long"
-                                            aria-hidden="true"
-                                        ></i
-                                    ></span>
                                 </article>
                             @empty
                                 <p class="le-kicker">{{ __('public.no_posts') }}</p>

@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'required' => 'Please enter :attribute.',
+    'regex' => 'The :attribute format is invalid.',
+    'email' => 'The :attribute must be a valid email address.',
+    'url' => 'The :attribute must be a valid URL.',
+    'min' => [
+        'string' => 'The :attribute must be at least :min characters.',
+        'numeric' => 'The :attribute must be at least :min.',
+    ],
+    'max' => [
+        'string' => 'The :attribute must not exceed :max characters.',
+        'numeric' => 'The :attribute must not exceed :max.',
+    ],
     'attributes' => [
         'analysis_image' => 'optimized AI image',
         'fields' => 'selected fields',

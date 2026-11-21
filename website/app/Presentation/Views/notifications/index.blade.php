@@ -29,6 +29,11 @@
         @else
             <div class="space-y-3">
                 @foreach ($notifications->items as $notification)
+                    @php
+                        $isReport = $notification->type === 'moderation.report_received';
+                        $reportTarget = in_array($notification->data['target_type'] ?? '', ['BLOG', 'POST', 'COMMENT'], true)
+                            ? $notification->data['target_type'] : 'BLOG';
+                    @endphp
                     <article
                         class="card {{ $notification->isUnread() ? 'border-accent-primary bg-surface-secondary' : '' }}"
                     >
@@ -47,14 +52,16 @@
                                 <div class="min-w-0">
                                 <h2 class="text-primary font-semibold">
                                     {{
-                                        $notification->type === 'platform.maintenance' ? __('admin.maintenance_banner') : $notification->data['title'] ??
-                                            __('notifications.fallback_title')
+                                        $isReport ? __('report_notifications.title') :
+                                            ($notification->type === 'platform.maintenance' ? __('admin.maintenance_banner') : ($notification->data['title'] ?? __('notifications.fallback_title')))
                                     }}
                                 </h2>
                                 <p class="text-secondary mt-1 text-sm">{{
-                                    $notification->data['message'] ??
-                                        ''
+                                    $isReport ? __('report_notifications.message', ['id' => $notification->data['report_id'] ?? '', 'target' => __('report_notifications.targets.' . $reportTarget)]) : ($notification->data['message'] ?? '')
                                 }}</p>
+                                @if ($notification->type === 'moderation.report_received' && isset($notification->data['report_id']))
+                                    <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('admin.reports.show', (int) $notification->data['report_id']) }}">{{ __('report_notifications.open') }}</a>
+                                @endif
                                 @if (isset($notificationLocations[$notification->id]))
                                     <a class="text-accent-primary mt-2 inline-block text-sm hover:underline" href="{{ route('public.post', [$notificationLocations[$notification->id]->blogSlug, $notificationLocations[$notification->id]->postSlug]) }}{{ isset($notification->data['comment_id']) ? '#comment-'.(int) $notification->data['comment_id'] : '' }}">{{ $notification->type === 'post.liked' ? __('post.open_liked_post') : 'Xem bình luận' }}</a>
                                 @endif

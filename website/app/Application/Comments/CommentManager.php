@@ -6,6 +6,7 @@ namespace App\Application\Comments;
 
 use App\Application\Comments\Contracts\CommentManager as CommentManagerContract;
 use App\Application\Comments\Contracts\CommentSideEffectDispatcher;
+use App\Application\Moderation\UseCases\ModerateContent\ModerateContentService;
 use App\Domain\Comments\Enums\CommentStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +16,7 @@ final readonly class CommentManager implements CommentManagerContract
     public function __construct(
         private CommentPermissions $permissions,
         private CommentSideEffectDispatcher $sideEffects,
+        private ModerateContentService $moderation,
     ) {}
 
     public function create(object $actor, int $postId, int $bodyPostOwnerId, string $body, ?int $parentId): int
@@ -129,18 +131,12 @@ final readonly class CommentManager implements CommentManagerContract
         if ($reason === '' || mb_strlen($reason) > 2000) {
             throw ValidationException::withMessages(['reason' => 'Lý do báo cáo không hợp lệ.']);
         }
-        DB::transaction(function () use ($actor, $blogId, $postId, $commentId, $reason): void {
-            DB::table('users')->where('id', (int) $actor->id)->lockForUpdate()->first(['id']);
-            abort_unless(DB::table('comments')->where('id', $commentId)->where('post_id', $postId)->whereNull('deleted_at')->exists(), 404);
-            $exists = DB::table('content_reports')->where('comment_id', $commentId)->where('reporter_user_id', (int) $actor->id)->whereIn('status', ['OPEN', 'REVIEWING'])->exists();
-            if ($exists) {
-                return;
-            }
-            DB::table('content_reports')->insert([
-                'blog_id' => $blogId, 'target_type' => 'COMMENT', 'post_id' => $postId, 'comment_id' => $commentId,
-                'reporter_user_id' => (int) $actor->id, 'reason' => $reason, 'status' => 'OPEN', 'created_at' => now(), 'updated_at' => now(),
-            ]);
-        });
+        abort_unless(DB::table('comments')->where('id', $commentId)->where('post_id', $postId)->whereNull('deleted_at')->exists(), 404);
+        try {
+            $this->moderation->reportComment((int) $actor->id, $blogId, $postId, $commentId, $reason);
+        } catch (\DomainException $exception) {
+            throw ValidationException::withMessages(['reason' => __($exception->getMessage())]);
+        }
     }
 
     private function locked(int $postId, int $commentId): object

@@ -10,7 +10,7 @@
 
 @php ($isPassword = $type === 'password')
 
-<div class="space-y-1">
+<div class="space-y-1" data-input-validation>
     @if ($label)
         <label for="{{ $name }}" class="text-primary block text-sm font-medium">
             {{ $label }}
@@ -26,6 +26,14 @@
             @if ($isPassword) :type="show ? 'text' : 'password'" @endif
             name="{{ $name }}"
             id="{{ $name }}"
+            data-validation-required="{{ __('validation.required', ['attribute' => $label ?? $name]) }}"
+            data-validation-format="{{ __('validation.regex', ['attribute' => $label ?? $name]) }}"
+            data-validation-email="{{ __('validation.email', ['attribute' => $label ?? $name]) }}"
+            data-validation-url="{{ __('validation.url', ['attribute' => $label ?? $name]) }}"
+            data-validation-min="{{ __('validation.min.string', ['attribute' => $label ?? $name, 'min' => $attributes->get('minlength', '')]) }}"
+            data-validation-max="{{ __('validation.max.string', ['attribute' => $label ?? $name, 'max' => $attributes->get('maxlength', '')]) }}"
+            data-validation-range-min="{{ __('validation.min.numeric', ['attribute' => $label ?? $name, 'min' => $attributes->get('min', '')]) }}"
+            data-validation-range-max="{{ __('validation.max.numeric', ['attribute' => $label ?? $name, 'max' => $attributes->get('max', '')]) }}"
             @unless ($isPassword) value="{{ old($name, $value) }}" @endunless
             @if ($isPassword) style="padding-right: 2.75rem" @endif
             {{
@@ -69,4 +77,5 @@
     @if ($error)
         <p class="text-sm text-red-500">{{ $error }}</p>
     @endif
+    <p class="hidden text-sm text-red-500" data-input-error role="alert"></p>
 </div>

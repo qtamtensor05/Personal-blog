@@ -12,7 +12,16 @@ Nền tảng blog cá nhân viết bằng Laravel 13, theo Clean Architecture d�
 - **Media:** upload ảnh lên Cloudinary bằng chữ ký tạo ở backend, metadata lưu trong `media_assets`, có giới hạn dung lượng theo blog.
 - **Trang public:** `/b/{blog}`, `/b/{blog}/{post}`, `/b/{blog}/p/{page}`. Chỉ hiển thị nội dung đã xuất bản.
 - **Domain riêng:** xác minh bằng bản ghi DNS TXT, sau đó blog được phục vụ trên domain của người dùng.
-- **Kiểm duyệt:** người đọc báo cáo blog hoặc bài viết, Admin xử lý (đình chỉ blog, lưu trữ bài viết). Thao tác của Admin được ghi vào `admin_audit_logs`.
+- **Kiểm duyệt:** người đọc báo cáo blog, bài viết hoặc bình luận; admin nhận thông báo và xử lý. Báo cáo và công việc gửi thông báo được lưu cùng transaction trong `report_notification_outbox`; gửi lỗi sẽ được thử lại, không yêu cầu người dùng gửi lại báo cáo. Thao tác của Admin được ghi vào `admin_audit_logs`.
+
+### Thử lại thông báo báo cáo
+
+Sau khi cập nhật, chạy `php artisan migrate` trong `website` để tạo bảng outbox.
+Laravel scheduler cần chạy (`php artisan schedule:work` khi phát triển, hoặc cron gọi
+`php artisan schedule:run` mỗi phút trên server). Tác vụ `reports:deliver-notifications`
+thử lại các thông báo chưa gửi mỗi phút; cũng có thể chạy thủ công bằng
+`php artisan reports:deliver-notifications`. Các thông báo và dấu đã gửi được commit
+cùng nhau, nên thử lại không tạo thông báo trùng. Lỗi gửi được ghi vào log Laravel.
 
 ## Yêu cầu
 
