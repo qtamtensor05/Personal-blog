@@ -1,4 +1,5 @@
 import './post-interactions.js';
+import './input-validation.js';
 import DOMPurify from 'dompurify';
 import { initNavigationBack } from './navigation-back.js';
 

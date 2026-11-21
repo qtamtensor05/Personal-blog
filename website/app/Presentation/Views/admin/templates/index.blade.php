@@ -94,32 +94,32 @@
                                     }}
                                 </td>
                                 <td class="px-4 py-3 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="template-table-actions">
                                         <a
                                             href="{{ route('templates.preview', $template->slug) }}"
                                             target="_blank"
                                             rel="noopener"
-                                            class="text-accent-primary text-sm hover:underline"
+                                            class="btn-secondary"
                                         >
                                             {{ __('templates.view') }}
                                         </a>
                                         <a
                                             href="{{ route('admin.templates.edit', $template->id) }}"
-                                            class="text-accent-primary text-sm hover:underline"
+                                            class="btn-secondary"
                                         >
                                             {{ __('templates.edit') }}
                                         </a>
                                         @if ($template->draftData !== null && $template->status->value === 'DRAFT')
                                             <button
                                                 onclick="publishTemplate({{ $template->id }})"
-                                                class="text-accent-primary text-sm hover:underline"
+                                                class="btn-secondary"
                                             >
                                                 {{ __('templates.publish') }}
                                             </button>
                                         @endif
                                         <button
                                             onclick="deleteTemplate({{ $template->id }}, '{{ addslashes($template->name) }}')"
-                                            class="text-sm text-red-500 hover:underline"
+                                            class="btn-danger"
                                         >
                                             {{ __('templates.delete') }}
                                         </button>
@@ -174,18 +174,18 @@
                                         }}
                                     </td>
                                     <td class="px-4 py-3 text-right">
-                                        <div class="flex justify-end gap-3">
+                                        <div class="template-table-actions">
                                             <button
                                                 type="button"
                                                 onclick="restoreTemplate({{ $template->id }})"
-                                                class="text-accent-primary text-sm hover:underline"
+                                                class="btn-secondary"
                                             >
                                                 {{ __('templates.restore') }}
                                             </button>
                                             <button
                                                 type="button"
                                                 onclick="permanentlyDeleteTemplate({{ $template->id }}, '{{ addslashes($template->name) }}')"
-                                                class="text-sm text-red-500 hover:underline"
+                                                class="btn-danger"
                                             >
                                                 {{ __('templates.delete_forever') }}
                                             </button>

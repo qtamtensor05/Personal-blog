@@ -165,12 +165,16 @@
                             name="name"
                             :label="__('template.blog_name')"
                             :value="old('name', $blog->name)"
+                            maxlength="160"
                             required
                         />
                         <x-input
                             name="slug"
                             :label="__('template.slug')"
                             :value="old('slug', $blog->slug)"
+                            maxlength="160"
+                            pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                            :hint="__('The slug may only contain lowercase unaccented letters, numbers and hyphens; for example: my-blog.')"
                             required
                         />
                         <x-textarea
