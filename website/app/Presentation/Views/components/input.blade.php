@@ -32,6 +32,8 @@
             data-validation-url="{{ __('validation.url', ['attribute' => $label ?? $name]) }}"
             data-validation-min="{{ __('validation.min.string', ['attribute' => $label ?? $name, 'min' => $attributes->get('minlength', '')]) }}"
             data-validation-max="{{ __('validation.max.string', ['attribute' => $label ?? $name, 'max' => $attributes->get('maxlength', '')]) }}"
+            data-validation-range-min="{{ __('validation.min.numeric', ['attribute' => $label ?? $name, 'min' => $attributes->get('min', '')]) }}"
+            data-validation-range-max="{{ __('validation.max.numeric', ['attribute' => $label ?? $name, 'max' => $attributes->get('max', '')]) }}"
             @unless ($isPassword) value="{{ old($name, $value) }}" @endunless
             @if ($isPassword) style="padding-right: 2.75rem" @endif
             {{

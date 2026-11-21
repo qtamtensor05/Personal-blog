@@ -141,6 +141,14 @@
                 >
                     {{ __('template.open_blog') }}
                 </a>
+                <a
+                    href="{{ route('public.blog.section', [$blog->slug, 'posts']) }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn-secondary text-sm"
+                >
+                    {{ __('report_notifications.public_posts') }}
+                </a>
             </div>
         </div>
 

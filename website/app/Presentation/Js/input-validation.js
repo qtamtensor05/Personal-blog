@@ -12,6 +12,8 @@ document.addEventListener('invalid', (event) => {
     else if (validity.typeMismatch && input.type === 'url') message = input.dataset.validationUrl;
     else if (validity.tooShort) message = input.dataset.validationMin;
     else if (validity.tooLong) message = input.dataset.validationMax;
+    else if (validity.rangeUnderflow) message = input.dataset.validationRangeMin;
+    else if (validity.rangeOverflow) message = input.dataset.validationRangeMax;
     error.textContent = message;
     error.classList.remove('hidden');
     input.setAttribute('aria-invalid', 'true');

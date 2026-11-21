@@ -13,31 +13,50 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
 {
     private const PENDING = ['OPEN', 'REVIEWING'];
 
+    public function __construct(private readonly ReportNotificationOutbox $outbox) {}
+
     public function create(int $blogId, ?int $postId, int $reporterId, string $reason): int
     {
-        $now = now();
-
-        return (int) DB::table('content_reports')->insertGetId([
-            'blog_id' => $blogId,
-            'target_type' => $postId === null ? 'BLOG' : 'POST',
-            'post_id' => $postId,
-            'reporter_user_id' => $reporterId,
-            'reason' => $reason,
-            'status' => ReportStatus::Open->value,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        return $this->createPending($blogId, $postId, null, $reporterId, $reason);
     }
 
     public function createComment(int $blogId, int $postId, int $commentId, int $reporterId, string $reason): int
     {
-        $now = now();
+        return $this->createPending($blogId, $postId, $commentId, $reporterId, $reason);
+    }
 
-        return (int) DB::table('content_reports')->insertGetId([
-            'blog_id' => $blogId, 'target_type' => 'COMMENT', 'post_id' => $postId, 'comment_id' => $commentId,
-            'reporter_user_id' => $reporterId, 'reason' => $reason, 'status' => ReportStatus::Open->value,
-            'created_at' => $now, 'updated_at' => $now,
-        ]);
+    private function createPending(int $blogId, ?int $postId, ?int $commentId, int $reporterId, string $reason): int
+    {
+        $reportId = DB::transaction(function () use ($blogId, $postId, $commentId, $reporterId, $reason): int {
+            // Serialize all submissions from this reporter, including absent target rows.
+            $reporter = DB::table('users')->where('id', $reporterId)->lockForUpdate()->first(['id']);
+            if ($reporter === null) {
+                throw new \DomainException('Reporter not found.');
+            }
+            $type = $commentId !== null ? 'COMMENT' : ($postId === null ? 'BLOG' : 'POST');
+            $pending = DB::table('content_reports')->where('reporter_user_id', $reporterId)
+                ->where('target_type', $type)->where('blog_id', $blogId)
+                ->where('post_id', $postId)->where('comment_id', $commentId)
+                ->whereIn('status', self::PENDING)->lockForUpdate()->first(['id']);
+            if ($pending !== null) {
+                throw new \DomainException('You have already reported this. It is being reviewed.');
+            }
+            $now = now();
+            $id = (int) DB::table('content_reports')->insertGetId([
+                'blog_id' => $blogId, 'target_type' => $type, 'post_id' => $postId, 'comment_id' => $commentId,
+                'reporter_user_id' => $reporterId, 'reason' => $reason, 'status' => ReportStatus::Open->value,
+                'created_at' => $now, 'updated_at' => $now,
+            ]);
+            DB::table('report_notification_outbox')->insert([
+                'report_id' => $id, 'target_type' => $type, 'created_at' => $now, 'updated_at' => $now,
+            ]);
+
+            return $id;
+        }, 3);
+        // Delivery failure must never undo acknowledgement of the saved report.
+        DB::afterCommit(fn () => $this->outbox->attempt($reportId));
+
+        return $reportId;
     }
 
     public function hasPendingCommentReport(int $reporterId, int $commentId): bool
@@ -50,6 +69,7 @@ final class QueryBuilderContentReportRepository implements ContentReportReposito
         return DB::table('content_reports')
             ->where('reporter_user_id', $reporterId)
             ->where('blog_id', $blogId)
+            ->where('target_type', $postId === null ? 'BLOG' : 'POST')
             ->when(
                 $postId === null,
                 fn ($q) => $q->whereNull('post_id'),
