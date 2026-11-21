@@ -71,11 +71,7 @@
 
     <header class="le-header">
         <a class="le-brand" href="{{ $homeUrl }}">
-            @if (!empty($header['mediaId']) && isset($mediaUrls[$header['mediaId']]))
-                <img src="{{ $mediaUrls[$header['mediaId']] }}" alt="" class="le-brand-image" />
-            @else
-                <i class="fa-solid fa-book-open le-brand-mark" aria-hidden="true"></i>
-            @endif
+            @include ('public.partials.blog-logo', ['content' => $header, 'imageClass' => 'le-brand-image', 'showFallback' => true])
             <span>{{ $header['title'] ?? $blog->name }}</span>
         </a>
         <nav class="le-nav" aria-label="{{ __('public.navigation') }}">

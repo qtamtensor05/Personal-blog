@@ -3,13 +3,7 @@
     style="border-color: var(--d-secondary)"
 >
     <div class="flex items-center gap-3">
-        @if (!empty($content['mediaId']) && isset($mediaUrls[$content['mediaId']]))
-            <img
-                src="{{ $mediaUrls[$content['mediaId']] }}"
-                alt=""
-                class="h-10 w-10 rounded-md object-cover"
-            />
-        @endif
+        @include ('public.partials.blog-logo', ['imageClass' => 'h-10 w-10 rounded-md object-cover'])
         <div>
             <a
                 href="{{ route('public.blog', $blog->slug) }}"

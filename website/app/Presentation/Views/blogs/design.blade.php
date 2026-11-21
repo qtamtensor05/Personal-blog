@@ -20,10 +20,7 @@
         <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <a
-                    onclick="
-                        window.history.back();
-                        return false;
-                    "
+                    data-navigation-back
                     href="{{ route('blogs.show', $blog->id) }}"
                     class="text-secondary hover:text-accent-primary text-sm"
                     ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ $blog->name }}</a
@@ -536,25 +533,66 @@
             }};
 
             async function upload(file, status) {
-                const body = new FormData();
-                body.append('file', file);
-                body.append('scope', 'BLOG');
-                body.append('blog_id', blogId);
-                status.textContent = uploadText.replace('__FILE__', file.name);
-                const response = await fetch(uploadUrl, {
-                    method: 'POST',
-                    headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
-                    body,
-                });
-                const result = await response.json().catch(() => ({}));
-                if (!response.ok)
-                    throw new Error(
-                        result.message ??
-                            Object.values(result.errors ?? {})[0]?.[0] ??
-                            'Không thể tải Media.',
-                    );
-                return result.data;
+                const root = status.closest('[data-direct-media]');
+                const form = status.closest('form');
+                root.dataset.uploadState = 'pending';
+                status.classList.remove('text-red-500');
+                updateSaveButtons(form);
+                try {
+                    const body = new FormData();
+                    body.append('file', file);
+                    body.append('scope', 'BLOG');
+                    body.append('blog_id', blogId);
+                    status.textContent = uploadText.replace('__FILE__', file.name);
+                    const response = await fetch(uploadUrl, {
+                        method: 'POST',
+                        headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body,
+                    });
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok)
+                        throw new Error(
+                            result.message ??
+                                Object.values(result.errors ?? {})[0]?.[0] ??
+                                'Không thể tải Media.',
+                        );
+                    if (!result.data?.id || !result.data?.url) {
+                        throw new Error('Tải ảnh chưa hoàn tất. Vui lòng chọn lại ảnh.');
+                    }
+                    root.dataset.uploadState = 'ready';
+                    return result.data;
+                } catch (error) {
+                    root.dataset.uploadState = 'error';
+                    throw error;
+                } finally {
+                    updateSaveButtons(form);
+                }
             }
+
+            function updateSaveButtons(form) {
+                if (!form) return;
+                const pending = !!form.querySelector('[data-upload-state="pending"]');
+                form.querySelectorAll('button[type="submit"]').forEach((button) => {
+                    button.disabled = pending;
+                    button.setAttribute('aria-busy', String(pending));
+                });
+            }
+
+            document.querySelectorAll('form').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    const incomplete = form.querySelector(
+                        '[data-upload-state="pending"], [data-upload-state="error"]',
+                    );
+                    if (!incomplete) return;
+                    event.preventDefault();
+                    const message =
+                        incomplete.dataset.uploadState === 'pending'
+                            ? 'Ảnh đang tải lên. Vui lòng chờ tải xong rồi lưu.'
+                            : 'Ảnh chưa tải lên thành công. Vui lòng chọn lại ảnh trước khi lưu.';
+                    incomplete.querySelector('[data-media-status]').textContent = message;
+                    window.showErrorModal?.(message);
+                });
+            });
 
             document.querySelectorAll('[data-direct-media]').forEach((root) => {
                 const input = root.querySelector('[data-media-file]');
@@ -576,7 +614,6 @@
                     try {
                         const files = [...input.files];
                         if (!files.length) return;
-                        if (root.dataset.directMedia === 'single') preview.innerHTML = '';
                         for (const file of files) {
                             const asset = await upload(file, status);
                             const media =
