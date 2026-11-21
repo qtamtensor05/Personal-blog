@@ -69,6 +69,8 @@
 
                     <a
                         href="{{ route('public.blog', $blog->slug) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         class="text-secondary inline-flex items-center gap-2 rounded-sm text-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
                     >
                         @if ($author?->avatarUrl)
