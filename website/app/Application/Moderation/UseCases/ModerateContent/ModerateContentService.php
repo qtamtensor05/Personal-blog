@@ -137,6 +137,7 @@ final readonly class ModerateContentService
             $this->notifications->publish((int) $report->owner_user_id, 'moderation.action_taken', [
                 'title' => 'Moderation action applied',
                 'message' => "A moderation action ({$action}) was applied to {$report->blog_name}.",
+                'blog_name' => $report->blog_name,
                 'report_id' => $reportId,
                 'action' => $action,
             ]);
@@ -169,6 +170,7 @@ final readonly class ModerateContentService
             [
                 'title' => 'Blog suspension lifted',
                 'message' => "The suspension on {$report->blog_name} was lifted.",
+                'blog_name' => $report->blog_name,
                 'report_id' => $reportId,
             ],
         );

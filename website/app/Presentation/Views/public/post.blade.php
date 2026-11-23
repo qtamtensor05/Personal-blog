@@ -181,18 +181,6 @@
                     @endif
                 </div>
 
-                @if ($layout->showCover)
-                    <div data-image-frame class="media-frame mb-8 overflow-hidden rounded-md">
-                        <img
-                            src="{{ $cover['url'] ?? asset('images/illustrations/post-cover.svg') }}"
-                            alt=""
-                            class="media-image block aspect-video w-full rounded-md object-cover"
-                            data-image-reveal
-                            @if ($cover && $cover['width'] && $cover['height']) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif
-                        />
-                    </div>
-                @endif
-
                 {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
                 <div class="post-content">{!! $html !!}</div>
 

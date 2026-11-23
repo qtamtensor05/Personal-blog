@@ -7,6 +7,7 @@ namespace App\Infrastructure\Content\Persistence;
 use App\Application\Content\Contracts\PublicPostCatalog;
 use App\Application\Content\DTOs\PublicPostPage;
 use App\Application\Content\DTOs\PublicPostSummary;
+use App\Domain\Content\ValueObjects\TiptapDocument;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +15,9 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
 {
     private const SUMMARY_COLUMNS = [
         'p.id',
+        'p.blog_id',
+        'p.cover_media_id',
+        'p.content_json',
         'p.title',
         'p.slug',
         'p.excerpt',
@@ -46,8 +50,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->orderByDesc('p.id')
             ->forPage($page, $perPage)
             ->get()
-            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
-            ->all();
+            ->pipe(fn ($rows): array => $this->toSummaries($rows->all()));
 
         return new PublicPostPage($items, $total, $page, $perPage);
     }
@@ -61,6 +64,8 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
                 $join
                     ->on('m.id', '=', 'p.cover_media_id')
                     ->where('m.status', '=', 'READY')
+                    ->where('m.scope', 'BLOG')
+                    ->on('m.blog_id', '=', 'p.blog_id')
                     ->whereNull('m.deleted_at');
             })
             ->where('p.status', 'PUBLISHED')
@@ -81,8 +86,7 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->limit(max(0, $limit))
             ->select(self::SUMMARY_COLUMNS)
             ->get()
-            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
-            ->all();
+            ->pipe(fn ($rows): array => $this->toSummaries($rows->all()));
     }
 
     public function recent(int $limit, array $excludeIds = []): array
@@ -99,8 +103,35 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
             ->limit(max(0, $limit))
             ->select(self::SUMMARY_COLUMNS)
             ->get()
-            ->map(fn (object $row): PublicPostSummary => $this->toSummary($row))
-            ->all();
+            ->pipe(fn ($rows): array => $this->toSummaries($rows->all()));
+    }
+
+    /** @param list<object> $rows
+     * @return list<PublicPostSummary>
+     */
+    private function toSummaries(array $rows): array
+    {
+        $fallbackIds = [];
+        foreach ($rows as $row) {
+            if ($row->cover_media_id === null) {
+                $id = TiptapDocument::fromArray(json_decode($row->content_json, true) ?? [])->mediaIds()[0] ?? null;
+                if ($id !== null) {
+                    $fallbackIds[(int) $row->id] = $id;
+                }
+            }
+        }
+        $assets = $fallbackIds === [] ? collect() : DB::table('media_assets')
+            ->whereIn('id', array_values(array_unique($fallbackIds)))
+            ->where('scope', 'BLOG')->where('status', 'READY')->whereNull('deleted_at')
+            ->whereNotNull('secure_url')->get(['id', 'blog_id', 'secure_url'])->keyBy('id');
+        foreach ($rows as $row) {
+            $asset = $assets->get($fallbackIds[(int) $row->id] ?? 0);
+            if ($row->cover_media_id === null && $asset !== null && (int) $asset->blog_id === (int) $row->blog_id) {
+                $row->cover_url = $asset->secure_url;
+            }
+        }
+
+        return array_map(fn (object $row): PublicPostSummary => $this->toSummary($row), $rows);
     }
 
     private function toSummary(object $row): PublicPostSummary

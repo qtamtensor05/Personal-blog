@@ -72,6 +72,7 @@ final readonly class CommentManager implements CommentManagerContract
                             : $actorName.' đã bình luận về bài viết "'.$post->title.'".',
                         'actor_user_id' => (int) $actor->id,
                         'actor_name' => $actorName,
+                        'post_title' => $post->title,
                         'blog_id' => (int) $post->blog_id,
                         'post_id' => $postId,
                         'blog_slug' => $post->blog_slug,

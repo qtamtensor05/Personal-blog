@@ -35,6 +35,11 @@ final readonly class PostRecord
         public array $tagIds = [],
     ) {}
 
+    public function previewMediaId(): ?int
+    {
+        return $this->coverMediaId ?? ($this->content->mediaIds()[0] ?? null);
+    }
+
     /**
      * What the editor should show: the draft if there is one, otherwise the live version.
      */

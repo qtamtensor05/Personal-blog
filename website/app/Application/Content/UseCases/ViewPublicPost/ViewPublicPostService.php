@@ -40,8 +40,8 @@ final readonly class ViewPublicPostService
 
         $ids = $post->content->mediaIds();
 
-        if ($post->coverMediaId !== null) {
-            $ids[] = $post->coverMediaId;
+        if ($post->previewMediaId() !== null) {
+            $ids[] = $post->previewMediaId();
         }
 
         return [
