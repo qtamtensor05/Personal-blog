@@ -102,7 +102,7 @@ final class PublicBlogController extends Controller
         $coverMediaIds = array_values(
             array_unique(
                 array_filter(
-                    array_map(static fn ($post): ?int => $post->coverMediaId, array_merge($publicPosts, $page->posts)),
+                    array_merge([], ...array_map(static fn ($post): array => $post->previewMediaIds(), array_merge($publicPosts, $page->posts))),
                 ),
             ),
         );

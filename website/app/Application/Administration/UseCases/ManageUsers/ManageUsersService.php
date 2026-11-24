@@ -72,6 +72,7 @@ final readonly class ManageUsersService
         $this->notifications->publish($userId, 'account.restricted', [
             'title' => 'Account restriction applied',
             'message' => "A {$kind} restriction was applied to your account. Reason: {$reason}",
+            'reason' => $reason,
             'kind' => $kind,
             'ends_at' => $endsAt?->format(DATE_ATOM),
         ]);
@@ -111,6 +112,7 @@ final readonly class ManageUsersService
         $this->notifications->publish($userId, 'account.restriction_lifted', [
             'title' => 'Account restriction lifted',
             'message' => "Your account restriction was lifted. Reason: {$reason}",
+            'reason' => $reason,
         ]);
     }
 

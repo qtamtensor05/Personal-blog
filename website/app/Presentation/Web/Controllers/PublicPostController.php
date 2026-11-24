@@ -48,8 +48,9 @@ final class PublicPostController extends Controller
             'page' => $result['page'],
             'post' => $record,
             'html' => $renderer->render($record->content, $result['media']),
-            'cover' => $record->coverMediaId !== null
-                    ? $result['media'][$record->coverMediaId] ?? null
+            'cover' => $record->coverMediaId !== null ? ($result['media'][$record->coverMediaId] ?? null) : null,
+            'previewCover' => $record->previewMediaId($result['media']) !== null
+                    ? $result['media'][$record->previewMediaId($result['media'])] ?? null
                     : null,
             'author' => $result['author'],
             'interactionState' => $request->user()

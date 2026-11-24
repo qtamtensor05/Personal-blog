@@ -39,7 +39,7 @@
         @forelse ($publicPosts as $post)
             <article class="relative">
                 <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary" aria-label="{{ $post->title }}"></a>
-                <img src="{{ $post->coverMediaId && isset($mediaUrls[$post->coverMediaId]) ? $mediaUrls[$post->coverMediaId] : asset('images/illustrations/post-cover.svg') }}" alt="" loading="lazy" />
+                <img src="{{ $post->previewMediaId($mediaUrls) && isset($mediaUrls[$post->previewMediaId($mediaUrls)]) ? $mediaUrls[$post->previewMediaId($mediaUrls)] : asset('images/illustrations/post-cover.svg') }}" alt="" loading="lazy" />
 
                 <div>
                     <time>

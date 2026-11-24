@@ -69,6 +69,7 @@ final readonly class PublishLikeNotificationService implements PublishLikeNotifi
                 'message' => $name.' đã thích bài viết "'.$current['post']->title.'".',
                 'liker_user_id' => $likerId,
                 'liker_name' => $name,
+                'post_title' => $current['post']->title,
                 'blog_id' => $location->blogId,
                 'post_id' => $postId,
             ]);

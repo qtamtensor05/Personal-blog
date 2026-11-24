@@ -35,6 +35,25 @@ final readonly class PostRecord
         public array $tagIds = [],
     ) {}
 
+    /** @return list<int> Explicit cover first, followed by body images in document order. */
+    public function previewMediaIds(): array
+    {
+        return array_values(array_unique(array_filter([$this->coverMediaId, ...$this->content->mediaIds()])));
+    }
+
+    /** @param array<int, mixed> $usableAssets Assets already validated for this blog. */
+    public function previewMediaId(array $usableAssets): ?int
+    {
+        foreach ($this->previewMediaIds() as $id) {
+            $asset = $usableAssets[$id] ?? null;
+            if ((is_string($asset) && $asset !== '') || (is_array($asset) && ! empty($asset['url']))) {
+                return $id;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * What the editor should show: the draft if there is one, otherwise the live version.
      */

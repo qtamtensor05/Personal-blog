@@ -73,17 +73,6 @@
                 </div>
             </header>
 
-            <!-- Cover Image -->
-            @if ($post['cover_image'] ?? false)
-                <div class="mb-8 overflow-hidden rounded-xl">
-                    <img
-                        src="{{ $post['cover_image'] }}"
-                        alt="{{ $post['title'] }}"
-                        class="h-auto w-full object-cover"
-                        loading="lazy"
-                    />
-                </div>
-            @endif
 
             <!-- Backend Notice -->
             <x-alert type="warning" class="mb-8">
