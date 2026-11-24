@@ -33,21 +33,24 @@ afterEach(function (): void {
 });
 
 it('uses an explicit cover or the first published content image across public catalogs', function (): void {
-    foreach ([[1, 11, 10], [2, null, 10], [3, null, 12], [4, null, 13], [5, null, null]] as [$id, $cover, $image]) {
+    foreach ([[1, 11, 10], [2, null, 10], [3, null, 12], [4, null, 13], [5, null, null], [6, 13, 10], [7, 999, 10]] as [$id, $cover, $image]) {
         $content = ['type' => 'doc', 'content' => $image === null ? [] : [
             ['type' => 'image', 'attrs' => ['mediaId' => $image]],
             ['type' => 'image', 'attrs' => ['mediaId' => 11]],
         ]];
         DB::table('posts')->insert(['id' => $id, 'blog_id' => 1, 'author_user_id' => 1, 'title' => 'Post '.$id, 'slug' => 'post-'.$id, 'content_json' => json_encode($content), 'cover_media_id' => $cover, 'status' => 'PUBLISHED', 'is_featured' => 1, 'published_at' => '2026-11-23']);
     }
+    DB::table('media_assets')->where('id', 13)->update(['status' => 'READY', 'deleted_at' => '2026-11-23']);
     $catalog = new QueryBuilderPublicPostCatalog;
     foreach ([$catalog->paginate(null, 1, 9)->items, $catalog->recent(9), $catalog->featured(9)] as $items) {
         $urls = collect($items)->keyBy('id');
         expect($urls[1]->coverUrl)->toBe('https://example.com/cover.jpg')
             ->and($urls[2]->coverUrl)->toBe('https://example.com/content.jpg')
-            ->and($urls[3]->coverUrl)->toBeNull()
-            ->and($urls[4]->coverUrl)->toBeNull()
-            ->and($urls[5]->coverUrl)->toBeNull();
+            ->and($urls[3]->coverUrl)->toBe('https://example.com/cover.jpg')
+            ->and($urls[4]->coverUrl)->toBe('https://example.com/cover.jpg')
+            ->and($urls[5]->coverUrl)->toBeNull()
+            ->and($urls[6]->coverUrl)->toBe('https://example.com/content.jpg')
+            ->and($urls[7]->coverUrl)->toBe('https://example.com/content.jpg');
     }
 });
 
@@ -58,6 +61,22 @@ it('resolves a preview image without changing the selected cover or body', funct
     ]]);
     foreach ([null, 99] as $cover) {
         $post = new PostRecord(1, 1, 1, 'Post', 'post', null, $document, null, PostStatus::Published, $cover, null, null, null, false, '2026-11-23', '2026-11-23');
-        expect($post->previewMediaId())->toBe($cover ?? 10)->and($post->coverMediaId)->toBe($cover)->and($post->content->mediaIds())->toBe([10, 11]);
+        expect($post->previewMediaId([10 => 'https://example.com/body.jpg', 99 => 'https://example.com/cover.jpg']))->toBe($cover ?? 10)->and($post->coverMediaId)->toBe($cover)->and($post->content->mediaIds())->toBe([10, 11]);
+        expect($post->previewMediaId([11 => 'https://example.com/later.jpg']))->toBe(11)
+            ->and($post->previewMediaId([]))->toBeNull();
     }
 });
+
+it('shows configured distinct covers without duplicating body images', function (bool $enabled, bool $available, int $bodyId, bool $visible): void {
+    $document = TiptapDocument::fromArray(['type' => 'doc', 'content' => [['type' => 'image', 'attrs' => ['mediaId' => $bodyId]]]]);
+    $html = view('public.partials.post-cover', [
+        'layout' => (object) ['showCover' => $enabled],
+        'cover' => $available ? ['url' => 'https://example.com/explicit.jpg', 'width' => 100, 'height' => 100] : null,
+        'post' => (object) ['coverMediaId' => 99, 'content' => $document],
+    ])->render();
+    if ($visible) {
+        expect($html)->toContain('https://example.com/explicit.jpg', 'data-image-frame');
+    } else {
+        expect($html)->not->toContain('<img');
+    }
+})->with([[true, true, 10, true], [false, true, 10, false], [true, true, 99, false], [true, false, 10, false]]);

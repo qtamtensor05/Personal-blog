@@ -24,8 +24,8 @@
         <meta name="robots" content="noindex,nofollow" />
     @endif
     <meta property="og:title" content="{{ $post->seoTitle ?? $post->title }}" />
-    @if ($cover)
-        <meta property="og:image" content="{{ $cover['url'] }}" />
+    @if ($previewCover ?? $cover)
+        <meta property="og:image" content="{{ ($previewCover ?? $cover)['url'] }}" />
     @endif
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
     @vite (['app/Presentation/Css/app.css', 'app/Presentation/Js/app.js'])
@@ -180,6 +180,8 @@
                         </span>
                     @endif
                 </div>
+
+                @include ('public.partials.post-cover')
 
                 {{-- $html comes from TiptapHtmlRenderer, which escapes all text and attributes. --}}
                 <div class="post-content">{!! $html !!}</div>

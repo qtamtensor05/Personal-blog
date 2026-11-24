@@ -60,8 +60,8 @@ final readonly class PostInteractionsService implements PostInteractionsUseCase
             $visible[] = [
                 'blog' => $page['page']->blog,
                 'post' => $post,
-                'coverUrl' => $post->previewMediaId() !== null
-                    ? ($page['media'][$post->previewMediaId()]['url'] ?? null)
+                'coverUrl' => $post->previewMediaId($page['media']) !== null
+                    ? ($page['media'][$post->previewMediaId($page['media'])]['url'] ?? null)
                     : null,
             ];
         }

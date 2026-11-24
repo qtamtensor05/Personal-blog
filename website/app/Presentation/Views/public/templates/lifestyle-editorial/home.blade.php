@@ -202,7 +202,7 @@
                                 <article class="relative">
                                     <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary" aria-label="{{ $post->title }}"></a>
                                     <img
-                                        src="{{ $post->previewMediaId() && isset($mediaUrls[$post->previewMediaId()]) ? $mediaUrls[$post->previewMediaId()] : $images.'/'.$fallbackCards[$loop->index % 3] }}"
+                                        src="{{ $post->previewMediaId($mediaUrls) && isset($mediaUrls[$post->previewMediaId($mediaUrls)]) ? $mediaUrls[$post->previewMediaId($mediaUrls)] : $images.'/'.$fallbackCards[$loop->index % 3] }}"
                                         alt=""
                                     />
                                     <time>{{

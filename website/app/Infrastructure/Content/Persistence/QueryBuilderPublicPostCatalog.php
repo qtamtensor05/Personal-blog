@@ -111,23 +111,25 @@ final class QueryBuilderPublicPostCatalog implements PublicPostCatalog
      */
     private function toSummaries(array $rows): array
     {
-        $fallbackIds = [];
+        $candidates = [];
         foreach ($rows as $row) {
-            if ($row->cover_media_id === null) {
-                $id = TiptapDocument::fromArray(json_decode($row->content_json, true) ?? [])->mediaIds()[0] ?? null;
-                if ($id !== null) {
-                    $fallbackIds[(int) $row->id] = $id;
-                }
-            }
+            $bodyIds = TiptapDocument::fromArray(json_decode($row->content_json, true) ?? [])->mediaIds();
+            $candidates[(int) $row->id] = array_values(array_unique(array_filter([$row->cover_media_id, ...$bodyIds])));
         }
-        $assets = $fallbackIds === [] ? collect() : DB::table('media_assets')
-            ->whereIn('id', array_values(array_unique($fallbackIds)))
+        $ids = array_values(array_unique(array_merge([], ...array_values($candidates))));
+        $assets = $ids === [] ? collect() : DB::table('media_assets')
+            ->whereIn('id', $ids)
             ->where('scope', 'BLOG')->where('status', 'READY')->whereNull('deleted_at')
-            ->whereNotNull('secure_url')->get(['id', 'blog_id', 'secure_url'])->keyBy('id');
+            ->whereNotNull('secure_url')->where('secure_url', '!=', '')
+            ->get(['id', 'blog_id', 'secure_url'])->keyBy('id');
         foreach ($rows as $row) {
-            $asset = $assets->get($fallbackIds[(int) $row->id] ?? 0);
-            if ($row->cover_media_id === null && $asset !== null && (int) $asset->blog_id === (int) $row->blog_id) {
-                $row->cover_url = $asset->secure_url;
+            $row->cover_url = null;
+            foreach ($candidates[(int) $row->id] as $id) {
+                $asset = $assets->get($id);
+                if ($asset !== null && (int) $asset->blog_id === (int) $row->blog_id) {
+                    $row->cover_url = $asset->secure_url;
+                    break;
+                }
             }
         }
 

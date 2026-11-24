@@ -38,11 +38,7 @@ final readonly class ViewPublicPostService
             throw new BlogNotFound;
         }
 
-        $ids = $post->content->mediaIds();
-
-        if ($post->previewMediaId() !== null) {
-            $ids[] = $post->previewMediaId();
-        }
+        $ids = $post->previewMediaIds();
 
         return [
             'page' => $page,

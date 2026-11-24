@@ -18,7 +18,7 @@
                         style="border-color: var(--d-secondary)"
                     >
                         <a href="{{ route('public.post', [$blog->slug, $post->slug]) }}" class="block h-full p-4 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-primary">
-                            <img src="{{ $post->previewMediaId() && isset($mediaUrls[$post->previewMediaId()]) ? $mediaUrls[$post->previewMediaId()] : asset('images/illustrations/post-cover.svg') }}" alt="" class="aspect-video w-full object-cover" loading="lazy" />
+                            <img src="{{ $post->previewMediaId($mediaUrls) && isset($mediaUrls[$post->previewMediaId($mediaUrls)]) ? $mediaUrls[$post->previewMediaId($mediaUrls)] : asset('images/illustrations/post-cover.svg') }}" alt="" class="aspect-video w-full object-cover" loading="lazy" />
                         <h3
                             class="mt-3 font-semibold"
                             style="font-family: var(--d-heading-font), sans-serif"
